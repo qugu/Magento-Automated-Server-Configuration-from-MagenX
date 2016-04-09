@@ -1039,30 +1039,17 @@ compress
 }
 END
 echo
-echo "---> SETUP DAILY CLAMAV SCANNER"
-cat >> /etc/cron.daily/clamscan <<END
-#!/bin/bash
-SCAN_MAGE="${MY_SHOP_PATH}"
-SCAN_TMP="/tmp"
-LOG_FILE="/var/log/clamav/clamscan.daily"
-
-alert_check () {
-    if [ \$(grep "Infected.*[1-9].*" \${LOG_FILE} | wc -l) != 0 ]
-    then
-        mail -s "INFECTED FILES FOUND ON \${HOSTNAME}" "${MAGE_ADMIN_EMAIL}" < \${LOG_FILE}
-        cp \${LOG_FILE} \${LOG_FILE}_INFECTED_\$(date +"%m-%d-%Y")
-        echo "" > \${LOG_FILE}
-    else
-        echo "" > \${LOG_FILE}
-    fi
-}
-
-/usr/bin/clamscan -i -r \${SCAN_MAGE} >> \${LOG_FILE}
-/usr/bin/clamscan -i -r \${SCAN_TMP} >> \${LOG_FILE}
-
-alert_check
-END
-chmod +x /etc/cron.daily/clamscan
+echo "---> SETUP DAILY MALWARE SCANNER WITH E-MAIL ALERTS"
+echo
+cd /usr/local/src
+wget -q ${MALDET}
+tar -zxf maldetect-current.tar.gz
+cd maldetect-*
+./install.sh
+echo
+sed -i 's/email_alert="0"/email_alert="1"/' /usr/local/maldetect/conf.maldet
+sed -i "s/you@domain.com/${MAGE_ADMIN_EMAIL}/" /usr/local/maldetect/conf.maldet
+echo
 sed -i "/^Example/d" /etc/clamd.d/scan.conf
 sed -i "/^Example/d" /etc/freshclam.conf
 echo
