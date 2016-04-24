@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="8.6.5"
+MASCM_VER="8.6.8"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -26,7 +26,7 @@ REPO_PERCONA="http://www.percona.com/redir/downloads/percona-release/redhat/late
 PERCONA_TOOLKIT="https://www.percona.com/downloads/percona-toolkit/2.2.17/RPM/percona-toolkit-2.2.17-1.noarch.rpm"
 REPO_NGINX="http://nginx.org/packages/mainline/centos/7/x86_64/"
 REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
-REPO_HHVM="https://yum.gleez.com/7/x86_64/hhvm-3.12.1-1.el7.centos.x86_64.rpm"
+REPO_HHVM="https://yum.gleez.com/7/x86_64/hhvm-3.13.1-1.el7.centos.x86_64.rpm"
 
 # WebStack Packages
 EXTRA_PACKAGES="boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate unzip vim wget tar curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle GeoIP ImageMagick libjpeg-turbo-utils pngcrush lsof goaccess net-snmp net-snmp-utils xinetd python-pip ncftp postfix time letsencrypt"
