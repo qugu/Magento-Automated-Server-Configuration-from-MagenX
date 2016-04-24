@@ -22,7 +22,6 @@ WEBMIN="http://prdownloads.sourceforge.net/webadmin/webmin-1.791-1.noarch.rpm"
 WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.tar.gz"
 
 # Repositories
-REPO_EPEL="http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm"
 REPO_PERCONA="http://www.percona.com/redir/downloads/percona-release/redhat/latest/percona-release-0.1-3.noarch.rpm"
 PERCONA_TOOLKIT="https://www.percona.com/downloads/percona-toolkit/2.2.17/RPM/percona-toolkit-2.2.17-1.noarch.rpm"
 REPO_NGINX="http://nginx.org/packages/mainline/centos/7/x86_64/"
@@ -295,7 +294,7 @@ if grep -q "yes" /root/mascm/.sysupdate >/dev/null 2>&1 ; then
 echo
 else
 ## Install EPEL repository
-rpm --quiet -U ${REPO_EPEL} >/dev/null 2>&1
+yum install -y epel-release >/dev/null 2>&1
 ## install all extra packages
 GREENTXT "INSTALLING EXTRA PACKAGES. PLEASE WAIT"
 yum -q -y install ${EXTRA_PACKAGES} ${PERL_MODULES[@]/#/perl-} >/dev/null 2>&1
