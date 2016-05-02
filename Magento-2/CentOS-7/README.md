@@ -4,7 +4,7 @@ do not edit core files!<br/><br/>
 Magento 2 intalled per documentation:<br/>
 http://devdocs.magento.com/guides/v2.0/install-gde/prereq/integrator_install.html
 
-full webstack configuration = php7, nginx, hhvm, varnish, percona, redis, memcached, proftpd, csf firewall, clamav scanner, images optimization, opcache invalidation, logrotate, webmin control panel.
+full webstack configuration = php7, nginx, hhvm, varnish, percona, redis, memcached, proftpd, csf firewall, clamav + maldet malware scanner, images optimization, opcache invalidation, logrotate, webmin control panel.
 <br/><br/>
 install Lets Encrypt and create ssl certificate<br/>
 ```
