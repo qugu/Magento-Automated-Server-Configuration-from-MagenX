@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="8.6.8"
+MASCM_VER="8.7.1"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -13,7 +13,7 @@ MASCM_VER="8.6.8"
 MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/releases 2>&1 | head -12 | grep 'tag_name' | grep -oP '(?<=")\d.*(?=")')
 REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
 
-PHPMYADMIN_VER="4.6"
+PHPMYADMIN_VER="4.6.0"
 
 REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/"
 
@@ -38,7 +38,7 @@ PERL_MODULES=(libwww-perl Template-Toolkit Time-HiRes ExtUtils-CBuilder ExtUtils
 
 # Nginx extra configuration
 NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento2/"
-NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf status.conf setup.conf hhvm.conf port.conf php_backend.conf maintenance.conf multishop.conf pagespeed.conf spider.conf"
+NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf status.conf setup.conf hhvm.conf php_backend.conf maintenance.conf multishop.conf pagespeed.conf spider.conf"
 NGINX_EXTRA_CONF_URL="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento2/conf.d/"
 
 # Debug Tools
