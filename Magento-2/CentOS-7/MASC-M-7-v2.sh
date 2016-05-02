@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="8.7.1"
+MASCM_VER="8.7.2"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -225,6 +225,71 @@ if [[ ${RESULT} == up ]]; then
   echo
   exit 1
 fi
+echo
+echo
+echo "-------------------------------------------------------------------------------------"
+BLUEBG "| QUICK SYSTEM TEST |"
+echo "-------------------------------------------------------------------------------------"
+echo
+    rpm -qa | grep -qw time || yum -y install time > /dev/null 2>&1
+    rpm -qa | grep -qw bzip2 || yum -y install bzip2 > /dev/null 2>&1
+    
+    test_file=vpsbench__$$
+    tar_file=tarfile
+    now=$(date +"%m/%d/%Y")
+
+    cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo )
+    cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
+    freq=$( awk -F: ' /cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo )
+    tram=$( free -m | awk 'NR==2 {print $2}' )
+    
+    echo
+    
+    echo -n "     PROCESSING I/O PERFORMANCE "
+    start_progress &
+    pid="$!"
+    io=$( ( dd if=/dev/zero of=$test_file bs=64k count=16k conv=fdatasync && rm -f $test_file ) 2>&1 | awk -F, '{io=$NF} END { print io}' )
+    stop_progress "$pid"
+
+    echo -n "     PROCESSING CPU PERFORMANCE "
+    dd if=/dev/urandom of=$tar_file bs=1024 count=25000 >>/dev/null 2>&1
+    start_progress &
+    pid="$!"
+    tf=$( (/usr/bin/time -f "%es" tar cfj $tar_file.bz2 $tar_file) 2>&1 )
+    stop_progress "$pid"
+    rm -f tarfile*
+    echo
+    echo
+
+    if [ ${io% *} -le 200 ] ; then
+        IO_COLOR="${RED}$io - bad performance"
+    elif [ ${io% *} -le 250 ] ; then
+        IO_COLOR="${YELLOW}$io - average performance"
+    else
+        IO_COLOR="${GREEN}$io - perfect performance"
+    fi
+
+    if [ ${tf%.*} -ge 10 ] ; then
+        CPU_COLOR="${RED}$tf - bad performance"
+    elif [ ${tf%.*} -ge 5 ] ; then
+        CPU_COLOR="${YELLOW}$tf - average performance"
+    else
+        CPU_COLOR="${GREEN}$tf - perfect performance"
+    fi
+
+  WHITETXT "${BOLD}SYSTEM DETAILS"
+  WHITETXT "CPU model: $cname"
+  WHITETXT "Number of cores: $cores"
+  WHITETXT "CPU frequency: $freq MHz"
+  WHITETXT "Total amount of RAM: $tram MB"
+  echo
+  WHITETXT "${BOLD}BENCHMARK RESULTS"
+  WHITETXT "I/O speed: ${IO_COLOR}"
+  WHITETXT "CPU Time: ${CPU_COLOR}"
+
+echo
+echo
+pause "---> Press [Enter] key to proceed"
 echo
 ###################################################################################
 #                                     CHECKS END                                  #
