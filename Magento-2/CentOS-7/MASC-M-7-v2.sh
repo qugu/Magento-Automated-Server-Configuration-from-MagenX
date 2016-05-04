@@ -5,15 +5,13 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="8.7.2"
+MASCM_VER="8.7.3"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
 # Software versions
 MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/releases 2>&1 | head -12 | grep 'tag_name' | grep -oP '(?<=")\d.*(?=")')
 REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
-
-PHPMYADMIN_VER="4.6.0"
 
 REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/"
 
@@ -38,7 +36,7 @@ PERL_MODULES=(libwww-perl Template-Toolkit Time-HiRes ExtUtils-CBuilder ExtUtils
 
 # Nginx extra configuration
 NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento2/"
-NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf status.conf setup.conf hhvm.conf php_backend.conf maintenance.conf multishop.conf pagespeed.conf spider.conf"
+NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf status.conf setup.conf hhvm.conf php_backend.conf phpmyadmin.conf maintenance.conf multishop.conf pagespeed.conf spider.conf"
 NGINX_EXTRA_CONF_URL="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento2/conf.d/"
 
 # Debug Tools
@@ -876,13 +874,11 @@ echo
 GREENTXT "Installing phpMyAdmin - advanced MySQL interface"
 pause '------> Press [Enter] key to continue'
 echo
-     cd ${MY_SHOP_PATH}/pub/
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-     mkdir -p ${PMA_FOLDER}_PMA && cd $_
-     wget -qO - https://files.phpmyadmin.net/phpMyAdmin/${PHPMYADMIN_VER}/phpMyAdmin-${PHPMYADMIN_VER}-all-languages.tar.gz | tar -xzp --strip 1
-     mv config.sample.inc.php config.inc.php
-     sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" ./config.inc.php
+     yum -q -y --enablerepo=remi-test install phpMyAdmin >/dev/null 2>&1
+     sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
+     sed -i "s/PHPMYADMIN_PLACEHOLDER/${PMA_FOLDER}/g" /etc/nginx/conf.d/phpmyadmin.conf
      echo
      GREENTXT "phpMyAdmin was installed to http://www.${MY_DOMAIN}/${PMA_FOLDER}_PMA"
 echo
