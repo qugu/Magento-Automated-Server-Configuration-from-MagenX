@@ -876,7 +876,7 @@ pause '------> Press [Enter] key to continue'
 echo
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-     yum -q -y --enablerepo=remi-test install phpMyAdmin >/dev/null 2>&1
+     yum -q -y --enablerepo=remi-test,remi-php70 install phpMyAdmin >/dev/null 2>&1
      sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
      sed -i "s/PHPMYADMIN_PLACEHOLDER/${PMA_FOLDER}/g" /etc/nginx/conf.d/phpmyadmin.conf
      echo
