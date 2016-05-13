@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="8.7.5"
+MASCM_VER="8.7.6"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -132,27 +132,6 @@ clear
 ###################################################################################
 echo
 echo
-# Check licence key
-# MASCM_BASE="http://www.magenx.com/mascm"
-# read -p "---> Paste your licence key and press enter: " KEY_OWNER
-# echo
-#  KEY_OUT=$(curl ${MASCM_BASE}/ver 2>&1 | grep ${KEY_OWNER} | awk '{print $2}')
-#  KEY_IN=$(echo ${HOSTNAME} | md5sum | awk '{print $1}')
-#if [[ "${KEY_OUT}" == "${KEY_IN}" ]]; then
-#    GREENTXT "PASS: INTEGRITY CHECK FOR '${SELF}' ON '${HOSTNAME}' OK"
-# elif [[ "${KEY_OUT}" != "${KEY_IN}" ]]; then
-#    echo
-#    REDTXT "ERROR: INTEGRITY CHECK FAILED! MD5 MISMATCH!"
-#    REDTXT "YOU CAN NOT RUN THIS SCRIPT WITHOUT A LICENCE KEY"
-#    echo "Local md5:  ${KEY_IN}"
-#    echo "Remote md5: ${KEY_OUT}"
-#    echo
-#    echo "-----> NOTE: PLEASE REPORT IT TO: admin@magenx.com"
-#       echo
-#       echo
-#       exit 1
-#fi
-
 # root?
 if [[ ${EUID} -ne 0 ]]; then
   echo
