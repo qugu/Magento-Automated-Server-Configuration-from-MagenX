@@ -226,8 +226,7 @@ fi
 echo
 echo
 if grep -q "yes" /root/mascm/.systest >/dev/null 2>&1 ; then
-  echo "loading menu"
-  sleep 1
+  echo ""
   else
 echo "-------------------------------------------------------------------------------------"
 BLUEBG "| QUICK SYSTEM TEST |"
@@ -300,8 +299,7 @@ fi
 ###################################################################################
 echo
 if grep -q "yes" /root/mascm/.terms >/dev/null 2>&1 ; then
-  echo "loading menu"
-  sleep 1
+  echo ""
   else
   YELLOWTXT "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
   echo
