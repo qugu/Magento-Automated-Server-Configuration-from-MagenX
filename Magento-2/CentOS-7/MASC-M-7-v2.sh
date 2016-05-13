@@ -861,7 +861,7 @@ echo
      sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
      sed -i "s/PHPMYADMIN_PLACEHOLDER/${PMA_FOLDER}/g" /etc/nginx/conf.d/phpmyadmin.conf
      echo
-     GREENTXT "phpMyAdmin was installed to http://www.${MY_DOMAIN}/${PMA_FOLDER}_PMA"
+     GREENTXT "phpMyAdmin was installed to http://www.${MY_DOMAIN}/${PMA_FOLDER}/"
 echo
 echo
 echo
