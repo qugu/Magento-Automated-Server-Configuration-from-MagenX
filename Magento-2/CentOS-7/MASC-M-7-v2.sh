@@ -225,12 +225,16 @@ if [[ ${RESULT} == up ]]; then
 fi
 echo
 echo
+if grep -q "yes" /root/mascm/.systest >/dev/null 2>&1 ; then
+  echo "loading menu"
+  sleep 1
+  else
 echo "-------------------------------------------------------------------------------------"
 BLUEBG "| QUICK SYSTEM TEST |"
 echo "-------------------------------------------------------------------------------------"
 echo
-    rpm -qa | grep -qw time || yum -y install time > /dev/null 2>&1
-    rpm -qa | grep -qw bzip2 || yum -y install bzip2 > /dev/null 2>&1
+    yum -y install epel-release > /dev/null 2>&1
+    yum -y install time bzip2 tar > /dev/null 2>&1
     
     test_file=vpsbench__$$
     tar_file=tarfile
@@ -286,9 +290,11 @@ echo
   WHITETXT "CPU Time: ${CPU_COLOR}"
 
 echo
+mkdir -p /root/mascm/ && echo "yes" > /root/mascm/.systest
 echo
 pause "---> Press [Enter] key to proceed"
 echo
+fi
 ###################################################################################
 #                                     CHECKS END                                  #
 ###################################################################################
@@ -311,7 +317,7 @@ if grep -q "yes" /root/mascm/.terms >/dev/null 2>&1 ; then
     echo -n "---> Do you agree to these terms?  [y/n][y]:"
     read terms_agree
   if [ "${terms_agree}" == "y" ];then
-    mkdir -p /root/mascm/ && echo "yes" > /root/mascm/.terms
+    echo "yes" > /root/mascm/.terms
           else
         REDTXT "Going out. EXIT"
         echo
