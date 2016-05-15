@@ -242,19 +242,19 @@ echo
     echo
 
     if [ ${io% *} -le 200 ] ; then
-        IO_COLOR="${RED}$io - bad performance"
+        IO_COLOR="${RED}$io - very bad result"
     elif [ ${io% *} -le 250 ] ; then
-        IO_COLOR="${YELLOW}$io - average performance"
+        IO_COLOR="${YELLOW}$io - average result"
     else
-        IO_COLOR="${GREEN}$io - perfect performance"
+        IO_COLOR="${GREEN}$io - excellent result"
     fi
 
     if [ ${tf%.*} -ge 10 ] ; then
-        CPU_COLOR="${RED}$tf - bad performance"
+        CPU_COLOR="${RED}$tf - very bad result"
     elif [ ${tf%.*} -ge 5 ] ; then
-        CPU_COLOR="${YELLOW}$tf - average performance"
+        CPU_COLOR="${YELLOW}$tf - average result"
     else
-        CPU_COLOR="${GREEN}$tf - perfect performance"
+        CPU_COLOR="${GREEN}$tf - excellent result"
     fi
 
   WHITETXT "${BOLD}SYSTEM DETAILS"
