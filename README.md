@@ -2,7 +2,6 @@
 
 MASC-M<sup>™</sup>
 ======
----->> Magento-2 **2.0.x**<br/>
 ---->> Magento **1.9.2.x**
 
 #### MagenX - Automated Server Configuration for Magento
