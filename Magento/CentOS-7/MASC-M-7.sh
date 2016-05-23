@@ -1,11 +1,11 @@
 #!/bin/bash
 #====================================================================#
 #  MagenX - Automated Server Configuration for Magento               #
-#    Copyright (C) 2015 admin@magenx.com                             #
+#    Copyright (C) 2016 admin@magenx.com                             #
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="7.9.5"
+MASCM_VER="8.0"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -13,8 +13,8 @@ MASCM_VER="7.9.5"
 #MAGENTO_VER=$(wget -q -O- http://connect20.magentocommerce.com/community/Mage_All_Latest/releases.xml | tail -6 | grep -Po '(?<=<v>).*(?=</v>)')
 MAGENTO_TMP_FILE="https://www.dropbox.com/s/oy4t5lzy1wfxqir/magento-1.9.2.4-2016-02-23-06-04-07.tar.gz"
 MAGENTO_VER="1.9.2.4"
-PHPMYADMIN_VER="4.6"
-AOE_SCHEDULER="1.3.1"
+PHPMYADMIN_VER="4.6.1"
+AOE_SCHEDULER="1.4.0"
 
 # Webmin Control Panel
 WEBMIN="http://prdownloads.sourceforge.net/webadmin/webmin-1.791-1.noarch.rpm"
@@ -28,8 +28,8 @@ REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
 REPO_HHVM="https://yum.gleez.com/7/x86_64/hhvm-3.13.1-1.el7.centos.x86_64.rpm"
 
 # WebStack Packages
-EXTRA_PACKAGES="boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate unzip vim wget tar curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle GeoIP ImageMagick libjpeg-turbo-utils pngcrush lsof goaccess net-snmp net-snmp-utils xinetd python-pip ncftp"
-PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl devel) 
+EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle GeoIP ImageMagick libjpeg-turbo-utils pngcrush lsof goaccess net-snmp net-snmp-utils xinetd python-pip ncftp postfix letsencrypt"
+PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl gmp php-gettext phpseclib recode symfony-class-loader symfony-common tcpdf tcpdf-dejavu-sans-fonts tidy udan11-sql-parser) 
 PHP_PECL_PACKAGES=(pecl-redis pecl-lzf pecl-geoip)
 PERCONA_PACKAGES=(client-56 server-56)
 PERL_MODULES=(libwww-perl Time-HiRes ExtUtils-CBuilder ExtUtils-MakeMaker TermReadKey DBI DBD-MySQL Digest-HMAC Digest-SHA1 Test-Simple Moose Net-SSLeay)
@@ -369,8 +369,10 @@ if [ "${repo_percona_install}" == "y" ];then
                  rpm -qa | grep -qw bc || yum -q -y install bc >/dev/null 2>&1
                  IBPS=$(echo "0.5*$(awk '/MemTotal/ { print $2 / (1024*1024)}' /proc/meminfo | cut -d'.' -f1)" | bc | xargs printf "%1.0f")
                  sed -i "s/innodb_buffer_pool_size = 4G/innodb_buffer_pool_size = ${IBPS}G/" /etc/my.cnf
+                 sed -i "s/innodb_buffer_pool_instances = 4/innodb_buffer_pool_instances = ${IBPS}/" /etc/my.cnf
                  echo
                  YELLOWTXT "Your innodb_buffer_pool_size = ${IBPS}G"
+                 YELLOWTXT "Your innodb_buffer_pool_instances = ${IBPS}"
                 echo
               echo
               ## get mysql tools
@@ -1179,30 +1181,19 @@ compress
 }
 END
 echo
-echo "---> SETUP DAILY CLAMAV SCANNER"
-cat >> /etc/cron.daily/clamscan <<END
-#!/bin/bash
-SCAN_MAGE="${MY_SHOP_PATH}"
-SCAN_TMP="/tmp"
-LOG_FILE="/var/log/clamav/clamscan.daily"
-
-alert_check () {
-    if [ \$(grep "Infected.*[1-9].*" \${LOG_FILE} | wc -l) != 0 ]
-    then
-        mail -s "INFECTED FILES FOUND ON \${HOSTNAME}" "${MAGE_ADMIN_EMAIL}" < \${LOG_FILE}
-        cp \${LOG_FILE} \${LOG_FILE}_INFECTED_\$(date +"%m-%d-%Y")
-        echo "" > \${LOG_FILE}
-    else
-        echo "" > \${LOG_FILE}
-    fi
-}
-
-/usr/bin/clamscan -i -r \${SCAN_MAGE} >> \${LOG_FILE}
-/usr/bin/clamscan -i -r \${SCAN_TMP} >> \${LOG_FILE}
-
-alert_check
-END
-chmod +x /etc/cron.daily/clamscan
+echo "---> SETUP DAILY MALWARE SCANNER WITH E-MAIL ALERTS"
+cd /usr/local/src
+wget -q ${MALDET}
+tar -zxf maldetect-current.tar.gz
+cd maldetect-*
+./install.sh
+echo
+sed -i 's/email_alert="0"/email_alert="1"/' /usr/local/maldetect/conf.maldet
+sed -i "s/you@domain.com/${MAGE_ADMIN_EMAIL}/" /usr/local/maldetect/conf.maldet
+echo
+sed -i "/^Example/d" /etc/clamd.d/scan.conf
+sed -i "/^Example/d" /etc/freshclam.conf
+echo
 echo
 echo "---> IMAGES OPTIMIZATION SCRIPT"
 wget -qO ${MY_SHOP_PATH}/wesley.pl https://raw.githubusercontent.com/magenx/MASC-M/master/tmp/wesley.pl
