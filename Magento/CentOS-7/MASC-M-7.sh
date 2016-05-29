@@ -723,15 +723,21 @@ echo -n "---> Download latest Magento version (${MAGENTO_VER}) ? [y/n][n]:"
 read new_down
 if [ "${new_down}" == "y" ];then
 echo
-     read -e -p "---> Enter folder full path: " -i "/var/www/html/myshop.com" MY_SHOP_PATH
-        echo "  Magento will be downloaded to:"
+     read -e -p "---> Enter your domain name (without www.): " -i "myshop.com" MY_DOMAIN
+     MY_SHOP_PATH="/home/${MY_DOMAIN%%.*}/public_html"
+        echo
+        echo "  Magento ${MAGENTO_VER} will be downloaded to:"
         GREENTXT ${MY_SHOP_PATH}
         mkdir -p ${MY_SHOP_PATH} && cd $_
+        useradd -d ${MY_SHOP_PATH} -s /sbin/nologin ${MY_DOMAIN%%.*}  >/dev/null 2>&1
+        LINUX_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
+        echo "${MY_DOMAIN%%.*}:${LINUX_USER_PASS}"  | chpasswd  >/dev/null 2>&1
         echo -n "      DOWNLOADING MAGENTO  "
         long_progress &
         pid="$!"
         wget -qO - ${MAGENTO_TMP_FILE} | tar -xzp --strip-components 1
         stop_progress "$pid"
+        chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
         echo
 fi
      echo
@@ -783,9 +789,6 @@ echo
 GREENTXT "Now we set up the PROFTPD server"
 pause '------> Press [Enter] key to continue'
 echo
-     useradd -d ${MY_SHOP_PATH} -s /sbin/nologin ${MY_DOMAIN%%.*}  >/dev/null 2>&1
-     LINUX_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
-     echo "${MY_DOMAIN%%.*}:${LINUX_USER_PASS}"  | chpasswd  >/dev/null 2>&1
      wget -qO /etc/proftpd.conf ${PROFTPD_CONF}
      ## change proftpd config
      SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
@@ -1135,39 +1138,11 @@ echo
 cd ${MY_SHOP_PATH}
 ./mage config-set preferred_state beta >/dev/null 2>&1
 echo
-echo -n "---> Would you like to install WebShopApps MatrixRate? [y/n][n]:"
-read wsamr
-if [ "${wsamr}" == "y" ];then
-./mage install http://connect20.magentocommerce.com/community Auctionmaid_Matrxrate
-fi
-echo -n "---> Would you like to install M2EPro Ebay? [y/n][n]:"
-read m2epro
-if [ "${m2epro}" == "y" ];then
-./mage install http://connect20.magentocommerce.com/community m2epro_ebay_magento
-fi
-echo -n "---> Would you like to install Enhanced Admin Grids (+ Editor)? [y/n][n]:"
-read eage
-if [ "${eage}" == "y" ];then
-./mage install http://connect20.magentocommerce.com/community BL_CustomGrid
-fi
-echo -n "---> Would you like to install SMTP PRO Email? [y/n][n]:"
-read smtppro
-if [ "${smtppro}" == "y" ];then
-./mage install http://connect20.magentocommerce.com/community ASchroder_SMTPPro
-fi
 echo -n "---> Would you like to install Nexcessnet Turpentine? [y/n][n]:"
 read netu
 if [ "${netu}" == "y" ];then
 ./mage install http://connect20.magentocommerce.com/community Nexcessnet_Turpentine
 fi
-echo
-## these we install by default
-cd /usr/local/src/
-wget -qO - https://github.com/AOEpeople/Aoe_Scheduler/archive/v${AOE_SCHEDULER}.tar.gz | tar -xz
-cp -rf Aoe_Scheduler-${AOE_SCHEDULER}/{app,shell,skin,var,scheduler_cron.sh}  ${MY_SHOP_PATH}/
-echo
-wget -q https://github.com/AOEpeople/Aoe_Profiler/archive/master.zip -O Aoe_Profiler.zip; unzip -qq Aoe_Profiler.zip; rm -rf Aoe_Profiler.zip
-cp -rf Aoe_Profiler*/{app,skin,var}  ${MY_SHOP_PATH}/
 echo
 echo "---> CREATE SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
 cat >> /etc/logrotate.d/magento <<END
@@ -1226,10 +1201,8 @@ END
 echo
         crontab -l -u ${MY_DOMAIN%%.*} > magecron
         echo "MAILTO="${MAGE_ADMIN_EMAIL}"" >> magecron
-        echo "* * * * * ! test -e ${MY_SHOP_PATH}/maintenance.flag && /bin/bash ${MY_SHOP_PATH}/scheduler_cron.sh --mode always" >> magecron
-	echo "* * * * * ! test -e ${MY_SHOP_PATH}/maintenance.flag && /bin/bash ${MY_SHOP_PATH}/scheduler_cron.sh --mode default" >> magecron
-        echo "*/5 * * * * /bin/bash ${MY_SHOP_PATH}/cron_check.sh" >> magecron
-	echo "*/10 * * * * ! test -e ${MY_SHOP_PATH}/maintenance.flag && cd ${MY_SHOP_PATH}/shell && /usr/bin/php scheduler.php --action watchdog" >> magecron
+        echo "* * * * * ! test -e ${MY_SHOP_PATH}/maintenance.flag && /bin/bash ${MY_SHOP_PATH}/cron.sh  > /dev/null" >> magecron
+        echo "*/5 * * * * /bin/bash ${MY_SHOP_PATH}/cron_check.sh  > /dev/null" >> magecron
         crontab -u ${MY_DOMAIN%%.*} magecron
         rm magecron
 echo
