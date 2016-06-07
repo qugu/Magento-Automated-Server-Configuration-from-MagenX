@@ -1178,7 +1178,7 @@ cat >> ${MY_SHOP_PATH}/images_opt.sh <<END
 ## monitor media folder and optimize new images
 /usr/bin/inotifywait -e create \\
     -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
-    --excludei '\.(xml|php|phtml|html?|css|js|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|opt|prog|crush)~?' \\
+    --excludei '\.(xml|php|phtml|html?|css|js|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|opt|prog|gifsicle|crush)~?' \\
     ${MY_SHOP_PATH}/media | while read line; do
     echo "\${line} " >> ${MY_SHOP_PATH}/var/log/images_optimization.log
     FILE=\$(echo \${line} | cut -d' ' -f1)
