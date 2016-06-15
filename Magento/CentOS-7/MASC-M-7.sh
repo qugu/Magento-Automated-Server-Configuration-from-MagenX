@@ -1210,7 +1210,7 @@ find . -type f -exec chmod 644 {} \;
 find . -type d -exec chmod 755 {} \;
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
 rm -rf index.php.sample LICENSE_AFL.txt LICENSE.html LICENSE.txt RELEASE_NOTES.txt php.ini.sample dev
-chmod +x cron_check.sh images_opt.sh zend_opcache.sh scheduler_cron.sh mage cron.sh wesley.pl
+chmod +x cron_check.sh images_opt.sh zend_opcache.sh mage cron.sh wesley.pl
 ${MY_SHOP_PATH}/zend_opcache.sh &
 ${MY_SHOP_PATH}/images_opt.sh &
 echo
