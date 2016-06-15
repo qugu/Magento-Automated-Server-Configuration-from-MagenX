@@ -748,8 +748,6 @@ echo
 echo
 echo "---> CREATING NGINX CONFIGURATION FILES NOW"
 echo
-read -e -p "---> Enter your domain name (without www.): " -i "myshop.com" MY_DOMAIN
-
 wget -qO /etc/nginx/port.conf ${NGINX_BASE}port.conf
 wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}fastcgi_params
 wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}nginx.conf
