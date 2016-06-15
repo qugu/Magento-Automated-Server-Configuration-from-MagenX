@@ -556,7 +556,7 @@ mkdir -p /var/lib/redis-${REDISPORT}
 chmod 755 /var/lib/redis-${REDISPORT}
 chown redis /var/lib/redis-${REDISPORT}
 \cp -rf /etc/redis.conf /etc/redis.conf-${REDISPORT}
-\cp -rf /usr/lib/systemd/system/redis.service /usr/lib/systemd/system/redis-${REDISPORT}.service
+\cp -rf /usr/lib/systemd/system/redis.service /etc/systemd/system/redis-${REDISPORT}.service
 
 sed -i "s/daemonize no/daemonize yes/"  /etc/redis.conf-${REDISPORT}
 sed -i "s/^bind 127.0.0.1.*/bind 127.0.0.1/"  /etc/redis.conf-${REDISPORT}
@@ -564,9 +564,8 @@ sed -i "s/^dir.*/dir \/var\/lib\/redis-${REDISPORT}\//"  /etc/redis.conf-${REDIS
 sed -i "s/^logfile.*/logfile \/var\/log\/redis\/redis-${REDISPORT}.log/"  /etc/redis.conf-${REDISPORT}
 sed -i "s/^pidfile.*/pidfile \/var\/run\/redis\/redis-${REDISPORT}.pid/"  /etc/redis.conf-${REDISPORT}
 sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis.conf-${REDISPORT}
-sed -i "s/redis.conf/redis.conf-${REDISPORT}/" /usr/lib/systemd/system/redis-${REDISPORT}.service
+sed -i "s/redis.conf/redis.conf-${REDISPORT}/" /etc/systemd/system/redis-${REDISPORT}.service
 done
-rm -rf /usr/lib/systemd/system/redis.service
 systemctl daemon-reload
 systemctl enable redis-6379 >/dev/null 2>&1
 systemctl enable redis-6380 >/dev/null 2>&1
@@ -602,10 +601,11 @@ if [ "${varnish_install}" == "y" ];then
           echo
             GREENTXT "Installation of Varnish package:"
             echo
+            rpm --quiet --nosignature -i https://repo.varnish-cache.org/redhat/varnish-4.1.el7.rpm >/dev/null 2>&1
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install varnish  >/dev/null 2>&1
+            yum -y -q install varnish >/dev/null 2>&1
             stop_progress "$pid"
             rpm  --quiet -q varnish
       if [ "$?" = 0 ]
