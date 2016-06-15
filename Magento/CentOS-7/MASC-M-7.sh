@@ -37,7 +37,7 @@ PROFTPD_CONF="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-
 
 # Nginx extra configuration
 NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento/"
-NGINX_EXTRA_CONF="error_page.conf extra_protect.conf export.conf hhvm.conf headers.conf maintenance.conf multishop.conf pagespeed.conf spider.conf"
+NGINX_EXTRA_CONF="error_page.conf extra_protect.conf export.conf hhvm.conf headers.conf maintenance.conf multishop.conf phpmyadmin.conf spider.conf"
 NGINX_EXTRA_CONF_URL="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento/conf.d/"
 
 # Debug Tools
@@ -809,14 +809,13 @@ GREENTXT "Installing phpMyAdmin - advanced MySQL interface"
 pause '------> Press [Enter] key to continue'
 echo
      cd ${MY_SHOP_PATH}
-     PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1)
+     PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-     mkdir -p ${PMA_FOLDER}_PMA && cd $_
-     wget -qO - https://files.phpmyadmin.net/phpMyAdmin/${PHPMYADMIN_VER}/phpMyAdmin-${PHPMYADMIN_VER}-all-languages.tar.gz | tar -xzp --strip 1
-     mv config.sample.inc.php config.inc.php
-     sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" ./config.inc.php
+     yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
+     sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
+     sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf.d/phpmyadmin.conf
      echo
-     GREENTXT "phpMyAdmin was installed to http://www.${MY_DOMAIN}/${PMA_FOLDER}_PMA"
+     GREENTXT "phpMyAdmin was installed to http://www.${MY_DOMAIN}/mysql_${PMA_FOLDER}/"
 echo
 echo
 echo
