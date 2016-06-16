@@ -1062,8 +1062,8 @@ sed -i '/<global>/ a\
         <port>6379</port> \
         <password></password> \
         <timeout>10</timeout> \
-	<persistent><![CDATA[db0]]></persistent> \
-	<db>0</db> \
+	<persistent><![CDATA[db1]]></persistent> \
+	<db>1</db> \
 	<compression_threshold>2048</compression_threshold> \
 	<compression_lib>lzf</compression_lib> \
 	<log_level>1</log_level> \
@@ -1084,8 +1084,8 @@ sed -i '/<global>/ a\
           <auto_refresh_fast_cache>1</auto_refresh_fast_cache> \
             <server>127.0.0.1</server> \
             <port>6380</port> \
-            <persistent><![CDATA[db0]]></persistent> \
-            <database>0</database> \
+            <persistent><![CDATA[db1]]></persistent> \
+            <database>1</database> \
             <password></password> \
             <force_standalone>0</force_standalone> \
             <connect_retries>1</connect_retries> \
