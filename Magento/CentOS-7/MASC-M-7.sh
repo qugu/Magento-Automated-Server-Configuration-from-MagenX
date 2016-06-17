@@ -737,6 +737,7 @@ echo
         pid="$!"
         wget -qO - ${MAGENTO_TMP_FILE} | tar -xzp --strip-components 1
         stop_progress "$pid"
+        wget -qO shell/fixSUPEE6788.php https://raw.githubusercontent.com/rhoerr/supee-6788-toolbox/master/fixSUPEE6788.php
         chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
         echo
 fi
