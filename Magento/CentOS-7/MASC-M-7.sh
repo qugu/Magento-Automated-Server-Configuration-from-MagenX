@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="8.0"
+MASCM_VER="8.5"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -13,11 +13,9 @@ MASCM_VER="8.0"
 #MAGENTO_VER=$(wget -q -O- http://connect20.magentocommerce.com/community/Mage_All_Latest/releases.xml | tail -6 | grep -Po '(?<=<v>).*(?=</v>)')
 MAGENTO_TMP_FILE="https://www.dropbox.com/s/oy4t5lzy1wfxqir/magento-1.9.2.4-2016-02-23-06-04-07.tar.gz"
 MAGENTO_VER="1.9.2.4"
-PHPMYADMIN_VER="4.6.2"
-AOE_SCHEDULER="1.4.0"
 
 # Webmin Control Panel
-WEBMIN="http://prdownloads.sourceforge.net/webadmin/webmin-1.791-1.noarch.rpm"
+WEBMIN="http://prdownloads.sourceforge.net/webadmin/webmin-1.801-1.noarch.rpm"
 WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.tar.gz"
 
 # Repositories
