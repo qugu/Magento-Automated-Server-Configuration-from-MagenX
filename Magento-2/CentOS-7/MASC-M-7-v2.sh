@@ -847,6 +847,7 @@ echo
      sed -i "s/server_ip_address/${SERVER_IP_ADDR}/" /etc/proftpd.conf
      sed -i "s/client_ip_address/${USER_IP}/" /etc/proftpd.conf
      sed -i "s/geoip_country_code/${USER_GEOIP//,/}/" /etc/proftpd.conf
+     sed -i "s/FTP_USER/${MY_DOMAIN%%.*}/" /etc/proftpd.conf
      echo
      /bin/systemctl restart  proftpd.service
      echo
@@ -854,6 +855,7 @@ echo
      WHITETXT "With a password: ${REDBG}${LINUX_USER_PASS}"
      WHITETXT "FTP PORT: ${REDBG}${FTP_PORT}"
      WHITETXT "Your GeoIP location: ${REDBG}${USER_GEOIP//,/}"
+     WHITETXT "PROFTPD config file /etc/proftpd.conf"
 echo
 GREENTXT "Installing phpMyAdmin - advanced MySQL interface"
 pause '------> Press [Enter] key to continue'
