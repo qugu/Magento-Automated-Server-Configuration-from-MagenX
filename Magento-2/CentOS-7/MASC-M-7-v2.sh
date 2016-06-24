@@ -29,7 +29,7 @@ REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
 REPO_HHVM="https://yum.gleez.com/7/x86_64/hhvm-3.14.1-1.el7.centos.x86_64.rpm"
 
 # WebStack Packages
-EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle GeoIP ImageMagick libjpeg-turbo-utils pngcrush lsof goaccess net-snmp net-snmp-utils xinetd python-pip ncftp postfix letsencrypt"
+EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle GeoIP ImageMagick libjpeg-turbo-utils pngcrush lsof goaccess net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron"
 PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl gmp php-gettext phpseclib recode symfony-class-loader symfony-common tcpdf tcpdf-dejavu-sans-fonts tidy udan11-sql-parser) 
 PHP_PECL_PACKAGES=(pecl-redis pecl-lzf pecl-geoip pecl-zip pecl-memcache)
 PERCONA_PACKAGES=(client-56 server-56)
@@ -929,6 +929,18 @@ service redis-6379 restart  >/dev/null 2>&1
 service redis-6380 restart  >/dev/null 2>&1
 systemctl start memcached  >/dev/null 2>&1
 echo
+GREENTXT "SYSTEM UPDATE CONFIGURATION YUM-CRON"
+echo
+sed -i '8s/.*/enabled=1/' /etc/yum.repos.d/remi-php70.repo
+sed -i '9s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
+sed -i '36s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
+echo
+sed -i 's/apply_updates = no/apply_updates = yes/' /etc/yum/yum-cron.conf
+sed -i "s/email_from = root@localhost/email_from = yum-cron@${MY_DOMAIN}/" /etc/yum/yum-cron.conf
+sed -i "s/email_to = root/email_to = admin@${MY_DOMAIN}/" /etc/yum/yum-cron.conf
+echo
+systemctl enable yum-cron
+systemctl restart yum-cron
 echo
 echo "-------------------------------------------------------------------------------------"
 BLUEBG " CONFIGURATION IS COMPLETED "
