@@ -242,9 +242,9 @@ echo
     echo
     echo
 
-    if [ ${io% *} -le 200 ] ; then
+    if [ ${io:0:3} -le 200 ] ; then
         IO_COLOR="${RED}$io - very bad result"
-    elif [ ${io% *} -le 250 ] ; then
+    elif [ ${io:0:3} -le 250 ] ; then
         IO_COLOR="${YELLOW}$io - average result"
     else
         IO_COLOR="${GREEN}$io - excellent result"
