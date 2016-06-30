@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="9.6"
+MASCM_VER="10.1"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -13,7 +13,7 @@ MASCM_VER="9.6"
 MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/releases 2>&1 | head -12 | grep 'tag_name' | grep -oP '(?<=")\d.*(?=")')
 REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
 
-PHPMYADMIN_VER="4.6.2"
+PHPMYADMIN_VER="4.6.3"
 
 REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/"
 
@@ -1024,6 +1024,7 @@ WHITETXT "======================================================================
 WHITETXT "vvv   MAGENTO ${MAGENTO_VER} PACKAGES INSTALLATION WITH COMPOSER   vvv"
 echo
 echo "---> FIXING PERMISSIONS "
+MY_SHOP_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
 cd ${MY_SHOP_PATH}
 find . -type f -exec chmod 660 {} \;
 find . -type d -exec chmod 770 {} \;
