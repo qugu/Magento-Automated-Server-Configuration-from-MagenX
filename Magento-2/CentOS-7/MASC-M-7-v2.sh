@@ -1059,6 +1059,9 @@ read -e -p "---> Enter your timezone: " -i "UTC"  MAGE_TIMEZONE
 read -e -p "---> Enter your currency: " -i "EUR"  MAGE_CURRENCY
 echo
 echo
+cat >> /root/mascm/.mascm_index <<END
+adminpass ${MAGE_ADMIN_PASS}
+END
 GREENTXT "NOW SETUP MAGENTO ${MAGENTO_VER} WITHOUT SAMPLE DATA"
 echo
 pause '---> Press [Enter] key to continue'
