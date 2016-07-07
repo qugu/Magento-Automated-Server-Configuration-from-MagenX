@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="10.1"
+MASCM_VER="10.3"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -1399,12 +1399,18 @@ echo "Kibana web listening port: ${KIBANA_PORT}"
 echo
 echo " to Configure an index pattern, set it up following these steps:
 
-- Check "Index contains time-based events".
-- Insert Index name or pattern: ossec-*
-- On "Time-field name" list select @timestamp option.
-- Click on "Create" button.
+- Check Index contains time-based events.
+- Insert Index name or pattern: ossec-* .
+- On Time-field name list select @timestamp option.
+- Click on Create button.
 - You should see the fields list with about ~72 fields.
-- Go to "Discover" tap on top bar buttons."
+- Go to Discover tap on top bar buttons."
+echo
+echo "
+- Click at top bar on Settings.
+- Click on Objects.
+- Download the Dashboards JSON File: https://raw.githubusercontent.com/wazuh/ossec-wazuh/stable/extensions/kibana/kibana-ossecwazuh-dashboards.json .
+- Then click the button Import."
 echo
 pause '---> Press [Enter] key to show menu'
 ;;
