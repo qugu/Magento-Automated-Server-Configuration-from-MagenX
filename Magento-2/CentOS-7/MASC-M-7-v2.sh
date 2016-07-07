@@ -1335,17 +1335,19 @@ systemctl enable elasticsearch.service
 echo
 sed -i "s/.*cluster.name.*/cluster.name: ossec/" /etc/elasticsearch/elasticsearch.yml
 sed -i "s/.*node.name.*/node.name: ossec_node1/" /etc/elasticsearch/elasticsearch.yml
-cd /usr/local/src/ossec_tmp/ossec-wazuh/extensions/elasticsearch/ && curl -XPUT "http://localhost:9200/_template/ossec/" -d "@elastic-ossec-template.json"
-echo
-GREENTXT "Lets start Elasticsearh and Logstash, debug any errors later:"
+sed -i "s/.*network.host.*/network.host: 127.0.0.1/" /etc/elasticsearch/elasticsearch.yml
+sed -i "s/.*http.port.*/http.port: 9200/" /etc/elasticsearch/elasticsearch.yml
+chown -R :elasticsearch /etc/elasticsearch/*
 service elasticsearch restart
-service logstash restart
+sleep 2
+echo
+cd /usr/local/src/ossec_tmp/ossec-wazuh/extensions/elasticsearch/ && curl -XPUT "http://localhost:9200/_template/ossec/" -d "@elastic-ossec-template.json"
 echo
 echo
 GREENTXT "Lets install Kibana:"
 cd /usr/local/src/ossec_tmp/
 wget https://download.elastic.co/kibana/kibana/kibana-4.3.1-linux-x64.tar.gz
-tar xvf kibana-*.tar.gz && sudo mkdir -p /opt/kibana && sudo cp -R kibana-4*/* /opt/kibana/
+tar xf kibana-*.tar.gz && sudo mkdir -p /opt/kibana && sudo cp -R kibana-4*/* /opt/kibana/
 cat > /etc/systemd/system/kibana4.service <<END
 [Service]
 ExecStart=/opt/kibana/bin/kibana
@@ -1360,6 +1362,10 @@ Environment=NODE_ENV=production
 WantedBy=multi-user.target
 END
 echo
+systemctl daemon-reload
+systemctl enable kibana4.service
+systemctl restart kibana4.service
+service logstash restart
 echo
 KIBANA_PORT=$(shuf -i 10322-10539 -n 1)
 USER_IP=$(last -i | grep "root.*still logged in" | awk '{print $3}')
@@ -1390,6 +1396,15 @@ echo
 cd /etc/nginx/sites-enabled/
 ln -s /etc/nginx/sites-available/kibana.conf kibana.conf
 echo "Kibana web listening port: ${KIBANA_PORT}"
+echo
+echo " to Configure an index pattern, set it up following these steps:
+
+- Check "Index contains time-based events".
+- Insert Index name or pattern: ossec-*
+- On "Time-field name" list select @timestamp option.
+- Click on "Create" button.
+- You should see the fields list with about ~72 fields.
+- Go to "Discover" tap on top bar buttons."
 echo
 pause '---> Press [Enter] key to show menu'
 ;;
