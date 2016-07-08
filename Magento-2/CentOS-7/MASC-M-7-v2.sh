@@ -845,6 +845,7 @@ echo
      sed -i "s/server_ip_address/${SERVER_IP_ADDR}/" /etc/proftpd.conf
      sed -i "s/client_ip_address/${USER_IP}/" /etc/proftpd.conf
      sed -i "s/geoip_country_code/${USER_GEOIP//,/}/" /etc/proftpd.conf
+     sed -i "s/sftp_domain/${MY_DOMAIN}/" /etc/proftpd.conf
      sed -i "s/FTP_USER/${MY_DOMAIN%%.*}/" /etc/proftpd.conf
      echo
      /bin/systemctl restart  proftpd.service
