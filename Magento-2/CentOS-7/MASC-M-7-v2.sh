@@ -940,6 +940,24 @@ echo
 systemctl enable yum-cron
 systemctl restart yum-cron
 echo
+GREENTXT "LETSENCRYPT SSL CERTIFICATE REQUEST"
+echo
+DNS_DOMAIN=$(getent hosts ${MY_DOMAIN} | awk '{ print $1 }')
+SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
+
+if [ "${DNS_DOMAIN}" != "${SERVER_IP_ADDR}" ] ; then
+    echo
+        echo "   DNS A record and your servers IP address do not match"
+	echo "   Your servers ip address ${SERVER_IP_ADDR}"
+	echo "   Domain ${MY_DOMAIN} resolves to ${DNS_DOMAIN}"
+	echo "   Please change your A record to this servers IP address"
+	echo "   and run this command later: /usr/bin/certbot certonly --standalone --email admin@${MY_DOMAIN} -d ${MY_DOMAIN} -d www.${MY_DOMAIN}"
+else
+    service nginx stop
+    /usr/bin/certbot certonly --standalone --email admin@${MY_DOMAIN} -d ${MY_DOMAIN} -d www.${MY_DOMAIN}
+    service nginx start
+fi
+echo
 echo "-------------------------------------------------------------------------------------"
 BLUEBG " CONFIGURATION IS COMPLETED "
 echo "-------------------------------------------------------------------------------------"
