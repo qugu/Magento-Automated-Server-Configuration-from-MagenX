@@ -16,16 +16,19 @@ Magento 2 installation including: <br/>
 - PHP 7 <br/>
 - REDIS <br/>
 - MEMCACHED <br/>
+- PROFTPD <br/>
 - MALWARE REALTIME MONITOR <br/>
 - CLAMAV ENGINE <br/>
 - PERCONA <br/>
 - PERCONA TOOL-KIT <br/>
 - MYSQLTUNER <br/>
 - MYTOP <br/>
+- PHPMYADMIN <br/>
 - CSF FIREWALL <br/>
 - OSSEC + ELK STACK <br/>
 - IMAGES OPTIMIZATION <br/>
-- 
+- LOGS ROTATION <br/>
+- MAGERUN 2 <br/>
 
 
 **System requirements**:<br/>
