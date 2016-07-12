@@ -8,8 +8,16 @@ MASC-M<sup>™</sup>
 #### MagenX - Automated Server Configuration for Magento
 Get a fully pre-configured server with Magento and LEMP stack in just 15 minutes.
 
-php 7 and Percona tool-kit
-
+including: <br/>
+- WEBMIN CONTROL PANEL <br/>
+- PROFTPD <br/>
+- PROFTPD <br/>
+- - PROFTPD <br/>
+- - PROFTPD <br/>
+- - PROFTPD <br/>
+- - PROFTPD <br/>
+- - PROFTPD <br/>
+- - PROFTPD <br/>
 **System requirements**:<br/>
 *Dedicated server / VPS*<br/>
 *CentOS x64 minimal*<br/>
