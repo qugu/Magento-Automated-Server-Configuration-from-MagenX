@@ -11,8 +11,3 @@ Follow the on-screen instructions. <br/>
 Production ready right after configuration. <br/>
 <br/>
 <br/>
-including: <br/>
-- WEBMIN CONTROL PANEL <br/>
-- PROFTPD <br/>
-
-php 7 and Percona tool-kit
