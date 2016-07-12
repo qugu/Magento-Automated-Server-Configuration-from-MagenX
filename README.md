@@ -8,17 +8,27 @@ MASC-M<sup>™</sup>
 #### MagenX - Automated Server Configuration for Magento
 Get a fully pre-configured server with Magento and LEMP stack in just 15 minutes.
 
-including: <br/>
+Magento 2 installation including: <br/>
 - WEBMIN CONTROL PANEL <br/>
-- PROFTPD <br/>
-- PROFTPD <br/>
-- - PROFTPD <br/>
-- - PROFTPD <br/>
-- - PROFTPD <br/>
-- - PROFTPD <br/>
-- - PROFTPD <br/>
-- - PROFTPD <br/>
+- HHVM <br/>
+- VARNISH <br/>
+- NGINX <br/>
+- PHP 7 <br/>
+- REDIS <br/>
+- MEMCACHED <br/>
+- MALWARE REALTIME MONITOR <br/>
+- CLAMAV ENGINE <br/>
+- PERCONA <br/>
+- PERCONA TOOL-KIT <br/>
+- MYSQLTUNER <br/>
+- MYTOP <br/>
+- CSF FIREWALL <br/>
+- OSSEC + ELK STACK <br/>
+- IMAGES OPTIMIZATION <br/>
+- 
+
+
 **System requirements**:<br/>
 *Dedicated server / VPS*<br/>
-*CentOS x64 minimal*<br/>
+*CentOS 7 minimal*<br/>
 *4Gb RAM*<br/>
