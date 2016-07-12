@@ -14,7 +14,5 @@ Production ready right after configuration. <br/>
 including: <br/>
 - WEBMIN CONTROL PANEL <br/>
 - PROFTPD <br/>
-- AOE_SCHEDULER <br/>
-- AOE_PROFILER <br/>
 
 php 7 and Percona tool-kit
