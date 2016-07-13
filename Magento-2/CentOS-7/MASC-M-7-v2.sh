@@ -1141,6 +1141,11 @@ echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
 maldet --monitor /usr/local/maldetect/monitor_paths
 echo
 echo
+echo "---> DOWNLOADING NETZ98 MAGERUN CLI TOOLS FOR MAGENTO 2"
+echo
+curl -o  /usr/local/bin/n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
+chmod +x /usr/local/bin/n98-magerun2.phar
+echo
 echo "---> IMAGES OPTIMIZATION SCRIPT"
 wget -qO ${MY_SHOP_PATH}/wesley.pl ${REPO_MASCM_TMP}wesley.pl
 echo
