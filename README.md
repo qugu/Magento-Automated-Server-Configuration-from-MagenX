@@ -9,26 +9,24 @@ MASC-M<sup>™</sup>
 Get a fully pre-configured server with Magento and LEMP stack in just 15 minutes.
 
 Magento 2 installation including: <br/>
-- WEBMIN CONTROL PANEL <br/>
-- HHVM <br/>
-- VARNISH <br/>
-- NGINX <br/>
-- PHP 7 <br/>
-- REDIS <br/>
-- MEMCACHED <br/>
-- PROFTPD <br/>
-- MALWARE REALTIME MONITOR <br/>
-- CLAMAV ENGINE <br/>
-- PERCONA <br/>
-- PERCONA TOOL-KIT <br/>
-- MYSQLTUNER <br/>
-- MYTOP <br/>
-- PHPMYADMIN <br/>
-- CSF FIREWALL <br/>
-- OSSEC + ELK STACK (JAVA,LOGSTASH,KIBANA 4,ELASTICSEARCH) <br/>
-- IMAGES OPTIMIZATION <br/>
-- LOGS ROTATION <br/>
-- MAGERUN 2 <br/>
+- WEBMIN CONTROL PANEL
+- HHVM
+- VARNISH
+- NGINX
+- PHP 7
+- REDIS
+- MEMCACHED
+- PROFTPD
+- MALWARE REALTIME MONITOR
+- CLAMAV ENGINE
+- PERCONA
+- PERCONA TOOL-KIT
+- MYSQLTUNER
+- MYTOP
+- PHPMYADMIN
+- CSF FIREWALL
+- OSSEC + ELK STACK (JAVA,LOGSTASH,KIBANA 4,ELASTICSEARCH)
+- MAGERUN 2
 
 Complete linux stack including: <br/>
 - linux and webstack settings optimization
@@ -39,6 +37,9 @@ Complete linux stack including: <br/>
 - strace
 - python-pip
 - iptraf
+- images optimization
+- opcache invalidation
+- logs rotation
 - and many more
 
 
