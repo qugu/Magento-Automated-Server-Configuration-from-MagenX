@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="10.3"
+MASCM_VER="10.5"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -1119,7 +1119,8 @@ compress
 }
 END
 echo
-echo "---> SETUP DAILY MALWARE SCANNER WITH E-MAIL ALERTS"
+echo "---> SETUP REALTIME MALWARE MONITOR WITH E-MAIL ALERTS"
+REDTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
 echo
 cd /usr/local/src
 wget -q ${MALDET}
@@ -1129,9 +1130,15 @@ cd maldetect-*
 echo
 sed -i 's/email_alert="0"/email_alert="1"/' /usr/local/maldetect/conf.maldet
 sed -i "s/you@domain.com/${MAGE_ADMIN_EMAIL}/" /usr/local/maldetect/conf.maldet
+sed -i 's/quarantine_hits="0"/quarantine_hits="1"/' /usr/local/maldetect/conf.maldet
+sed -i 's,# default_monitor_mode="/usr/local/maldetect/monitor_paths",default_monitor_mode="/usr/local/maldetect/monitor_paths",' /usr/local/maldetect/conf.maldet
+sed -i 's/inotify_base_watches="16384"/inotify_base_watches="35384"/' /usr/local/maldetect/conf.maldet
+echo "${MY_SHOP_PATH},/var/tmp,/tmp" > /usr/local/maldetect/monitor_paths
 echo
 sed -i "/^Example/d" /etc/clamd.d/scan.conf
 sed -i "/^Example/d" /etc/freshclam.conf
+echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
+maldet --monitor /usr/local/maldetect/monitor_paths
 echo
 echo
 echo "---> IMAGES OPTIMIZATION SCRIPT"
