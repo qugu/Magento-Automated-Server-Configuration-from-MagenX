@@ -25,10 +25,21 @@ Magento 2 installation including: <br/>
 - MYTOP <br/>
 - PHPMYADMIN <br/>
 - CSF FIREWALL <br/>
-- OSSEC + ELK STACK <br/>
+- OSSEC + ELK STACK (JAVA,LOGSTASH,KIBANA 4,ELASTICSEARCH) <br/>
 - IMAGES OPTIMIZATION <br/>
 - LOGS ROTATION <br/>
 - MAGERUN 2 <br/>
+
+Complete linux stack including: <br/>
+- linux and webstack settings optimization
+- goaccess
+- iotop
+- sysstat
+- git/svn
+- strace
+- python-pip
+- iptraf
+- and many more
 
 
 **System requirements**:<br/>
