@@ -14,18 +14,18 @@ Magento 2 installation including: <br/>
 - VARNISH
 - NGINX
 - PHP 7
-- REDIS
+- REDIS (2 instances 6379|6380)
 - MEMCACHED
-- PROFTPD
-- MALWARE REALTIME MONITOR
+- PROFTPD (custom port + ssl)
+- MALWARE REALTIME MONITOR (quarantine)
 - CLAMAV ENGINE
-- PERCONA
+- PERCONA (5.6)
 - PERCONA TOOL-KIT
-- MYSQLTUNER
+- MYSQLTUNER (+ weekly reports to admin email)
 - MYTOP
 - PHPMYADMIN
 - CSF FIREWALL
-- OSSEC + ELK STACK (JAVA,LOGSTASH,KIBANA 4,ELASTICSEARCH)
+- [OSSEC + ELK STACK (JAVA,LOGSTASH,KIBANA 4,ELASTICSEARCH)](http://www.wazuh.com/)
 - MAGERUN 2
 
 Complete linux stack including: <br/>
