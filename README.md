@@ -30,6 +30,7 @@ Magento 2 installation including: <br/>
 
 Complete linux stack including: <br/>
 - linux and webstack settings optimization
+- letsencrypt (certbot)
 - goaccess
 - iotop
 - sysstat
