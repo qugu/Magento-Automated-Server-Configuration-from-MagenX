@@ -1,5 +1,5 @@
 #!/bin/bash
-MAILTO="admin@MAGE_ADMIN_EMAIL"
+MAILTO="MAGE_ADMIN_EMAIL"
 MAILFROM="${HOSTNAME}"
 SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
 SERVICE=$1
