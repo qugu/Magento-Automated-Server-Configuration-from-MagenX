@@ -6,4 +6,4 @@ SERVICE=$1
 
 SERVICE_STATUS=$(systemctl status ${SERVICE})
 
-echo " ${SERVICE_STATUS} " | mail -s "${SERVICE} status ${MAILFROM} IP:${SERVER_IP_ADDR}" ${MAILTO}
+echo " ${SERVICE_STATUS} " | mail -s "${SERVICE} entered failed state on ${MAILFROM} IP:${SERVER_IP_ADDR}" ${MAILTO}
