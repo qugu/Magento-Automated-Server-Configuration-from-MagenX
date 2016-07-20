@@ -1,16 +1,11 @@
 [Unit]
 Description=Varnish a high-perfomance HTTP accelerator
 After=syslog.target network.target
+OnFailure=service-status-mail@%n.service
 
 [Service]
-
-#
-# If you want to make changes to this file, please copy it to 
-# /etc/systemd/system/varnish.service and make your changes there.
-# This will override the file kept at /lib/systemd/system/varnish.service
-#
 # Enviroment variables may be found in /etc/varnish/varnish.params
-#
+EnvironmentFile=/etc/varnish/varnish.params
 
 # Maximum number of open files (for ulimit -n)
 LimitNOFILE=131072
@@ -22,10 +17,8 @@ LimitMEMLOCK=82000
 # Maximum size of the corefile. 
 LimitCORE=infinity
 
-EnvironmentFile=/etc/varnish/varnish.params
-
 Type=forking
-PrivateTmp=true
+PrivateTmp=false
 ExecStartPre=/usr/sbin/varnishd -C -f VCL_PATH
 ExecStart=/usr/sbin/varnishd \
 	-a :80 \
