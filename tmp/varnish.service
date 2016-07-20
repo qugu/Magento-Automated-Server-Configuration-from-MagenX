@@ -37,7 +37,7 @@ ExecStart=/usr/sbin/varnishd \
 	-p thread_pool_add_delay=2 \
 	-p cli_timeout=25 \
 	-p cli_buffer=26384 \
-	-p feature=+esi_ignore_other_elements \
+	-p feature=+esi_disable_xml_check,+esi_ignore_other_elements \
 	-p vcc_allow_inline_c=on \
 	-p timeout_linger=100 \
 	-S /etc/varnish/secret \
