@@ -17,13 +17,11 @@ REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Serve
 STATUS_ALERT_SERVICE="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/service-status-mail%40.service"
 STATUS_ALERT_SCRIPT="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/service-status-mail.sh"
 
-# Webmin Control Panel
-WEBMIN="http://prdownloads.sourceforge.net/webadmin/webmin-1.801-1.noarch.rpm"
+# Webmin Control Panel Nginx plugin
 WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.tar.gz"
 
 # Repositories
 REPO_PERCONA="http://www.percona.com/redir/downloads/percona-release/redhat/latest/percona-release-0.1-3.noarch.rpm"
-PERCONA_TOOLKIT="https://www.percona.com/downloads/percona-toolkit/2.2.17/RPM/percona-toolkit-2.2.17-1.noarch.rpm"
 REPO_NGINX="http://nginx.org/packages/mainline/centos/7/x86_64/"
 REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
 REPO_HHVM="https://yum.gleez.com/7/x86_64/hhvm-3.14.2-1.el7.centos.x86_64.rpm"
@@ -430,7 +428,7 @@ if [ "${repo_percona_install}" == "y" ];then
               wget -qO /etc/mysqltuner.pl ${MYSQL_TUNER}
               wget -qO - ${MYSQL_TOP} | tar -xzp && cd mytop*
               perl Makefile.PL && make && make install  >/dev/null 2>&1
-              yum -y -q install ${PERCONA_TOOLKIT} >/dev/null 2>&1
+              yum -y -q install percona-toolkit >/dev/null 2>&1
               echo
               WHITETXT "Please use these tools to check and finetune your database:"
               echo
@@ -1304,11 +1302,19 @@ read webmin_install
 if [ "${webmin_install}" == "y" ];then
           echo
             GREENTXT "Installation of Webmin package:"
+cat > /etc/yum.repos.d/webmin.repo <<END
+[Webmin]
+name=Webmin Distribution Neutral
+#baseurl=http://download.webmin.com/download/yum
+mirrorlist=http://download.webmin.com/download/yum/mirrorlist
+enabled=1
+END
+rpm --import http://www.webmin.com/jcameron-key.asc
             echo
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install ${WEBMIN} >/dev/null 2>&1
+            yum -y -q install webmin >/dev/null 2>&1
             stop_progress "$pid"
             rpm  --quiet -q webmin
       if [ "$?" = 0 ]
@@ -1330,6 +1336,7 @@ if [ "${webmin_install}" == "y" ];then
             sed -i 's/root:/webadmin:/' /etc/webmin/webmin.acl
             WEBADMIN_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
             /usr/libexec/webmin/changepass.pl /etc/webmin/ webadmin ${WEBADMIN_PASS}
+            chkconfig webmin on >/dev/null 2>&1
             service webmin restart  >/dev/null 2>&1
             YELLOWTXT "Access Webmin on port: ${WEBMIN_PORT}"
             YELLOWTXT "User: webadmin , Password: ${WEBADMIN_PASS}"
