@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="10.6"
+MASCM_VER="10.8"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -14,6 +14,8 @@ MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/releases 2>&
 REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
 
 REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/"
+STATUS_ALERT_SERVICE="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/service-status-mail%40.service"
+STATUS_ALERT_SCRIPT="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/service-status-mail.sh"
 
 # Webmin Control Panel
 WEBMIN="http://prdownloads.sourceforge.net/webadmin/webmin-1.801-1.noarch.rpm"
@@ -403,6 +405,11 @@ if [ "${repo_percona_install}" == "y" ];then
             echo
               GREENTXT "DATABASE HAS BEEN INSTALLED  -  OK"
               echo
+              ## plug in service status alert
+              cp /usr/lib/systemd/system/mysqld.service /etc/systemd/system/mysqld.service
+              sed -i "/Restart=always/d" /etc/systemd/system/mysqld.service
+              sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/mysqld.service
+              systemctl daemon-reload
               systemctl enable mysql >/dev/null 2>&1
               echo
               WHITETXT "Downloading my.cnf file from MagenX Github repository"
@@ -482,6 +489,12 @@ END
         then
           echo
             GREENTXT "NGINX HAS BEEN INSTALLED  -  OK"
+            echo
+            ## plug in service status alert
+            cp /usr/lib/systemd/system/nginx.service /etc/systemd/system/nginx.service
+            sed -i "s/PrivateTmp=true/PrivateTmp=false/" /etc/systemd/system/nginx.service
+            sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/nginx.service
+            systemctl daemon-reload
             systemctl enable nginx >/dev/null 2>&1
               else
              echo
@@ -524,6 +537,11 @@ if [ "${repo_remi_install}" == "y" ];then
          then
            echo
              GREENTXT "PHP HAS BEEN INSTALLED  -  OK"
+             ## plug in service status alert
+             cp /usr/lib/systemd/system/php-fpm.service /etc/systemd/system/php-fpm.service
+             sed -i "s/PrivateTmp=true/PrivateTmp=false/" /etc/systemd/system/php-fpm.service
+             sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/php-fpm.service
+             systemctl daemon-reload
              systemctl enable php-fpm >/dev/null 2>&1
              systemctl disable httpd >/dev/null 2>&1
              yum list installed | awk '/php.*x86_64/ {print "      ",$1}'
@@ -553,16 +571,16 @@ do
 mkdir -p /var/lib/redis-${REDISPORT}
 chmod 755 /var/lib/redis-${REDISPORT}
 chown redis /var/lib/redis-${REDISPORT}
-\cp -rf /etc/redis.conf /etc/redis.conf-${REDISPORT}
+\cp -rf /etc/redis.conf /etc/redis-${REDISPORT}.conf
 \cp -rf /usr/lib/systemd/system/redis.service /etc/systemd/system/redis-${REDISPORT}.service
-
-sed -i "s/daemonize no/daemonize yes/"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^bind 127.0.0.1.*/bind 127.0.0.1/"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^dir.*/dir \/var\/lib\/redis-${REDISPORT}\//"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^logfile.*/logfile \/var\/log\/redis\/redis-${REDISPORT}.log/"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^pidfile.*/pidfile \/var\/run\/redis\/redis-${REDISPORT}.pid/"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis.conf-${REDISPORT}
-sed -i "s/redis.conf/redis.conf-${REDISPORT}/" /etc/systemd/system/redis-${REDISPORT}.service
+sed -i "s/daemonize no/daemonize yes/"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^bind 127.0.0.1.*/bind 127.0.0.1/"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^dir.*/dir \/var\/lib\/redis-${REDISPORT}\//"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^logfile.*/logfile \/var\/log\/redis\/redis-${REDISPORT}.log/"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^pidfile.*/pidfile \/var\/run\/redis\/redis-${REDISPORT}.pid/"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis-${REDISPORT}.conf
+sed -i "s/redis.conf/redis-${REDISPORT}.conf/" /etc/systemd/system/redis-${REDISPORT}.service
+sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/redis-${REDISPORT}.service
 done
 systemctl daemon-reload
 systemctl enable redis-6379 >/dev/null 2>&1
@@ -575,6 +593,10 @@ MAXCONN="5024"
 CACHESIZE="128"
 OPTIONS="-l 127.0.0.1"
 END
+## plug in service status alert
+cp /usr/lib/systemd/system/memcached.service /etc/systemd/system/memcached.service
+sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/memcached.service
+systemctl daemon-reload
 systemctl enable memcached   >/dev/null 2>&1
                 else
                echo
@@ -638,6 +660,12 @@ if [ "${hhvm_install}" == "y" ];then
         then
           echo
             GREENTXT "HHVM HAS BEEN INSTALLED  -  OK"
+            echo
+            ## plug in service status alert
+            cp /usr/lib/systemd/system/hhvm.service /etc/systemd/system/hhvm.service
+            sed -i "/^Description=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/hhvm.service
+            systemctl daemon-reload
+            systemctl enable hhvm >/dev/null 2>&1
                else
               echo
             REDTXT "HHVM INSTALLATION ERROR"
@@ -848,7 +876,12 @@ echo
      sed -i "s/sftp_domain/${MY_DOMAIN}/" /etc/proftpd.conf
      sed -i "s/FTP_USER/${MY_DOMAIN%%.*}/" /etc/proftpd.conf
      echo
-     /bin/systemctl restart  proftpd.service
+     ## plug in service status alert
+     cp /usr/lib/systemd/system/proftpd.service /etc/systemd/system/proftpd.service
+     sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/proftpd.service
+     systemctl daemon-reload
+     systemctl enable proftpd.service >/dev/null 2>&1
+     /bin/systemctl restart proftpd.service
      echo
      WHITETXT "We have created a user: ${REDBG}${MY_DOMAIN%%.*}"
      WHITETXT "With a password: ${REDBG}${LINUX_USER_PASS}"
@@ -913,8 +946,8 @@ GREENTXT "VARNISH DAEMON CONFIGURATION FILE"
 echo
 wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
 sed -i "s,VCL_PATH,/etc/varnish/default.vcl,g" /etc/systemd/system/varnish.service
-systemctl daemon-reload  >/dev/null 2>&1
-systemctl enable varnish  >/dev/null 2>&1
+systemctl daemon-reload >/dev/null 2>&1
+systemctl enable varnish >/dev/null 2>&1
 echo
 echo 'Varnish secret key -->'$(cat /etc/varnish/secret)'<-- copy it'
 echo
@@ -922,11 +955,11 @@ WHITETXT "Varnish settings were loaded ${GREEN} [ok]"
 echo
 fi
 echo
-/bin/systemctl start nginx.service
-/bin/systemctl start php-fpm.service
+/bin/systemctl restart nginx.service >/dev/null 2>&1
+/bin/systemctl restart php-fpm.service >/dev/null 2>&1
 service redis-6379 restart  >/dev/null 2>&1
 service redis-6380 restart  >/dev/null 2>&1
-systemctl start memcached  >/dev/null 2>&1
+systemctl restart memcached  >/dev/null 2>&1
 echo
 GREENTXT "SYSTEM UPDATE CONFIGURATION YUM-CRON"
 echo
@@ -1118,6 +1151,15 @@ missingok
 compress
 }
 END
+echo
+echo "---> SETUP SERVICE STATUS WITH E-MAIL ALERTS"
+echo
+wget -qO /etc/systemd/system/service-status-mail@.service ${STATUS_ALERT_SERVICE}
+wget -qO /bin/service-status-mail.sh ${STATUS_ALERT_SCRIPT}
+sed -i "s/MAGEADMINEMAIL/${MAGE_ADMIN_EMAIL}/" /bin/service-status-mail.sh
+sed -i "s/DOMAINNAME/${MY_DOMAIN}/" /bin/service-status-mail.sh
+chmod +x /bin/service-status-mail.sh
+systemctl daemon-reload
 echo
 echo "---> SETUP REALTIME MALWARE MONITOR WITH E-MAIL ALERTS"
 REDTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
@@ -1383,7 +1425,6 @@ tar xf kibana-*.tar.gz && sudo mkdir -p /opt/kibana && sudo cp -R kibana-4*/* /o
 cat > /etc/systemd/system/kibana4.service <<END
 [Service]
 ExecStart=/opt/kibana/bin/kibana
-Restart=always
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=kibana4
