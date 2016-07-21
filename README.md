@@ -40,6 +40,7 @@ Complete linux stack including: <br/>
 - iptraf
 - images optimization
 - opcache invalidation
+- geoip
 - logs rotation
 - and many more
 
