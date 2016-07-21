@@ -798,7 +798,7 @@ sed -i 's/;realpath_cache_size = 16k/realpath_cache_size = 512k/' /etc/php.ini
 sed -i 's/;realpath_cache_ttl = 120/realpath_cache_ttl = 86400/' /etc/php.ini
 sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php.ini
 sed -i 's/; max_input_vars = 1000/max_input_vars = 50000/' /etc/php.ini
-sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 86400/' /etc/php.ini
+sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' /etc/php.ini
 sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' /etc/php.ini
 sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' /etc/php.ini
 sed -i 's/;date.timezone =/date.timezone = UTC/' /etc/php.ini
