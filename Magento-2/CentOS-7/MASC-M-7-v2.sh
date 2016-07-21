@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="10.9"
+MASCM_VER="11.0"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -22,7 +22,6 @@ WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.t
 
 # Repositories
 REPO_PERCONA="http://www.percona.com/redir/downloads/percona-release/redhat/latest/percona-release-0.1-3.noarch.rpm"
-REPO_NGINX="http://nginx.org/packages/mainline/centos/7/x86_64/"
 REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
 
 # WebStack Packages
@@ -468,7 +467,7 @@ if [ "${repo_nginx_install}" == "y" ];then
 cat >> /etc/yum.repos.d/nginx.repo <<END
 [nginx]
 name=nginx repo
-baseurl=${REPO_NGINX}
+baseurl=http://nginx.org/packages/mainline/centos/7/x86_64/
 enabled=1
 gpgkey=file:///etc/pki/rpm-gpg/nginx_signing.key
 gpgcheck=1
@@ -481,7 +480,7 @@ END
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install nginx  >/dev/null 2>&1
+            yum -y -q install nginx nginx-module-geoip >/dev/null 2>&1
             stop_progress "$pid"
             rpm  --quiet -q nginx
       if [ "$?" = 0 ]
