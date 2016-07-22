@@ -6,6 +6,7 @@
 #====================================================================#
 SELF=$(basename $0)
 MASCM_VER="11.0"
+MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -127,6 +128,34 @@ clear
 ###################################################################################
 #                                     START CHECKS                                #
 ###################################################################################
+echo
+    echo
+        MD5_NEW=$(curl -sL ${MASCM_BASE} > MASCM_NEW && md5sum MASCM_NEW | awk '{print $1}')
+        MD5_OLD=$(md5sum ${SELF} | awk '{print $1}')
+            if [[ "${MD5_NEW}" == "${MD5_OLD}" ]]; then
+            GREENTXT "PASS: INTEGRITY CHECK FOR '${SELF}' OK"
+            rm MASCM_NEW
+            elif [[ "${MD5_NEW}" != "${MD5_OLD}" ]]; then
+            echo
+            YELLOWTXT "INTEGRITY CHECK FOR '${SELF}'"
+            YELLOWTXT "DETECTED DIFFERENT MD5 CHECKSUM"
+            YELLOWTXT "REMOTE REPOSITORY FILE HAS SOME CHANGES"
+            REDTXT "IF YOU HAVE LOCAL CHANGES - SKIP UPDATES"
+            echo
+                echo -n "---> Would you like to update the file now?  [y/n][y]:"
+		read update_agree
+		if [ "${update_agree}" == "y" ];then
+		mv MASCM_NEW ${SELF}
+		echo
+                GREENTXT "THE FILE HAS BEEN UPGRADED, PLEASE RUN IT AGAIN"
+		echo
+                exit 1
+                else
+        echo
+        YELLOWTXT "NEW FILE SAVED TO MASCM_NEW"
+        echo
+  fi
+fi
 echo
 echo
 # root?
