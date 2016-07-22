@@ -150,7 +150,7 @@ echo
                 GREENTXT "THE FILE HAS BEEN UPGRADED, PLEASE RUN IT AGAIN"
 		echo
                 exit 1
-                else
+            else
         echo
         YELLOWTXT "NEW FILE SAVED TO MASCM_NEW"
         echo
