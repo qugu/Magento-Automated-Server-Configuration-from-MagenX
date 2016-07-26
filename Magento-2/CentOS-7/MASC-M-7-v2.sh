@@ -675,35 +675,12 @@ echo -n "---> Start HHVM installation? [y/n][n]:"
 read hhvm_install
 if [ "${hhvm_install}" == "y" ];then
           echo
-cat > /etc/pki/rpm-gpg/RPM-GPG-KEY-gleez <<END
------BEGIN PGP PUBLIC KEY BLOCK-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-mQENBFBBC94BCADqItBtFO3EpYNXS7U6fPk228YXI7cVMqyn475OvDNlGdbMXzMr
-lC+f/drw+tI4AWL6IThvk8Iw9bWGQUZ+lxHf2l9/VMcr6FFsNG2oTfsJ/jfJ80jq
-6dHXLN9oaVeLnEsWE9fBHlvpdCBbB9LagLfJZ4tclTm+PV3rDzqXXOKzW0jmsSiJ
-esyDjfLtDCOj4TF2CeY/KizaJnqGuPqWHJqxharrYRhqixprsE4VCnbiE/bpwiQC
-QBRVErcKULsE5wnadtJ0QR0AB+d6WN56d1mM6+muE9cBqaPCIK9rBBIuCaseXFRP
-c8wtyE3vHgLYrZsItGVovzPkGliPZYb8TF9tABEBAAG0P1NhbmRlZXAgU2FuZ2Ft
-cmVkZGkgKEdsZWV6IFRlY2hub2xvZ2llcykgPHNhbmRlZXBvbmVAZ21haWwuY29t
-PokBNgQTAQIAIAUCUEEL3gIbAwYLCQgHAwIEFQIIAwQWAgMBAh4BAheAAAoJEG3H
-ZCMRuQni1loIAK8O8/CQr5WdCKZFZqgIhoqH8Ea2nVeNYOf7dkdKwN5kWwabdtHq
-3VRsemiSuKYuMmw9sXh4mHcctsfDa65/J5u/sNSWVUtQfVsWYWRzh3qg/4jAzEPs
-LtDBSf6qdSq+9n3YKOJ00d4BZo/pGPp8N1qYWKMImgBZ+TqTxhlpAJWa9CIpgzv+
-r0GgJSUvU685VktECRqe/cmBSjzANkzX4xF6J3WgWDi/BJycfWzI04yJ1fWtwIn1
-EcN+QYdc8QyHmPM0IPEZx3WusYzzemzB+4CPZ0Co1v1VD1akz+Ba/AGVa5s2ZkRn
-drSZ2y5xWeR+jkE9P8DkEmesBMpI34EY/MY=
-=tefs
------END PGP PUBLIC KEY BLOCK-----
-END
-
 cat > /etc/yum.repos.d/gleez.repo <<END
 [gleez]
 name=Gleez repo
 baseurl=http://yum.gleez.com/7/$basearch/
 gpgcheck=0
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-gleez
-includepkgs=hhvm
 END
 echo
             GREENTXT "Installation of HHVM package:"
