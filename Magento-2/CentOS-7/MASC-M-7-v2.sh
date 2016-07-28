@@ -949,32 +949,32 @@ echo
 echo
 echo
 echo
-GREENTXT "INSTALLING Magento folder monitor and opcache invalidation script"
-pause '------> Press [Enter] key to continue'
-cat > ${MY_SHOP_PATH}/zend_opcache.sh <<END
-#!/bin/bash
-## monitor magento folder and log modified files
-/usr/bin/inotifywait -e modify,move \\
-    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
-    --excludei '/(cache|log|session|report|locks|media|skin|tmp)/|\.(xml|html?|css|js|gif|jpe?g|png|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|sh|pl)~?' \\
-    ${MY_SHOP_PATH}/ | while read line; do
-    echo "\$line " >> ${MY_SHOP_PATH}/var/log/zend_opcache_monitor.log
-    FILE=\$(echo \${line} | cut -d' ' -f1 | sed -e 's/\/\./\//g' | cut -f1-2 -d'.')
-    TARGETEXT="(php|phtml)"
-    EXTENSION="\${FILE##*.}"
-  if [[ "\$EXTENSION" =~ \$TARGETEXT ]];
-    then
-    curl --silent "http://www.${MY_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php?page=invalidate&file=\${FILE}" >/dev/null 2>&1
-  fi
-done
-END
+#GREENTXT "INSTALLING Magento folder monitor and opcache invalidation script"
+#pause '------> Press [Enter] key to continue'
+#cat > ${MY_SHOP_PATH}/zend_opcache.sh <<END
+##!/bin/bash
+### monitor magento folder and log modified files
+#/usr/bin/inotifywait -e modify,move \\
+#    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
+#    --excludei '/(cache|log|session|report|locks|media|skin|tmp)/|\.(xml|html?|css|js|gif|jpe?g|png|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|sh|pl)~?' \\
+#    ${MY_SHOP_PATH}/ | while read line; do
+#    echo "\$line " >> ${MY_SHOP_PATH}/var/log/zend_opcache_monitor.log
+#    FILE=\$(echo \${line} | cut -d' ' -f1 | sed -e 's/\/\./\//g' | cut -f1-2 -d'.')
+#    TARGETEXT="(php|phtml)"
+#    EXTENSION="\${FILE##*.}"
+#  if [[ "\$EXTENSION" =~ \$TARGETEXT ]];
+#    then
+#   curl --silent "http://www.${MY_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php?page=invalidate&file=\${FILE}" >/dev/null 2>&1
+# fi
+#done
+#END
+#echo
+#echo
+#    GREENTXT "Script was installed to ${MY_SHOP_PATH}/zend_opcache.sh"
 echo
-echo
-    GREENTXT "Script was installed to ${MY_SHOP_PATH}/zend_opcache.sh"
-echo
-echo
-    echo "${MY_SHOP_PATH}/zend_opcache.sh &" >> /etc/rc.local
-echo
+#echo
+#    echo "${MY_SHOP_PATH}/zend_opcache.sh &" >> /etc/rc.local
+#echo
 echo
 if yum list installed "varnish" >/dev/null 2>&1; then
 GREENTXT "VARNISH DAEMON CONFIGURATION FILE"
@@ -1226,39 +1226,39 @@ chmod +x /usr/local/bin/n98-magerun2.phar
 echo
 echo "---> IMAGES OPTIMIZATION SCRIPT"
 wget -qO ${MY_SHOP_PATH}/wesley.pl ${REPO_MASCM_TMP}wesley.pl
-echo
-cat >> ${MY_SHOP_PATH}/images_opt.sh <<END
-#!/bin/bash
+#echo
+#cat >> ${MY_SHOP_PATH}/images_opt.sh <<END
+##!/bin/bash
 ## monitor media folder and optimize new images
-/usr/bin/inotifywait -e create \\
-    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
-    --excludei '\.(xml|php|phtml|html?|css|js|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|opt|prog|crush)~?' \\
-    ${MY_SHOP_PATH}/pub/media | while read line; do
-    echo "\${line} " >> ${MY_SHOP_PATH}/var/log/images_optimization.log
-    FILE=\$(echo \${line} | cut -d' ' -f1)
-    TARGETEXT="(jpg|jpeg|png|gif)"
-    EXTENSION="\${FILE##*.}"
-  if [[ "\${EXTENSION}" =~ \${TARGETEXT} ]];
-    then
-   su ${MY_DOMAIN%%.*} -s /bin/bash -c "${MY_SHOP_PATH}/wesley.pl \${FILE} >/dev/null 2>&1"
-  fi
-done
-END
-echo "${MY_SHOP_PATH}/images_opt.sh &" >> /etc/rc.local
+#/usr/bin/inotifywait -e create \\
+#    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
+#    --excludei '\.(xml|php|phtml|html?|css|js|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|opt|prog|crush)~?' \\
+#    ${MY_SHOP_PATH}/pub/media | while read line; do
+#    echo "\${line} " >> ${MY_SHOP_PATH}/var/log/images_optimization.log
+#    FILE=\$(echo \${line} | cut -d' ' -f1)
+#    TARGETEXT="(jpg|jpeg|png|gif)"
+#    EXTENSION="\${FILE##*.}"
+#  if [[ "\${EXTENSION}" =~ \${TARGETEXT} ]];
+#    then
+#   su ${MY_DOMAIN%%.*} -s /bin/bash -c "${MY_SHOP_PATH}/wesley.pl \${FILE} >/dev/null 2>&1"
+#  fi
+#done
+#END
+#echo "${MY_SHOP_PATH}/images_opt.sh &" >> /etc/rc.local
 chmod +x /etc/rc.local
-echo
-cat >> ${MY_SHOP_PATH}/cron_check.sh <<END
-#!/bin/bash
-pgrep images_opt.sh > /dev/null || ${MY_SHOP_PATH}/images_opt.sh &
-pgrep zend_opcache.sh > /dev/null || ${MY_SHOP_PATH}/zend_opcache.sh &
-END
+#echo
+#cat >> ${MY_SHOP_PATH}/cron_check.sh <<END
+##!/bin/bash
+#pgrep images_opt.sh > /dev/null || ${MY_SHOP_PATH}/images_opt.sh &
+#pgrep zend_opcache.sh > /dev/null || ${MY_SHOP_PATH}/zend_opcache.sh &
+#END
 echo
         crontab -l -u ${MY_DOMAIN%%.*} > magecron
         echo "MAILTO="${MAGE_ADMIN_EMAIL}"" >> magecron
         echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/bin/magento cron:run" >> magecron
 	echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/update/cron.php" >> magecron
 	echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/bin/magento setup:cron:run" >> magecron
-        echo "*/5 * * * * /bin/bash ${MY_SHOP_PATH}/cron_check.sh" >> magecron
+        echo "#*/5 * * * * /bin/bash ${MY_SHOP_PATH}/cron_check.sh" >> magecron
         echo "5 8 * * 7 perl /etc/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
         crontab -u ${MY_DOMAIN%%.*} magecron
         rm magecron
@@ -1270,10 +1270,10 @@ echo "---> FIXING PERMISSIONS "
 find . -type f -exec chmod 660 {} \;
 find . -type d -exec chmod 770 {} \;
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
-chmod +x ${MY_SHOP_PATH}/{cron_check.sh,images_opt.sh,zend_opcache.sh,wesley.pl,bin/magento,pub/cron.php}
-echo
-${MY_SHOP_PATH}/zend_opcache.sh &
-${MY_SHOP_PATH}/images_opt.sh &
+chmod +x ${MY_SHOP_PATH}/{wesley.pl,bin/magento,pub/cron.php}
+#echo
+#${MY_SHOP_PATH}/zend_opcache.sh &
+#${MY_SHOP_PATH}/images_opt.sh &
 echo
 echo
     GREENTXT "NOW CHECK EVERYTHING AND LOGIN TO YOUR BACKEND"
