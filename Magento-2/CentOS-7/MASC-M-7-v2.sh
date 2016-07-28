@@ -1214,6 +1214,7 @@ echo -e "${MY_SHOP_PATH}\n\n/var/tmp/\n\n/tmp/" > /usr/local/maldetect/monitor_p
 echo
 sed -i "/^Example/d" /etc/clamd.d/scan.conf
 sed -i "/^Example/d" /etc/freshclam.conf
+sed -i "/^FRESHCLAM_DELAY/d" /etc/sysconfig/freshclam
 echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
 maldet --monitor /usr/local/maldetect/monitor_paths
 echo
