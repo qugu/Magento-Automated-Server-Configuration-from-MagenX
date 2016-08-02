@@ -231,7 +231,7 @@ fi
 echo
 echo
 if grep -q "yes" /root/mascm/.systest >/dev/null 2>&1 ; then
-  echo ""
+  echo "the systems test has been made already"
   else
 echo "-------------------------------------------------------------------------------------"
 BLUEBG "| QUICK SYSTEM TEST |"
@@ -299,6 +299,55 @@ echo
 pause "---> Press [Enter] key to proceed"
 echo
 fi
+if grep -q "yes" /root/mascm/.sshport >/dev/null 2>&1 ; then
+echo "ssh port has been changed already"
+else
+if grep -q "Port 22" /etc/ssh/sshd_config >/dev/null 2>&1 ; then
+echo -n "---> Lets change the default ssh port now? [y/n][n]:"
+read new_ssh_set
+if [ "${new_ssh_set}" == "y" ];then
+   echo
+      cp /etc/ssh/sshd_config /etc/ssh/sshd_config.BACK
+      SSHPORT=$(shuf -i 9537-9554 -n 1)
+      read -e -p "---> Enter a new ssh port : " -i "${SSHPORT}" NEW_SSH_PORT
+      sed -i "s/.*Port 22/Port ${NEW_SSH_PORT}/g" /etc/ssh/sshd_config
+      sed -i "s/.*LoginGraceTime.*/LoginGraceTime 30/" /etc/ssh/sshd_config
+      sed -i "s/.*MaxAuthTries.*/MaxAuthTries 6/" /etc/ssh/sshd_config
+      sed -i "s/.*X11Forwarding.*/X11Forwarding no/" /etc/ssh/sshd_config
+      sed -i "s/.*PrintLastLog.*/PrintLastLog yes/" /etc/ssh/sshd_config
+      sed -i "s/.*TCPKeepAlive.*/TCPKeepAlive yes/" /etc/ssh/sshd_config
+      sed -i "s/.*ClientAliveInterval.*/ClientAliveInterval 600/" /etc/ssh/sshd_config
+      sed -i "s/.*ClientAliveCountMax.*/ClientAliveCountMax 3/" /etc/ssh/sshd_config
+      sed -i "s/.*UseDNS.*/UseDNS no/" /etc/ssh/sshd_config
+     echo
+        GREENTXT "SSH PORT AND SETTINGS HAS BEEN UPDATED  -  OK"
+        /bin/systemctl restart sshd.service
+        ss -tlp | grep sshd
+     echo
+fi
+echo
+echo
+REDTXT "!IMPORTANT: NOW OPEN A NEW SSH SESSION WITH THE NEW PORT!"
+REDTXT "!IMPORTANT: DO NOT CLOSE THE CURRENT SESSION!"
+echo
+echo -n "------> Have you logged in another session? [y/n][n]:"
+read new_ssh_test
+if [ "${new_ssh_test}" == "y" ];then
+      echo
+        GREENTXT "REMEMBER THE NEW SSH PORT NOW: ${NEW_SSH_PORT}"
+        else
+        mv /etc/ssh/sshd_config.BACK /etc/ssh/sshd_config
+        REDTXT "RESTORING sshd_config FILE BACK TO DEFAULTS ${GREEN} [ok]"
+        /bin/systemctl restart sshd.service
+        echo
+        GREENTXT "SSH PORT HAS BEEN RESTORED  -  OK"
+        ss -tlp | grep sshd
+fi
+fi
+echo
+echo
+pause '---> Press [Enter] key to show menu'
+echo
 ###################################################################################
 #                                     CHECKS END                                  #
 ###################################################################################
@@ -1342,7 +1391,7 @@ if [ "${webmin_install}" == "y" ];then
             GREENTXT "Installation of Webmin package:"
 cat > /etc/yum.repos.d/webmin.repo <<END
 [Webmin]
-name=Webmin Distribution Neutral
+name=Webmin Distribution
 #baseurl=http://download.webmin.com/download/yum
 mirrorlist=http://download.webmin.com/download/yum/mirrorlist
 enabled=1
