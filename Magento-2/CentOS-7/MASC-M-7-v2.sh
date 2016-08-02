@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="11.1"
+MASCM_VER="11.5"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -842,7 +842,7 @@ echo
         echo "  Magento ${MAGENTO_VER} will be downloaded to:"
         GREENTXT ${MY_SHOP_PATH}
         mkdir -p ${MY_SHOP_PATH} && cd $_
-        useradd -d ${MY_SHOP_PATH%/*} -s /sbin/nologin ${MY_DOMAIN%%.*}  >/dev/null 2>&1
+        useradd -d ${MY_SHOP_PATH%/*} -s /sbin/nologin -G apache,nginx ${MY_DOMAIN%%.*}  >/dev/null 2>&1
         LINUX_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
         echo "${MY_DOMAIN%%.*}:${LINUX_USER_PASS}"  | chpasswd  >/dev/null 2>&1
         chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
