@@ -322,6 +322,7 @@ if [ "${new_ssh_set}" == "y" ];then
       sed -i "s/.*UseDNS.*/UseDNS no/" /etc/ssh/sshd_config
      echo
         GREENTXT "SSH PORT AND SETTINGS HAS BEEN UPDATED  -  OK"
+        echo "yes" > /root/mascm/.sshport
         /bin/systemctl restart sshd.service
         ss -tlp | grep sshd
      echo
