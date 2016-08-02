@@ -231,7 +231,7 @@ fi
 echo
 echo
 if grep -q "yes" /root/mascm/.systest >/dev/null 2>&1 ; then
-  echo "the systems test has been made already"
+  BLUETXT "the systems test has been made already"
   else
 echo "-------------------------------------------------------------------------------------"
 BLUEBG "| QUICK SYSTEM TEST |"
@@ -301,7 +301,7 @@ echo
 fi
 echo
 if grep -q "yes" /root/mascm/.sshport >/dev/null 2>&1 ; then
-echo "ssh port has been changed already"
+BLUETXT "ssh port has been changed already"
 else
 if grep -q "Port 22" /etc/ssh/sshd_config >/dev/null 2>&1 ; then
 echo -n "---> Lets change the default ssh port now? [y/n][n]:"
@@ -348,7 +348,7 @@ fi
 fi
 echo
 echo
-pause '---> Press [Enter] key to show menu'
+pause '---> Press [Enter] key to proceed'
 echo
 ###################################################################################
 #                                     CHECKS END                                  #
