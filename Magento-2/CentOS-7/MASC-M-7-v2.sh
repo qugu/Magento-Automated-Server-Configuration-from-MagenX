@@ -299,6 +299,7 @@ echo
 pause "---> Press [Enter] key to proceed"
 echo
 fi
+echo
 if grep -q "yes" /root/mascm/.sshport >/dev/null 2>&1 ; then
 echo "ssh port has been changed already"
 else
@@ -342,6 +343,7 @@ if [ "${new_ssh_test}" == "y" ];then
         echo
         GREENTXT "SSH PORT HAS BEEN RESTORED  -  OK"
         ss -tlp | grep sshd
+fi
 fi
 fi
 echo
