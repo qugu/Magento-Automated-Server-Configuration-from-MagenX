@@ -35,7 +35,7 @@ PERL_MODULES=(libwww-perl Template-Toolkit Time-HiRes ExtUtils-CBuilder ExtUtils
 # Nginx extra configuration
 NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento2/"
 NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf status.conf setup.conf hhvm.conf php_backend.conf phpmyadmin.conf maintenance.conf multishop.conf spider.conf"
-NGINX_EXTRA_CONF_URL="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento2/conf.d/"
+NGINX_EXTRA_CONF_URL="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento2/conf_m2/"
 
 # Debug Tools
 MYSQL_TUNER="https://raw.githubusercontent.com/major/MySQLTuner-perl/master/mysqltuner.pl"
@@ -875,7 +875,7 @@ sed -i "s,/var/www/html,${MY_SHOP_PATH},g" /etc/nginx/sites-available/magento2.c
 ln -s /etc/nginx/sites-available/magento2.conf /etc/nginx/sites-enabled/magento2.conf
 ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
 
-cd /etc/nginx/conf.d/ && rm -rf *
+mkdir -p /etc/nginx/conf_m2 && cd /etc/nginx/conf_m2/
 for CONFIG in ${NGINX_EXTRA_CONF}
 do
 wget -q ${NGINX_EXTRA_CONF_URL}${CONFIG}
@@ -932,7 +932,7 @@ echo
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
      yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
      sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
-     sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf.d/phpmyadmin.conf
+     sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m2/phpmyadmin.conf
      echo
      GREENTXT "phpMyAdmin was installed to http://www.${MY_DOMAIN}/mysql_${PMA_FOLDER}/"
 echo
