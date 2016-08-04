@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="11.8"
+MASCM_VER="12.1"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -896,6 +896,8 @@ echo
         LINUX_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
         echo "${MY_DOMAIN%%.*}:${LINUX_USER_PASS}"  | chpasswd  >/dev/null 2>&1
         chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
+        chmod 2770 ${MY_SHOP_PATH}
+        setfacl -Rdm u:${MY_DOMAIN%%.*}:rwx,g:${MY_DOMAIN%%.*}:rwx,o:--- ${MY_SHOP_PATH}
         echo
         curl -sS https://getcomposer.org/installer | php >/dev/null 2>&1
         mv composer.phar /usr/local/bin/composer
@@ -1161,8 +1163,6 @@ echo
 echo "---> FIXING PERMISSIONS "
 MY_SHOP_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
 cd ${MY_SHOP_PATH}
-find . -type f -exec chmod 660 {} \;
-find . -type d -exec chmod 770 {} \;
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
 echo
 echo
@@ -1317,8 +1317,6 @@ cd ${MY_SHOP_PATH}
 su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:static-content:deploy ${MAGE_LOCALE}"
 echo
 echo "---> FIXING PERMISSIONS "
-find . -type f -exec chmod 660 {} \;
-find . -type d -exec chmod 770 {} \;
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
 chmod +x ${MY_SHOP_PATH}/{wesley.pl,bin/magento,pub/cron.php}
 ## SERVER TIMEZONE SETUP
