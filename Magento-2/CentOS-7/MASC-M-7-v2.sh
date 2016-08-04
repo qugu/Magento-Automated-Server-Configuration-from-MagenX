@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="11.5"
+MASCM_VER="11.8"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -1190,10 +1190,10 @@ MAGE_ADMIN_PASSGEN=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 9 |
 read -e -p "---> Use generated admin password: " -i "${RANDOM}${MAGE_ADMIN_PASSGEN}"  MAGE_ADMIN_PASS
 read -e -p "---> Enter your shop url: " -i "http://www.${MY_DOMAIN}/"  MAGE_SITE_URL
 echo
-WHITETXT "Locale settings"
+WHITETXT "Language, Currency and Timezone settings"
 read -e -p "---> Enter your locale: " -i "en_US"  MAGE_LOCALE
-read -e -p "---> Enter your timezone: " -i "UTC"  MAGE_TIMEZONE
 read -e -p "---> Enter your currency: " -i "EUR"  MAGE_CURRENCY
+read -e -p "---> Enter your timezone: " -i "UTC"  MAGE_TIMEZONE
 echo
 echo
 cat >> /root/mascm/.mascm_index <<END
@@ -1314,13 +1314,15 @@ echo
         rm magecron
 echo
 cd ${MY_SHOP_PATH}
-su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:static-content:deploy"
+su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:static-content:deploy ${MAGE_LOCALE}"
 echo
 echo "---> FIXING PERMISSIONS "
 find . -type f -exec chmod 660 {} \;
 find . -type d -exec chmod 770 {} \;
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
 chmod +x ${MY_SHOP_PATH}/{wesley.pl,bin/magento,pub/cron.php}
+## SERVER TIMEZONE SETUP
+timedatectl set-timezone ${MAGE_TIMEZONE}
 #echo
 #${MY_SHOP_PATH}/zend_opcache.sh &
 #${MY_SHOP_PATH}/images_opt.sh &
