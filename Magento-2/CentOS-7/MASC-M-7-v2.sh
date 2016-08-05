@@ -728,7 +728,7 @@ if [ "${hhvm_install}" == "y" ];then
 cat > /etc/yum.repos.d/gleez.repo <<END
 [gleez]
 name=Gleez repo
-baseurl=http://yum.gleez.com/7/$basearch/
+baseurl=https://yum.gleez.com/7/x86_64/
 gpgcheck=0
 enabled=1
 END
