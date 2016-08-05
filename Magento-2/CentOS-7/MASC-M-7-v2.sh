@@ -824,8 +824,8 @@ opcache.validate_timestamps = 0
 ;opcache.revalidate_freq = 2
 opcache.file_update_protection = 2
 opcache.revalidate_path = 0
-opcache.save_comments = 1
-opcache.load_comments = 1
+opcache.save_comments = 0
+opcache.load_comments = 0
 opcache.fast_shutdown = 0
 opcache.enable_file_override = 0
 opcache.optimization_level = 0xffffffff
@@ -834,7 +834,7 @@ opcache.blacklist_filename=/etc/php.d/opcache-default.blacklist
 opcache.max_file_size = 0
 opcache.consistency_checks = 0
 opcache.force_restart_timeout = 60
-opcache.error_log = ""
+opcache.error_log = "/var/log/php-fpm/opcache.log"
 opcache.log_verbosity_level = 1
 opcache.preferred_memory_model = ""
 opcache.protect_memory = 0
@@ -857,7 +857,6 @@ sed -i 's/; max_input_vars = 1000/max_input_vars = 50000/' /etc/php.ini
 sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' /etc/php.ini
 sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' /etc/php.ini
 sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' /etc/php.ini
-sed -i 's/;date.timezone =/date.timezone = UTC/' /etc/php.ini
 sed -i 's/pm = dynamic/pm = ondemand/' /etc/php-fpm.d/www.conf
 sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' /etc/php-fpm.d/www.conf
 sed -i 's/pm.max_children = 50/pm.max_children = 1000/' /etc/php-fpm.d/www.conf
@@ -1320,6 +1319,7 @@ echo "---> FIXING PERMISSIONS "
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
 chmod +x ${MY_SHOP_PATH}/{wesley.pl,bin/magento,pub/cron.php}
 ## SERVER TIMEZONE SETUP
+sed -i "s/.*date.timezone.*/date.timezone = ${MAGE_TIMEZONE}/" /etc/php.ini
 timedatectl set-timezone ${MAGE_TIMEZONE}
 #echo
 #${MY_SHOP_PATH}/zend_opcache.sh &
