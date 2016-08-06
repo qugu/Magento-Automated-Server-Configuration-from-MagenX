@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="8.5"
+MASCM_VER="8.6"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -14,8 +14,7 @@ MASCM_VER="8.5"
 MAGENTO_TMP_FILE="https://www.dropbox.com/s/oy4t5lzy1wfxqir/magento-1.9.2.4-2016-02-23-06-04-07.tar.gz"
 MAGENTO_VER="1.9.2.4"
 
-# Webmin Control Panel
-WEBMIN="http://prdownloads.sourceforge.net/webadmin/webmin-1.801-1.noarch.rpm"
+# Webmin Control Panel Nginx Plugin
 WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.tar.gz"
 
 # Repositories
@@ -23,7 +22,6 @@ REPO_PERCONA="http://www.percona.com/redir/downloads/percona-release/redhat/late
 PERCONA_TOOLKIT="https://www.percona.com/downloads/percona-toolkit/2.2.17/RPM/percona-toolkit-2.2.17-1.noarch.rpm"
 REPO_NGINX="http://nginx.org/packages/mainline/centos/7/x86_64/"
 REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
-REPO_HHVM="https://yum.gleez.com/7/x86_64/hhvm-3.14.2-1.el7.centos.x86_64.rpm"
 
 # WebStack Packages
 EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle GeoIP ImageMagick libjpeg-turbo-utils pngcrush lsof goaccess net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron"
@@ -507,16 +505,16 @@ do
 mkdir -p /var/lib/redis-${REDISPORT}
 chmod 755 /var/lib/redis-${REDISPORT}
 chown redis /var/lib/redis-${REDISPORT}
-\cp -rf /etc/redis.conf /etc/redis.conf-${REDISPORT}
+\cp -rf /etc/redis.conf /etc/redis-${REDISPORT}.conf
 \cp -rf /usr/lib/systemd/system/redis.service /usr/lib/systemd/system/redis-${REDISPORT}.service
 
-sed -i "s/daemonize no/daemonize yes/"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^bind 127.0.0.1.*/bind 127.0.0.1/"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^dir.*/dir \/var\/lib\/redis-${REDISPORT}\//"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^logfile.*/logfile \/var\/log\/redis\/redis-${REDISPORT}.log/"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^pidfile.*/pidfile \/var\/run\/redis\/redis-${REDISPORT}.pid/"  /etc/redis.conf-${REDISPORT}
-sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis.conf-${REDISPORT}
-sed -i "s/redis.conf/redis.conf-${REDISPORT}/" /usr/lib/systemd/system/redis-${REDISPORT}.service
+sed -i "s/daemonize no/daemonize yes/"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^bind 127.0.0.1.*/bind 127.0.0.1/"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^dir.*/dir \/var\/lib\/redis-${REDISPORT}\//"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^logfile.*/logfile \/var\/log\/redis\/redis-${REDISPORT}.log/"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^pidfile.*/pidfile \/var\/run\/redis\/redis-${REDISPORT}.pid/"  /etc/redis-${REDISPORT}.conf
+sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis-${REDISPORT}.conf
+sed -i "s/redis.conf/redis-${REDISPORT}.conf/" /usr/lib/systemd/system/redis-${REDISPORT}.service
 done
 rm -rf /usr/lib/systemd/system/redis.service
 systemctl daemon-reload
@@ -571,12 +569,20 @@ echo -n "---> Start HHVM installation? [y/n][n]:"
 read hhvm_install
 if [ "${hhvm_install}" == "y" ];then
           echo
+cat > /etc/yum.repos.d/gleez.repo <<END
+[gleez]
+name=Gleez repo
+baseurl=https://yum.gleez.com/7/x86_64/
+gpgcheck=0
+enabled=1
+END
+echo
             GREENTXT "Installation of HHVM package:"
             echo
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install ${REPO_HHVM}  >/dev/null 2>&1
+            yum -y -q install hhvm >/dev/null 2>&1
             stop_progress "$pid"
             rpm  --quiet -q hhvm
       if [ "$?" = 0 ]
@@ -616,7 +622,7 @@ kernel.msgmnb = 65535
 kernel.msgmax = 65535
 kernel.shmmax = 68719476736
 kernel.shmall = 4294967296
-net.ipv4.tcp_tw_recycle = 1
+net.ipv4.tcp_tw_recycle = 0
 net.ipv4.tcp_tw_reuse = 1
 net.ipv4.tcp_mem = 8388608 8388608 8388608
 net.ipv4.tcp_rmem = 4096 87380 8388608
@@ -656,8 +662,8 @@ opcache.validate_timestamps = 0
 ;opcache.revalidate_freq = 2
 opcache.file_update_protection = 2
 opcache.revalidate_path = 0
-opcache.save_comments = 1
-opcache.load_comments = 1
+opcache.save_comments = 0
+opcache.load_comments = 0
 opcache.fast_shutdown = 0
 opcache.enable_file_override = 0
 opcache.optimization_level = 0xffffffff
@@ -727,15 +733,18 @@ echo
         echo "  Magento ${MAGENTO_VER} will be downloaded to:"
         GREENTXT ${MY_SHOP_PATH}
         mkdir -p ${MY_SHOP_PATH} && cd $_
-        useradd -d ${MY_SHOP_PATH} -s /sbin/nologin ${MY_DOMAIN%%.*}  >/dev/null 2>&1
+        useradd -d ${MY_SHOP_PATH} -s /sbin/nologin -G apache,nginx ${MY_DOMAIN%%.*}  >/dev/null 2>&1
         LINUX_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
         echo "${MY_DOMAIN%%.*}:${LINUX_USER_PASS}"  | chpasswd  >/dev/null 2>&1
+        chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
+        chmod 2770 ${MY_SHOP_PATH}
+        setfacl -Rdm u:${MY_DOMAIN%%.*}:rwx,g:${MY_DOMAIN%%.*}:rwx,o:--- ${MY_SHOP_PATH}
         echo -n "      DOWNLOADING MAGENTO  "
         long_progress &
         pid="$!"
-        wget -qO - ${MAGENTO_TMP_FILE} | tar -xzp --strip-components 1
+        su ${MY_DOMAIN%%.*} -s /bin/bash -c "wget -qO - ${MAGENTO_TMP_FILE} | tar -xzp --strip-components 1"
         stop_progress "$pid"
-        wget -qO shell/fixSUPEE6788.php https://raw.githubusercontent.com/rhoerr/supee-6788-toolbox/master/fixSUPEE6788.php
+        su ${MY_DOMAIN%%.*} -s /bin/bash -c "wget -qO shell/fixSUPEE6788.php https://raw.githubusercontent.com/rhoerr/supee-6788-toolbox/master/fixSUPEE6788.php"
         chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
         echo
 fi
@@ -806,7 +815,6 @@ echo
 GREENTXT "Installing phpMyAdmin - advanced MySQL interface"
 pause '------> Press [Enter] key to continue'
 echo
-     cd ${MY_SHOP_PATH}
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
      yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
@@ -822,7 +830,7 @@ pause '------> Press [Enter] key to continue'
 echo
     cd ${MY_SHOP_PATH}
     OPCACHE_FILE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
-    wget -qO ${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
+    su ${MY_DOMAIN%%.*} -s /bin/bash -c "wget -qO ${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php"
     echo
     GREENTXT "OPCACHE interface was installed to http://www.${MY_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php"
 echo
@@ -851,9 +859,9 @@ echo
 echo
     GREENTXT "Script was installed to ${MY_SHOP_PATH}/zend_opcache.sh"
 echo
-echo
-    echo "${MY_SHOP_PATH}/zend_opcache.sh &" >> /etc/rc.local
-echo
+#echo
+#    echo "${MY_SHOP_PATH}/zend_opcache.sh &" >> /etc/rc.local
+#echo
 echo
 if yum list installed "varnish" >/dev/null 2>&1; then
 GREENTXT "VARNISH DAEMON CONFIGURATION FILE"
@@ -1012,9 +1020,9 @@ sed -i "s/CURLOPT_SSL_CIPHER_LIST, 'TLSv1'/CURLOPT_SSLVERSION, CURL_SSLVERSION_T
 sed -i '555s/.*/$out .= $this->getBlock($callback[0])->{$callback[1]}();/' app/code/core/Mage/Core/Model/Layout.php
 sed -i '274s/.*/$params['object']->{$params['method']}($this->_file['tmp_name']);/' lib/Varien/File/Uploader.php
 
-./mage mage-setup .
+su - ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage mage-setup ."
 
-php -f install.php -- \
+su - ${MY_DOMAIN%%.*} -s /bin/bash -c "php -f install.php -- \
 --license_agreement_accepted "yes" \
 --locale "${MAGE_LOCALE}" \
 --timezone "${MAGE_TIMEZONE}" \
@@ -1034,7 +1042,7 @@ php -f install.php -- \
 --admin_lastname "${MAGE_ADMIN_LNAME}" \
 --admin_email "${MAGE_ADMIN_EMAIL}" \
 --admin_username "${MAGE_ADMIN_LOGIN}" \
---admin_password "${MAGE_ADMIN_PASS}"
+--admin_password "${MAGE_ADMIN_PASS}""
 
 GREENTXT "ok"
     echo
@@ -1138,18 +1146,18 @@ echo
 echo "---> CLEANING UP INDEXES LOCKS AND RUNNING RE-INDEX ALL"
 echo
 rm -rf  ${MY_SHOP_PATH}/var/locks/*
-php ${MY_SHOP_PATH}/shell/indexer.php --reindexall
+su - ${MY_DOMAIN%%.*} -s /bin/bash -c "php ${MY_SHOP_PATH}/shell/indexer.php --reindexall"
 echo
 echo
 echo "---> NOW WE INSTALL SELECTED EXTENSIONS"
 echo
 cd ${MY_SHOP_PATH}
-./mage config-set preferred_state beta >/dev/null 2>&1
+su - ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage config-set preferred_state beta >/dev/null 2>&1"
 echo
 echo -n "---> Would you like to install Nexcessnet Turpentine? [y/n][n]:"
 read netu
 if [ "${netu}" == "y" ];then
-./mage install http://connect20.magentocommerce.com/community Nexcessnet_Turpentine
+su - ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage install http://connect20.magentocommerce.com/community Nexcessnet_Turpentine"
 fi
 echo
 echo "---> CREATE SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
@@ -1164,7 +1172,9 @@ compress
 }
 END
 echo
-echo "---> SETUP DAILY MALWARE SCANNER WITH E-MAIL ALERTS"
+echo "---> SETUP REALTIME MALWARE MONITOR WITH E-MAIL ALERTS"
+REDTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
+echo
 cd /usr/local/src
 wget -q ${MALDET}
 tar -zxf maldetect-current.tar.gz
@@ -1173,13 +1183,20 @@ cd maldetect-*
 echo
 sed -i 's/email_alert="0"/email_alert="1"/' /usr/local/maldetect/conf.maldet
 sed -i "s/you@domain.com/${MAGE_ADMIN_EMAIL}/" /usr/local/maldetect/conf.maldet
+sed -i 's/quarantine_hits="0"/quarantine_hits="1"/' /usr/local/maldetect/conf.maldet
+sed -i 's,# default_monitor_mode="/usr/local/maldetect/monitor_paths",default_monitor_mode="/usr/local/maldetect/monitor_paths",' /usr/local/maldetect/conf.maldet
+sed -i 's/inotify_base_watches="16384"/inotify_base_watches="35384"/' /usr/local/maldetect/conf.maldet
+echo -e "${MY_SHOP_PATH}\n\n/var/tmp/\n\n/tmp/" > /usr/local/maldetect/monitor_paths
 echo
 sed -i "/^Example/d" /etc/clamd.d/scan.conf
 sed -i "/^Example/d" /etc/freshclam.conf
+sed -i "/^FRESHCLAM_DELAY/d" /etc/sysconfig/freshclam
+echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
+maldet --monitor /usr/local/maldetect/monitor_paths
 echo
 echo
 echo "---> IMAGES OPTIMIZATION SCRIPT"
-wget -qO ${MY_SHOP_PATH}/wesley.pl https://raw.githubusercontent.com/magenx/MASC-M/master/tmp/wesley.pl
+su - ${MY_DOMAIN%%.*} -s /bin/bash -c "wget -qO ${MY_SHOP_PATH}/wesley.pl https://raw.githubusercontent.com/magenx/MASC-M/master/tmp/wesley.pl"
 echo
 cat >> ${MY_SHOP_PATH}/images_opt.sh <<END
 #!/bin/bash
@@ -1198,7 +1215,7 @@ cat >> ${MY_SHOP_PATH}/images_opt.sh <<END
   fi
 done
 END
-echo "${MY_SHOP_PATH}/images_opt.sh &" >> /etc/rc.local
+#echo "${MY_SHOP_PATH}/images_opt.sh &" >> /etc/rc.local
 chmod +x /etc/rc.local
 echo
 cat >> ${MY_SHOP_PATH}/cron_check.sh <<END
@@ -1210,19 +1227,17 @@ echo
         crontab -l -u ${MY_DOMAIN%%.*} > magecron
         echo "MAILTO="${MAGE_ADMIN_EMAIL}"" >> magecron
         echo "* * * * * ! test -e ${MY_SHOP_PATH}/maintenance.flag && /bin/bash ${MY_SHOP_PATH}/cron.sh  > /dev/null" >> magecron
-        echo "*/5 * * * * /bin/bash ${MY_SHOP_PATH}/cron_check.sh  > /dev/null" >> magecron
+        echo "#*/5 * * * * /bin/bash ${MY_SHOP_PATH}/cron_check.sh  > /dev/null" >> magecron
         crontab -u ${MY_DOMAIN%%.*} magecron
         rm magecron
 echo
 cd ${MY_SHOP_PATH}
 mkdir -p var/log
-find . -type f -exec chmod 644 {} \;
-find . -type d -exec chmod 755 {} \;
-chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
+chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH/*}
 rm -rf index.php.sample LICENSE_AFL.txt LICENSE.html LICENSE.txt RELEASE_NOTES.txt php.ini.sample dev
 chmod +x cron_check.sh images_opt.sh zend_opcache.sh mage cron.sh wesley.pl
-${MY_SHOP_PATH}/zend_opcache.sh &
-${MY_SHOP_PATH}/images_opt.sh &
+#${MY_SHOP_PATH}/zend_opcache.sh &
+#${MY_SHOP_PATH}/images_opt.sh &
 echo
 echo
     GREENTXT "NOW LOGIN TO YOUR BACKEND AND CHECK EVERYTHING"
@@ -1289,11 +1304,19 @@ read webmin_install
 if [ "${webmin_install}" == "y" ];then
           echo
             GREENTXT "Installation of Webmin package:"
+cat > /etc/yum.repos.d/webmin.repo <<END
+[Webmin]
+name=Webmin Distribution
+#baseurl=http://download.webmin.com/download/yum
+mirrorlist=http://download.webmin.com/download/yum/mirrorlist
+enabled=1
+END
+rpm --import http://www.webmin.com/jcameron-key.asc
             echo
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install ${WEBMIN} >/dev/null 2>&1
+            yum -y -q install webmin >/dev/null 2>&1
             stop_progress "$pid"
             rpm  --quiet -q webmin
       if [ "$?" = 0 ]
