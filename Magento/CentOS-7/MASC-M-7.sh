@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="8.6"
+MASCM_VER="8.7"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -770,7 +770,7 @@ sed -i "s,root /var/www/html,root ${MY_SHOP_PATH},g" /etc/nginx/sites-available/
 ln -s /etc/nginx/sites-available/magento.conf /etc/nginx/sites-enabled/magento.conf
 ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
 
-mkdir -p /etc/nginx/conf_m1 cd /etc/nginx/conf_m1/
+mkdir -p /etc/nginx/conf_m1 && cd /etc/nginx/conf_m1/
 for CONFIG in ${NGINX_EXTRA_CONF}
 do
 wget -q ${NGINX_EXTRA_CONF_URL}${CONFIG}
