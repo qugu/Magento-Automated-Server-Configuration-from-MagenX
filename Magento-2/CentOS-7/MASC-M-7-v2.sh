@@ -124,6 +124,33 @@ wait $1 2>/dev/null
 echo -en "\n"
 }
 
+updown_menu () {
+i=1;for items in $(echo $1); do item[$i]="${items}"; let i=$i+1; done
+i=1
+echo
+echo -e "\n---> Use up/down arrow keys then press enter to select $2"
+while [ 0 ]; do
+  if [ "$i" -eq 0 ]; then i=1; fi
+  if [ ! "${item[$i]}" ]; then let i=i-1; fi
+  echo -en "\r                                 " 
+  echo -en "\r${item[$i]}"
+  read -sn 1 selector
+  case "${selector}" in
+    "B") let i=i+1;;
+    "A") let i=i-1;;
+    "") echo; read -sn 1 -p "To confirm [ ${item[$i]} ] press y or n for new selection" confirm
+      if [[ "${confirm}" =~ ^[Yy]$  ]]; then
+        printf -v "$2" '%s' "${item[$i]}"
+        break
+      else
+        echo
+        echo -e "\n---> Use up/down arrow keys then press enter to select $2"
+      fi
+      ;;
+  esac
+done }
+
+
 clear
 ###################################################################################
 #                                     START CHECKS                                #
@@ -1190,9 +1217,9 @@ read -e -p "---> Use generated admin password: " -i "${RANDOM}${MAGE_ADMIN_PASSG
 read -e -p "---> Enter your shop url: " -i "http://www.${MY_DOMAIN}/"  MAGE_SITE_URL
 echo
 WHITETXT "Language, Currency and Timezone settings"
-read -e -p "---> Enter your locale: " -i "en_US"  MAGE_LOCALE
-read -e -p "---> Enter your currency: " -i "EUR"  MAGE_CURRENCY
-read -e -p "---> Enter your timezone: " -i "UTC"  MAGE_TIMEZONE
+updown_menu "$(bin/magento info:language:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_LOCALE
+updown_menu "$(bin/magento info:currency:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_CURRENCY
+updown_menu "$(bin/magento info:timezone:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_TIMEZONE
 echo
 echo
 cat >> /root/mascm/.mascm_index <<END
