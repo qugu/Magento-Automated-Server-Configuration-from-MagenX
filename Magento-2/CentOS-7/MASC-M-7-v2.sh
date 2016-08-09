@@ -1217,6 +1217,7 @@ read -e -p "---> Use generated admin password: " -i "${RANDOM}${MAGE_ADMIN_PASSG
 read -e -p "---> Enter your shop url: " -i "http://www.${MY_DOMAIN}/"  MAGE_SITE_URL
 echo
 WHITETXT "Language, Currency and Timezone settings"
+chmod +x bin/magento
 updown_menu "$(bin/magento info:language:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_LOCALE
 updown_menu "$(bin/magento info:currency:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_CURRENCY
 updown_menu "$(bin/magento info:timezone:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_TIMEZONE
@@ -1229,7 +1230,6 @@ GREENTXT "NOW SETUP MAGENTO ${MAGENTO_VER} WITHOUT SAMPLE DATA"
 echo
 pause '---> Press [Enter] key to continue'
 echo
-chmod +x bin/magento
 su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:install --base-url=${MAGE_SITE_URL} \
 --db-host=${MAGE_DB_HOST} \
 --db-name=${MAGE_DB_NAME} \
@@ -1247,6 +1247,8 @@ su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:install --base-url=${MAGE
 --session-save=files \
 --use-rewrites=1"
 echo
+echo
+pause '---> Press [Enter] key to continue'
 echo
 WHITETXT "-= FINAL MAINTENANCE AND CLEANUP =-"
 echo
