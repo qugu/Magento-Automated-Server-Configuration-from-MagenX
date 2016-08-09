@@ -1186,7 +1186,6 @@ printf "\033c"
 WHITETXT "============================================================================="
 WHITETXT "vvv   MAGENTO ${MAGENTO_VER} PACKAGES INSTALLATION WITH COMPOSER   vvv"
 echo
-echo "---> FIXING PERMISSIONS "
 MY_SHOP_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
 cd ${MY_SHOP_PATH}
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
@@ -1348,7 +1347,7 @@ echo "---> FIXING PERMISSIONS "
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
 chmod +x ${MY_SHOP_PATH}/{wesley.pl,bin/magento,pub/cron.php}
 ## SERVER TIMEZONE SETUP
-sed -i "s/.*date.timezone.*/date.timezone = ${MAGE_TIMEZONE}/" /etc/php.ini
+sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
 timedatectl set-timezone ${MAGE_TIMEZONE}
 #echo
 #${MY_SHOP_PATH}/zend_opcache.sh &
