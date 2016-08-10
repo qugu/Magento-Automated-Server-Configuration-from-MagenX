@@ -448,8 +448,8 @@ yum -q -y install ${EXTRA_PACKAGES} ${PERL_MODULES[@]/#/perl-} >/dev/null 2>&1
 echo
 GREENTXT "CHECKING UPDATES. PLEASE WAIT"
 ## checking updates
-UPDATES=$(yum check-update | grep updates$ | wc -l)
-KERNEL=$(yum check-update | grep ^kernel | wc -l)
+UPDATES=$(yum check-update | grep -c updates$)
+KERNEL=$(yum check-update | grep -c ^kernel)
 if [ "${UPDATES}" -gt 0 ] || [ "${KERNEL}" -gt 0 ]; then
 echo
 YELLOWTXT "---> NEW UPDATED PKGS: ${UPDATES}"
