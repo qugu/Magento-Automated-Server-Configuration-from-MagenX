@@ -1150,17 +1150,6 @@ rm -rf  ${MY_SHOP_PATH}/var/locks/*
 su ${MY_DOMAIN%%.*} -s /bin/bash -c "php ${MY_SHOP_PATH}/shell/indexer.php --reindexall"
 echo
 echo
-echo "---> NOW WE INSTALL SELECTED EXTENSIONS"
-echo
-cd ${MY_SHOP_PATH}
-su ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage config-set preferred_state beta >/dev/null 2>&1"
-echo
-echo -n "---> Would you like to install Nexcessnet Turpentine? [y/n][n]:"
-read netu
-if [ "${netu}" == "y" ];then
-su ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage install http://connect20.magentocommerce.com/community Nexcessnet_Turpentine"
-fi
-echo
 echo "---> CREATE SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
 cat > /etc/logrotate.d/magento <<END
 ${MY_SHOP_PATH}/var/log/*.log
