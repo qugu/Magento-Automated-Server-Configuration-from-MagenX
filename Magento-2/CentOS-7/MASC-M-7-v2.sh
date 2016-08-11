@@ -1216,7 +1216,7 @@ read -e -p "---> Use generated admin password: " -i "${RANDOM}${MAGE_ADMIN_PASSG
 read -e -p "---> Enter your shop url: " -i "http://www.${MY_DOMAIN}/"  MAGE_SITE_URL
 echo
 WHITETXT "Language, Currency and Timezone settings"
-chmod +x bin/magento
+chmod u+x bin/magento
 updown_menu "$(bin/magento info:language:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_LOCALE
 updown_menu "$(bin/magento info:currency:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_CURRENCY
 updown_menu "$(bin/magento info:timezone:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_TIMEZONE
@@ -1345,7 +1345,7 @@ su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:static-content:deploy ${M
 echo
 echo "---> FIXING PERMISSIONS "
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
-chmod +x ${MY_SHOP_PATH}/{wesley.pl,bin/magento,pub/cron.php}
+chmod u+x ${MY_SHOP_PATH}/{wesley.pl,bin/magento,pub/cron.php}
 ## SERVER TIMEZONE SETUP
 sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
 timedatectl set-timezone ${MAGE_TIMEZONE}
