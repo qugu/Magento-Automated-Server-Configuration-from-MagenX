@@ -836,28 +836,28 @@ echo
 echo
 echo
 echo
-GREENTXT "INSTALLING Magento folder monitor and opcache invalidation script"
-pause '------> Press [Enter] key to continue'
-cat > ${MY_SHOP_PATH}/zend_opcache.sh <<END
-#!/bin/bash
-## monitor magento folder and log modified files
-/usr/bin/inotifywait -e modify,move \\
-    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
-    --excludei '/(cache|log|session|report|locks|media|skin|tmp)/|\.(xml|html?|css|js|gif|jpe?g|png|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|sh|pl)~?' \\
-    ${MY_SHOP_PATH}/ | while read line; do
-    echo "\$line " >> /var/log/zend_opcache_monitor.log
-    FILE=\$(echo \${line} | cut -d' ' -f1 | sed -e 's/\/\./\//g' | cut -f1-2 -d'.')
-    TARGETEXT="(php|phtml)"
-    EXTENSION="\${FILE##*.}"
-  if [[ "\$EXTENSION" =~ \$TARGETEXT ]];
-    then
-    curl --silent "http://www.${MY_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php?page=invalidate&file=\${FILE}" >/dev/null 2>&1
-  fi
-done
-END
-echo
-echo
-    GREENTXT "Script was installed to ${MY_SHOP_PATH}/zend_opcache.sh"
+#GREENTXT "INSTALLING Magento folder monitor and opcache invalidation script"
+#pause '------> Press [Enter] key to continue'
+#cat > ${MY_SHOP_PATH}/zend_opcache.sh <<END
+##!/bin/bash
+### monitor magento folder and log modified files
+#/usr/bin/inotifywait -e modify,move \\
+#    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
+#    --excludei '/(cache|log|session|report|locks|media|skin|tmp)/|\.(xml|html?|css|js|gif|jpe?g|png|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|sh|pl)~?' \\
+#    ${MY_SHOP_PATH}/ | while read line; do
+#    echo "\$line " >> /var/log/zend_opcache_monitor.log
+#    FILE=\$(echo \${line} | cut -d' ' -f1 | sed -e 's/\/\./\//g' | cut -f1-2 -d'.')
+#    TARGETEXT="(php|phtml)"
+#    EXTENSION="\${FILE##*.}"
+#  if [[ "\$EXTENSION" =~ \$TARGETEXT ]];
+#    then
+#    curl --silent "http://www.${MY_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php?page=invalidate&file=\${FILE}" >/dev/null 2>&1
+#  fi
+#done
+#END
+#echo
+#echo
+#    GREENTXT "Script was installed to ${MY_SHOP_PATH}/zend_opcache.sh"
 echo
 #echo
 #    echo "${MY_SHOP_PATH}/zend_opcache.sh &" >> /etc/rc.local
@@ -1015,14 +1015,14 @@ GREENTXT "NOW INSTALLING MAGENTO WITHOUT SAMPLE DATA"
 MAGE_ADMIN_PATH=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
 MY_SHOP_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
 cd ${MY_SHOP_PATH}
-chmod +x mage
+chmod u+x mage
 sed -i "s/CURLOPT_SSL_CIPHER_LIST, 'TLSv1'/CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1/" downloader/lib/Mage/HTTP/Client/Curl.php
 sed -i '555s/.*/$out .= $this->getBlock($callback[0])->{$callback[1]}();/' app/code/core/Mage/Core/Model/Layout.php
 sed -i '274s/.*/$params['object']->{$params['method']}($this->_file['tmp_name']);/' lib/Varien/File/Uploader.php
 
-su - ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage mage-setup ."
+su ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage mage-setup ."
 
-su - ${MY_DOMAIN%%.*} -s /bin/bash -c "php -f install.php -- \
+su ${MY_DOMAIN%%.*} -s /bin/bash -c "php -f install.php -- \
 --license_agreement_accepted "yes" \
 --locale "${MAGE_LOCALE}" \
 --timezone "${MAGE_TIMEZONE}" \
@@ -1146,7 +1146,7 @@ echo
 echo "---> CLEANING UP INDEXES LOCKS AND RUNNING RE-INDEX ALL"
 echo
 rm -rf  ${MY_SHOP_PATH}/var/locks/*
-su - ${MY_DOMAIN%%.*} -s /bin/bash -c "php ${MY_SHOP_PATH}/shell/indexer.php --reindexall"
+su ${MY_DOMAIN%%.*} -s /bin/bash -c "php ${MY_SHOP_PATH}/shell/indexer.php --reindexall"
 echo
 echo
 echo "---> NOW WE INSTALL SELECTED EXTENSIONS"
@@ -1157,11 +1157,11 @@ echo
 echo -n "---> Would you like to install Nexcessnet Turpentine? [y/n][n]:"
 read netu
 if [ "${netu}" == "y" ];then
-su - ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage install http://connect20.magentocommerce.com/community Nexcessnet_Turpentine"
+su ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage install http://connect20.magentocommerce.com/community Nexcessnet_Turpentine"
 fi
 echo
 echo "---> CREATE SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
-cat >> /etc/logrotate.d/magento <<END
+cat > /etc/logrotate.d/magento <<END
 ${MY_SHOP_PATH}/var/log/*.log
 {
 weekly
@@ -1196,33 +1196,33 @@ maldet --monitor /usr/local/maldetect/monitor_paths
 echo
 echo
 echo "---> IMAGES OPTIMIZATION SCRIPT"
-su - ${MY_DOMAIN%%.*} -s /bin/bash -c "wget -qO ${MY_SHOP_PATH}/wesley.pl https://raw.githubusercontent.com/magenx/MASC-M/master/tmp/wesley.pl"
+su ${MY_DOMAIN%%.*} -s /bin/bash -c "wget -qO ${MY_SHOP_PATH}/wesley.pl https://raw.githubusercontent.com/magenx/MASC-M/master/tmp/wesley.pl"
 echo
-cat >> ${MY_SHOP_PATH}/images_opt.sh <<END
-#!/bin/bash
-## monitor media folder and optimize new images
-/usr/bin/inotifywait -e create \\
-    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
-    --excludei '\.(xml|php|phtml|html?|css|js|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|opt|prog|gifsicle|crush)~?' \\
-    ${MY_SHOP_PATH}/media | while read line; do
-    echo "\${line} " >> ${MY_SHOP_PATH}/var/log/images_optimization.log
-    FILE=\$(echo \${line} | cut -d' ' -f1)
-    TARGETEXT="(jpg|jpeg|png|gif)"
-    EXTENSION="\${FILE##*.}"
-  if [[ "\${EXTENSION}" =~ \${TARGETEXT} ]];
-    then
-   su - ${MY_DOMAIN%%.*} -s /bin/bash -c "${MY_SHOP_PATH}/wesley.pl \${FILE} > /dev/null"
-  fi
-done
-END
+#cat >> ${MY_SHOP_PATH}/images_opt.sh <<END
+##!/bin/bash
+### monitor media folder and optimize new images
+#/usr/bin/inotifywait -e create \\
+#    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
+#    --excludei '\.(xml|php|phtml|html?|css|js|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|opt|prog|gifsicle|crush)~?' \\
+#    ${MY_SHOP_PATH}/media | while read line; do
+#    echo "\${line} " >> ${MY_SHOP_PATH}/var/log/images_optimization.log
+#    FILE=\$(echo \${line} | cut -d' ' -f1)
+#    TARGETEXT="(jpg|jpeg|png|gif)"
+#    EXTENSION="\${FILE##*.}"
+#  if [[ "\${EXTENSION}" =~ \${TARGETEXT} ]];
+#    then
+#   su ${MY_DOMAIN%%.*} -s /bin/bash -c "${MY_SHOP_PATH}/wesley.pl \${FILE} > /dev/null"
+#  fi
+#done
+#END
 #echo "${MY_SHOP_PATH}/images_opt.sh &" >> /etc/rc.local
 chmod +x /etc/rc.local
 echo
-cat >> ${MY_SHOP_PATH}/cron_check.sh <<END
-#!/bin/bash
-pgrep images_opt.sh > /dev/null || ${MY_SHOP_PATH}/images_opt.sh &
-pgrep zend_opcache.sh > /dev/null || ${MY_SHOP_PATH}/zend_opcache.sh &
-END
+#cat >> ${MY_SHOP_PATH}/cron_check.sh <<END
+##!/bin/bash
+#pgrep images_opt.sh > /dev/null || ${MY_SHOP_PATH}/images_opt.sh &
+#pgrep zend_opcache.sh > /dev/null || ${MY_SHOP_PATH}/zend_opcache.sh &
+#END
 echo
         crontab -l -u ${MY_DOMAIN%%.*} > magecron
         echo "MAILTO="${MAGE_ADMIN_EMAIL}"" >> magecron
@@ -1235,7 +1235,7 @@ cd ${MY_SHOP_PATH}
 mkdir -p var/log
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH/*}
 rm -rf index.php.sample LICENSE_AFL.txt LICENSE.html LICENSE.txt RELEASE_NOTES.txt php.ini.sample dev
-chmod +x cron_check.sh images_opt.sh zend_opcache.sh mage cron.sh wesley.pl
+chmod u+x mage cron.sh wesley.pl
 #${MY_SHOP_PATH}/zend_opcache.sh &
 #${MY_SHOP_PATH}/images_opt.sh &
 echo
