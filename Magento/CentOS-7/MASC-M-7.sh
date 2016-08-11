@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="8.7"
+MASCM_VER="8.8"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
@@ -988,7 +988,9 @@ DB_HOST=$(awk '/database/ { print $2 }' /root/mascm/.mascm_index)
 DB_NAME=$(awk '/database/ { print $3 }' /root/mascm/.mascm_index)
 DB_USER_NAME=$(awk '/database/ { print $4 }' /root/mascm/.mascm_index)
 DB_PASS=$(awk '/database/ { print $5 }' /root/mascm/.mascm_index)
-DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
+MY_DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
+MY_SHOP_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
+MAGE_ADMIN_PATH=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
 echo
 WHITETXT "Database information"
 read -e -p "---> Enter your database host: " -i "${DB_HOST}"  MAGE_DB_HOST
@@ -999,11 +1001,11 @@ echo
 WHITETXT "Administrator and domain"
 read -e -p "---> Enter your First Name: " -i "Name"  MAGE_ADMIN_FNAME
 read -e -p "---> Enter your Last Name: " -i "Lastname"  MAGE_ADMIN_LNAME
-read -e -p "---> Enter your email: " -i "admin@${DOMAIN}"  MAGE_ADMIN_EMAIL
+read -e -p "---> Enter your email: " -i "admin@${MY_DOMAIN}"  MAGE_ADMIN_EMAIL
 read -e -p "---> Enter your admins login name: " -i "admin"  MAGE_ADMIN_LOGIN
 MAGE_ADMIN_PASSGEN=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 9 | head -n 1)
 read -e -p "---> Use generated admin password: " -i "${RANDOM}${MAGE_ADMIN_PASSGEN}"  MAGE_ADMIN_PASS
-read -e -p "---> Enter your shop url: " -i "http://www.${DOMAIN}/"  MAGE_SITE_URL
+read -e -p "---> Enter your shop url: " -i "http://www.${MY_DOMAIN}/"  MAGE_SITE_URL
 echo
 WHITETXT "Locale settings"
 read -e -p "---> Enter your locale: " -i "en_GB"  MAGE_LOCALE
@@ -1013,8 +1015,6 @@ echo
 WHITETXT "============================================================================="
 echo
 GREENTXT "NOW INSTALLING MAGENTO WITHOUT SAMPLE DATA"
-MAGE_ADMIN_PATH=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
-MY_SHOP_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
 cd ${MY_SHOP_PATH}
 chmod u+x mage
 sed -i "s/CURLOPT_SSL_CIPHER_LIST, 'TLSv1'/CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1/" downloader/lib/Mage/HTTP/Client/Curl.php
@@ -1153,7 +1153,7 @@ echo
 echo "---> NOW WE INSTALL SELECTED EXTENSIONS"
 echo
 cd ${MY_SHOP_PATH}
-su - ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage config-set preferred_state beta >/dev/null 2>&1"
+su ${MY_DOMAIN%%.*} -s /bin/bash -c "./mage config-set preferred_state beta >/dev/null 2>&1"
 echo
 echo -n "---> Would you like to install Nexcessnet Turpentine? [y/n][n]:"
 read netu
@@ -1233,7 +1233,7 @@ echo
         rm magecron
 echo
 cd ${MY_SHOP_PATH}
-mkdir -p var/log
+su ${MY_DOMAIN%%.*} -s /bin/bash -c "mkdir -p var/log"
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH/*}
 rm -rf index.php.sample LICENSE_AFL.txt LICENSE.html LICENSE.txt RELEASE_NOTES.txt php.ini.sample dev
 chmod u+x mage cron.sh wesley.pl
