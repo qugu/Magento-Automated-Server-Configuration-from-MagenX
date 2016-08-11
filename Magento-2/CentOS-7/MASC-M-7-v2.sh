@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="12.1"
+MASCM_VER="12.2"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -24,6 +24,7 @@ WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.t
 # Repositories
 REPO_PERCONA="http://www.percona.com/redir/downloads/percona-release/redhat/latest/percona-release-0.1-3.noarch.rpm"
 REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
+REPO_FAN="http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-1-13.rhel7.noarch.rpm"
 
 # WebStack Packages
 EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate goaccess unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle ncurses-devel GeoIP GeoIP-devel GeoIP-update ImageMagick libjpeg-turbo-utils pngcrush lsof net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron sysstat attr iotop"
@@ -422,7 +423,7 @@ printf "\033c"
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
         echo
         WHITETXT "-> Install Webmin control panel         :  ${YELLOW}\t\twebmin"
-        WHITETXT "-> Install CSF firewall                 :  ${YELLOW}\t\t\tfirewall"
+        WHITETXT "-> CSF firewall or Fail2ban+CF          :  ${YELLOW}\t\t\tfirewall"
         WHITETXT "-> Install Ossec ELK stack              :  ${YELLOW}\t\t\tossec"
         echo
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
@@ -444,6 +445,7 @@ echo
 else
 ## install all extra packages
 GREENTXT "INSTALLING EXTRA PACKAGES. PLEASE WAIT"
+yum -q -y install ${REPO_FAN} >/dev/null 2>&1
 yum -q -y install ${EXTRA_PACKAGES} ${PERL_MODULES[@]/#/perl-} >/dev/null 2>&1
 echo
 GREENTXT "CHECKING UPDATES. PLEASE WAIT"
