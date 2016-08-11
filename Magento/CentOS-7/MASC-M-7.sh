@@ -628,6 +628,7 @@ net.ipv4.tcp_mem = 8388608 8388608 8388608
 net.ipv4.tcp_rmem = 4096 87380 8388608
 net.ipv4.tcp_wmem = 4096 65535 8388608
 net.ipv4.ip_local_port_range = 1024 65535
+net.ipv4.tcp_challenge_ack_limit = 1073741823
 net.ipv4.tcp_fin_timeout = 15
 net.ipv4.tcp_keepalive_time = 15
 net.ipv4.tcp_max_orphans = 262144
