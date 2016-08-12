@@ -423,7 +423,7 @@ printf "\033c"
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
         echo
         WHITETXT "-> Install Webmin control panel         :  ${YELLOW}\t\twebmin"
-        WHITETXT "-> CSF firewall or Fail2ban+CF          :  ${YELLOW}\t\t\tfirewall"
+        WHITETXT "-> Install CSF Firewall                 :  ${YELLOW}\t\t\tfirewall"
         WHITETXT "-> Install Ossec ELK stack              :  ${YELLOW}\t\t\tossec"
         echo
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
