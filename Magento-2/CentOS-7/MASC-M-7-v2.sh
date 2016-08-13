@@ -926,7 +926,7 @@ echo
         echo "${MY_DOMAIN%%.*}:${LINUX_USER_PASS}"  | chpasswd  >/dev/null 2>&1
         chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
         chmod 2770 ${MY_SHOP_PATH}
-        setfacl -Rdm u:${MY_DOMAIN%%.*}:rwx,g:${MY_DOMAIN%%.*}:rwx,o:--- ${MY_SHOP_PATH}
+        setfacl -Rdm u:${MY_DOMAIN%%.*}:rwx,g:${MY_DOMAIN%%.*}:rw,g::rw,o::- ${MY_SHOP_PATH}
         echo
         curl -sS https://getcomposer.org/installer | php >/dev/null 2>&1
         mv composer.phar /usr/local/bin/composer
@@ -1273,7 +1273,7 @@ wget -qO /etc/systemd/system/service-status-mail@.service ${STATUS_ALERT_SERVICE
 wget -qO /bin/service-status-mail.sh ${STATUS_ALERT_SCRIPT}
 sed -i "s/MAGEADMINEMAIL/${MAGE_ADMIN_EMAIL}/" /bin/service-status-mail.sh
 sed -i "s/DOMAINNAME/${MY_DOMAIN}/" /bin/service-status-mail.sh
-chmod +x /bin/service-status-mail.sh
+chmod u+x /bin/service-status-mail.sh
 systemctl daemon-reload
 echo
 echo "---> SETUP REALTIME MALWARE MONITOR WITH E-MAIL ALERTS"
@@ -1302,7 +1302,7 @@ echo
 echo "---> DOWNLOADING NETZ98 MAGERUN CLI TOOLS FOR MAGENTO 2"
 echo
 curl -o  /usr/local/bin/n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
-chmod +x /usr/local/bin/n98-magerun2.phar
+chmod u+x /usr/local/bin/n98-magerun2.phar
 echo
 echo "---> IMAGES OPTIMIZATION SCRIPT"
 wget -qO ${MY_SHOP_PATH}/wesley.pl ${REPO_MASCM_TMP}wesley.pl
@@ -1325,7 +1325,7 @@ wget -qO ${MY_SHOP_PATH}/wesley.pl ${REPO_MASCM_TMP}wesley.pl
 #done
 #END
 #echo "${MY_SHOP_PATH}/images_opt.sh &" >> /etc/rc.local
-chmod +x /etc/rc.local
+chmod u+x /etc/rc.local
 #echo
 #cat >> ${MY_SHOP_PATH}/cron_check.sh <<END
 ##!/bin/bash
@@ -1338,7 +1338,6 @@ echo
         echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/bin/magento cron:run" >> magecron
 	echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/update/cron.php" >> magecron
 	echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/bin/magento setup:cron:run" >> magecron
-        echo "#*/5 * * * * /bin/bash ${MY_SHOP_PATH}/cron_check.sh" >> magecron
         echo "5 8 * * 7 perl /etc/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
         crontab -u ${MY_DOMAIN%%.*} magecron
         rm magecron
@@ -1348,7 +1347,7 @@ su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:static-content:deploy ${M
 echo
 echo "---> FIXING PERMISSIONS "
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
-chmod u+x ${MY_SHOP_PATH}/{wesley.pl,bin/magento,pub/cron.php}
+chmod u+x ${MY_SHOP_PATH}/{wesley.pl,bin/magento}
 ## SERVER TIMEZONE SETUP
 sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
 timedatectl set-timezone ${MAGE_TIMEZONE}
