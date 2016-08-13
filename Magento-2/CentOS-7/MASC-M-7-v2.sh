@@ -921,7 +921,7 @@ echo
         echo "  Magento ${MAGENTO_VER} will be downloaded to:"
         GREENTXT ${MY_SHOP_PATH}
         mkdir -p ${MY_SHOP_PATH} && cd $_
-        useradd -d ${MY_SHOP_PATH%/*} -s /sbin/nologin -G apache,nginx ${MY_DOMAIN%%.*}  >/dev/null 2>&1
+        useradd -d ${MY_SHOP_PATH%/*} -s /sbin/nologin ${MY_DOMAIN%%.*}  >/dev/null 2>&1
         LINUX_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
         echo "${MY_DOMAIN%%.*}:${LINUX_USER_PASS}"  | chpasswd  >/dev/null 2>&1
         chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
@@ -965,6 +965,8 @@ echo
 usermod -G ${MY_DOMAIN%%.*} nginx
 sed -i "s/user = apache/user = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
 sed -i "s/group = apache/group = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
+sed -i "s,.*php_value[session.save_path].*,php_value[session.save_path] = ${MY_SHOP_PATH}/var/session," /etc/php-fpm.d/www.conf
+sed -i "s,.*php_value[soap.wsdl_cache_dir].*,php_value[soap.wsdl_cache_dir] = ${MY_SHOP_PATH}/tmp," /etc/php-fpm.d/www.conf
 echo
 pause '------> Press [Enter] key to continue'
 mkdir -p /root/mascm/
