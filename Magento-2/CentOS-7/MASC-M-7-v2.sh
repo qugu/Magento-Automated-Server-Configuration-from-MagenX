@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="12.2"
+MASCM_VER="12.3"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -1083,7 +1083,6 @@ GREENTXT "SYSTEM UPDATE CONFIGURATION YUM-CRON"
 echo
 sed -i '8s/.*/enabled=1/' /etc/yum.repos.d/remi-php70.repo
 sed -i '9s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
-sed -i '36s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
 echo
 sed -i 's/apply_updates = no/apply_updates = yes/' /etc/yum/yum-cron.conf
 sed -i "s/email_from = root@localhost/email_from = yum-cron@${MY_DOMAIN}/" /etc/yum/yum-cron.conf
