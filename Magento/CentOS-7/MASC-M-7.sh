@@ -1224,7 +1224,7 @@ echo
 echo
 cd ${MY_SHOP_PATH}
 su ${MY_DOMAIN%%.*} -s /bin/bash -c "mkdir -p var/log"
-chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH/*}
+chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
 rm -rf index.php.sample LICENSE_AFL.txt LICENSE.html LICENSE.txt RELEASE_NOTES.txt php.ini.sample dev
 chmod u+x mage cron.sh wesley.pl
 #${MY_SHOP_PATH}/zend_opcache.sh &
