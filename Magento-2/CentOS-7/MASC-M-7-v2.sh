@@ -599,8 +599,9 @@ END
             echo
             ## plug in service status alert
             cp /usr/lib/systemd/system/nginx.service /etc/systemd/system/nginx.service
-            sed -i "s/PrivateTmp=true/PrivateTmp=false/" /etc/systemd/system/nginx.service
             sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/nginx.service
+            sed -i "s,PIDFile=/run/nginx.pid,PIDFile=/var/run/nginx.pid," /etc/systemd/system/nginx.service
+            sed -i "s/PrivateTmp=true/PrivateTmp=false/" /etc/systemd/system/nginx.service
             systemctl daemon-reload
             systemctl enable nginx >/dev/null 2>&1
               else
