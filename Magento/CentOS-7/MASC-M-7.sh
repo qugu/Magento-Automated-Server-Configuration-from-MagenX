@@ -739,7 +739,7 @@ echo
         echo "${MY_DOMAIN%%.*}:${LINUX_USER_PASS}"  | chpasswd  >/dev/null 2>&1
         chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
         chmod 2770 ${MY_SHOP_PATH}
-        setfacl -Rdm u:${MY_DOMAIN%%.*}:rwx,g:${MY_DOMAIN%%.*}:rw,g::rw,o::- ${MY_SHOP_PATH}
+        setfacl -Rdm u:${MY_DOMAIN%%.*}:rwx,g:${MY_DOMAIN%%.*}:rwx,g::rw,o::- ${MY_SHOP_PATH}
         echo -n "      DOWNLOADING MAGENTO  "
         long_progress &
         pid="$!"
