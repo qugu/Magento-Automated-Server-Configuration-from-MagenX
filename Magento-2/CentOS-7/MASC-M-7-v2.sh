@@ -159,6 +159,16 @@ clear
 ###################################################################################
 echo
 echo
+# root?
+if [[ ${EUID} -ne 0 ]]; then
+  echo
+  REDTXT "ERROR: THIS SCRIPT MUST BE RUN AS ROOT!"
+  YELLOWTXT "------> USE SUPER-USER PRIVILEGES."
+  exit 1
+  else
+  GREENTXT "PASS: ROOT!"
+fi
+
 # network is up?
 host1=74.125.24.106
 host2=208.80.154.225
@@ -198,16 +208,6 @@ fi
         YELLOWTXT "NEW FILE SAVED TO MASCM_NEW"
         echo
   fi
-fi
-
-# root?
-if [[ ${EUID} -ne 0 ]]; then
-  echo
-  REDTXT "ERROR: THIS SCRIPT MUST BE RUN AS ROOT!"
-  YELLOWTXT "------> USE SUPER-USER PRIVILEGES."
-  exit 1
-  else
-  GREENTXT "PASS: ROOT!"
 fi
 
 # do we have CentOS 7?
