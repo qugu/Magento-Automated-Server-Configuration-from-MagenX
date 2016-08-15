@@ -224,10 +224,10 @@ fi
 # check if x64. if not, beat it...
 ARCH=$(uname -m)
 if [ "${ARCH}" = "x86_64" ]; then
-  GREENTXT "PASS: YOUR ARCHITECTURE IS 64-BIT"
+  GREENTXT "PASS: 64-BIT"
   else
   echo
-  REDTXT "ERROR: YOUR ARCHITECTURE IS 32-BIT?"
+  REDTXT "ERROR: 32-BIT SYSTEM?"
   YELLOWTXT "------> CONFIGURATION FOR 64-BIT ONLY."
   echo
   exit 1
