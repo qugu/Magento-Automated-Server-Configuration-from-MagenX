@@ -660,12 +660,12 @@ if [ "${repo_remi_install}" == "y" ];then
        fi
          echo
            echo
-            GREENTXT "Installation of Redis and Memcached packages:"
+            GREENTXT "Installation of Redis, Memcached and Sphinx packages:"
             echo
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum --enablerepo=remi -y -q install redis memcached >/dev/null 2>&1
+            yum --enablerepo=remi -y -q install redis memcached sphinx >/dev/null 2>&1
             stop_progress "$pid"
             rpm  --quiet -q redis
        if [ "$?" = 0 ]
@@ -690,9 +690,6 @@ sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis-${REDISPORT}.conf
 sed -i "s/redis.conf/redis-${REDISPORT}.conf/" /etc/systemd/system/redis-${REDISPORT}.service
 sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/redis-${REDISPORT}.service
 done
-systemctl daemon-reload
-systemctl enable redis-6379 >/dev/null 2>&1
-systemctl enable redis-6380 >/dev/null 2>&1
 echo
 cat > /etc/sysconfig/memcached <<END
 PORT="11211"
@@ -703,12 +700,16 @@ OPTIONS="-l 127.0.0.1"
 END
 ## plug in service status alert
 cp /usr/lib/systemd/system/memcached.service /etc/systemd/system/memcached.service
+cp /usr/lib/systemd/system/searchd.service /etc/systemd/system/searchd.service
 sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/memcached.service
+sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/searchd.service
 systemctl daemon-reload
-systemctl enable memcached   >/dev/null 2>&1
+systemctl enable redis-6379 >/dev/null 2>&1
+systemctl enable redis-6380 >/dev/null 2>&1
+systemctl enable memcached  >/dev/null 2>&1
                 else
                echo
-             REDTXT "REDIS INSTALLATION ERROR"
+             REDTXT "PACKAGES INSTALLATION ERROR"
          exit
        fi
          else
