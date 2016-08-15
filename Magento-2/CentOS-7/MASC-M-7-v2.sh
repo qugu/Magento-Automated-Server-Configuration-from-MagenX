@@ -1112,8 +1112,8 @@ echo
 usermod -G ${MY_DOMAIN%%.*} nginx
 sed -i "s/user = apache/user = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
 sed -i "s/group = apache/group = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value[session.save_path]    =.*,php_value[session.save_path] = ${MY_SHOP_PATH}/var/session," /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value[soap.wsdl_cache_dir]  =.*,php_value[soap.wsdl_cache_dir] = ${MY_SHOP_PATH}/tmp," /etc/php-fpm.d/www.conf
+sed -i "s,.*php_value\[session.save_path\].*,php_value\[session.save_path\] = ${MY_SHOP_PATH}/var/session," /etc/php-fpm.d/www.conf
+sed -i "s,.*php_value\[soap.wsdl_cache_dir\].*,php_value\[soap.wsdl_cache_dir\] = ${MY_SHOP_PATH}/tmp," /etc/php-fpm.d/www.conf
 echo
 GREENTXT "PROFTPD CONFIGURATION"
 pause '------> Press [Enter] key to continue'
