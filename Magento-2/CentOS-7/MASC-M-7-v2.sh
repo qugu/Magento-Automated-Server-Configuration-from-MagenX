@@ -5,13 +5,14 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="12.3"
+MASCM_VER="14.1"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
 # Software versions
-MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/releases 2>&1 | head -12 | grep 'tag_name' | grep -oP '(?<=")\d.*(?=")')
+MAGENTO_VER="2.1.0"
+#MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/releases 2>&1 | head -12 | grep 'tag_name' | grep -oP '(?<=")\d.*(?=")')
 REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
 
 REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/"
@@ -157,7 +158,21 @@ clear
 #                                     START CHECKS                                #
 ###################################################################################
 echo
-    echo
+echo
+# network is up?
+host1=74.125.24.106
+host2=208.80.154.225
+RESULT=$(((ping -w3 -c2 ${host1} || ping -w3 -c2 ${host2}) > /dev/null 2>&1) && echo "up" || (echo "down" && exit 1))
+if [[ ${RESULT} == up ]]; then
+  GREENTXT "PASS: NETWORK IS UP. GREAT, LETS START!"
+  else
+  echo
+  REDTXT "ERROR: NETWORK IS DOWN?"
+  YELLOWTXT "------> PLEASE CHECK YOUR NETWORK SETTINGS."
+  echo
+  echo
+  exit 1
+fi
         MD5_NEW=$(curl -sL ${MASCM_BASE} > MASCM_NEW && md5sum MASCM_NEW | awk '{print $1}')
         MD5_OLD=$(md5sum ${SELF} | awk '{print $1}')
             if [[ "${MD5_NEW}" == "${MD5_OLD}" ]]; then
@@ -184,8 +199,7 @@ echo
         echo
   fi
 fi
-echo
-echo
+
 # root?
 if [[ ${EUID} -ne 0 ]]; then
   echo
@@ -241,22 +255,6 @@ if [ "${SELINUX}" != "disabled" ]; then
   GREENTXT "PASS: SELINUX IS DISABLED"
 fi
 fi
-
-# network is up?
-host1=74.125.24.106
-host2=208.80.154.225
-RESULT=$(((ping -w3 -c2 ${host1} || ping -w3 -c2 ${host2}) > /dev/null 2>&1) && echo "up" || (echo "down" && exit 1))
-if [[ ${RESULT} == up ]]; then
-  GREENTXT "PASS: NETWORK IS UP. GREAT, LETS START!"
-  else
-  echo
-  REDTXT "ERROR: NETWORK IS DOWN?"
-  YELLOWTXT "------> PLEASE CHECK YOUR NETWORK SETTINGS."
-  echo
-  echo
-  exit 1
-fi
-echo
 echo
 if grep -q "yes" /root/mascm/.systest >/dev/null 2>&1 ; then
   BLUETXT "the systems test has been made already"
@@ -332,6 +330,8 @@ if grep -q "yes" /root/mascm/.sshport >/dev/null 2>&1 ; then
 BLUETXT "ssh port has been changed already"
 else
 if grep -q "Port 22" /etc/ssh/sshd_config >/dev/null 2>&1 ; then
+REDTXT "DEFAULT SSH PORT :22 DETECTED"
+echo
 echo -n "---> Lets change the default ssh port now? [y/n][n]:"
 read new_ssh_set
 if [ "${new_ssh_set}" == "y" ];then
@@ -350,12 +350,9 @@ if [ "${new_ssh_set}" == "y" ];then
       sed -i "s/.*UseDNS.*/UseDNS no/" /etc/ssh/sshd_config
      echo
         GREENTXT "SSH PORT AND SETTINGS HAS BEEN UPDATED  -  OK"
-        echo "yes" > /root/mascm/.sshport
         /bin/systemctl restart sshd.service
         ss -tlp | grep sshd
      echo
-fi
-echo
 echo
 REDTXT "!IMPORTANT: NOW OPEN A NEW SSH SESSION WITH THE NEW PORT!"
 REDTXT "!IMPORTANT: DO NOT CLOSE THE CURRENT SESSION!"
@@ -365,13 +362,16 @@ read new_ssh_test
 if [ "${new_ssh_test}" == "y" ];then
       echo
         GREENTXT "REMEMBER THE NEW SSH PORT NOW: ${NEW_SSH_PORT}"
+        echo "yes" > /root/mascm/.sshport
         else
+	echo
         mv /etc/ssh/sshd_config.BACK /etc/ssh/sshd_config
         REDTXT "RESTORING sshd_config FILE BACK TO DEFAULTS ${GREEN} [ok]"
         /bin/systemctl restart sshd.service
         echo
         GREENTXT "SSH PORT HAS BEEN RESTORED  -  OK"
         ss -tlp | grep sshd
+fi
 fi
 fi
 fi
@@ -412,13 +412,14 @@ showMenu () {
 printf "\033c"
     echo
       echo
-        echo -e "${DGREYBG}${BOLD}  MAGENTO SERVER CONFIGURATION v.${MASCM_VER}  ${RESET}"
+        echo -e "${DGREYBG}${BOLD}  MAGENTO ${MAGENTO_VER} SERVER CONFIGURATION v.${MASCM_VER}  ${RESET}"
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
         echo
         WHITETXT "-> Install repository and LEMP packages :  ${YELLOW}\tlemp"
-        WHITETXT "-> Download latest Magento package      :  ${YELLOW}\t\tmagento"
-        WHITETXT "-> Setup Magento database               :  ${YELLOW}\t\t\tdatabase"
-        WHITETXT "-> Install Magento (no sample data)     :  ${YELLOW}\t\tinstall"
+        WHITETXT "-> Download Magento latest packages     :  ${YELLOW}\t\tmagento"
+	WHITETXT "-> Setup Magento database               :  ${YELLOW}\t\t\tdatabase"
+	WHITETXT "-> Install Magento with Composer        :  ${YELLOW}\t\tinstall"
+	WHITETXT "-> Post-Install configuration           :  ${YELLOW}\t\tpostconfig"
         echo
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
         echo
@@ -446,6 +447,7 @@ else
 ## install all extra packages
 GREENTXT "INSTALLING EXTRA PACKAGES. PLEASE WAIT"
 yum -q -y install ${REPO_FAN} >/dev/null 2>&1
+sed -i '0,/gpgkey/s//includepkgs=curl libmetalink libpsl libcurl libssh2\n&/' /etc/yum.repos.d/city-fan.org.repo
 yum -q -y install ${EXTRA_PACKAGES} ${PERL_MODULES[@]/#/perl-} >/dev/null 2>&1
 echo
 GREENTXT "CHECKING UPDATES. PLEASE WAIT"
@@ -533,7 +535,6 @@ if [ "${repo_percona_install}" == "y" ];then
                 echo
               echo
               ## get mysql tools
-              wget -qO /etc/mysqltuner.pl ${MYSQL_TUNER}
               wget -qO - ${MYSQL_TOP} | tar -xzp && cd mytop*
               perl Makefile.PL && make && make install  >/dev/null 2>&1
               yum -y -q install percona-toolkit >/dev/null 2>&1
@@ -542,7 +543,7 @@ if [ "${repo_percona_install}" == "y" ];then
               echo
               WHITETXT "Percona Toolkit with pt- commands"
               WHITETXT "mytop"
-              WHITETXT "perl /etc/mysqltuner.pl"
+              WHITETXT "perl mysqltuner.pl"
               echo
               else
               echo
@@ -911,15 +912,15 @@ printf "\033c"
 ###################################################################################
 echo
 echo "-------------------------------------------------------------------------------------"
-BLUEBG "| DOWNLOADING MAGENTO AND CONFIGURING WEBSTACK |"
+BLUEBG "| DOWNLOADING MAGENTO ${MAGENTO_VER} |"
 echo "-------------------------------------------------------------------------------------"
 echo
 echo
      read -e -p "---> Enter your domain name (without www.): " -i "myshop.com" MY_DOMAIN
      MY_SHOP_PATH="/home/${MY_DOMAIN%%.*}/public_html"
      echo
-        echo "  Magento ${MAGENTO_VER} will be downloaded to:"
-        GREENTXT ${MY_SHOP_PATH}
+        echo "--->  Magento ${MAGENTO_VER} will be downloaded to:"
+        echo "--->  ${MY_SHOP_PATH}"
         mkdir -p ${MY_SHOP_PATH} && cd $_
         useradd -d ${MY_SHOP_PATH%/*} -s /sbin/nologin ${MY_DOMAIN%%.*}  >/dev/null 2>&1
         LINUX_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
@@ -938,185 +939,10 @@ echo
 WHITETXT "============================================================================="
 GREENTXT "      == MAGENTO DOWNLOADED AND READY FOR INSTALLATION =="
 WHITETXT "============================================================================="
-echo
-echo
-echo "---> NGINX CONFIGURATION"
-echo
-wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}fastcgi_params
-wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}nginx.conf
-
-mkdir -p /etc/nginx/sites-enabled
-mkdir -p /etc/nginx/sites-available && cd $_
-wget -q ${NGINX_BASE}sites-available/default.conf
-wget -q ${NGINX_BASE}sites-available/magento2.conf
-
-sed -i "s/example.com/${MY_DOMAIN}/g" /etc/nginx/sites-available/magento2.conf
-sed -i "s,/var/www/html,${MY_SHOP_PATH},g" /etc/nginx/sites-available/magento2.conf
-
-ln -s /etc/nginx/sites-available/magento2.conf /etc/nginx/sites-enabled/magento2.conf
-ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
-
-mkdir -p /etc/nginx/conf_m2 && cd /etc/nginx/conf_m2/
-for CONFIG in ${NGINX_EXTRA_CONF}
-do
-wget -q ${NGINX_EXTRA_CONF_URL}${CONFIG}
-done
-echo
-usermod -G ${MY_DOMAIN%%.*} nginx
-sed -i "s/user = apache/user = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
-sed -i "s/group = apache/group = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value[session.save_path].*,php_value[session.save_path] = ${MY_SHOP_PATH}/var/session," /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value[soap.wsdl_cache_dir].*,php_value[soap.wsdl_cache_dir] = ${MY_SHOP_PATH}/tmp," /etc/php-fpm.d/www.conf
-echo
-pause '------> Press [Enter] key to continue'
 mkdir -p /root/mascm/
 cat >> /root/mascm/.mascm_index <<END
-webshop ${MY_DOMAIN}    ${MY_SHOP_PATH}    ${MY_DOMAIN%%.*}
+webshop ${MY_DOMAIN}    ${MY_SHOP_PATH}    ${MY_DOMAIN%%.*}   ${LINUX_USER_PASS}
 END
-echo
-###################################################################################
-#                   LOADING ALL THE EXTRA TOOLS FROM HERE                         #
-###################################################################################
-echo
-GREENTXT "Now we set up the PROFTPD server"
-pause '------> Press [Enter] key to continue'
-echo
-     wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
-     ## change proftpd config
-     SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
-     USER_IP=$(last -i | grep "root.*still logged in" | awk 'NR==1{print $3}')
-     USER_GEOIP=$(geoiplookup ${USER_IP} | awk '{print $4}')
-     FTP_PORT=$(shuf -i 5121-5132 -n 1)
-     sed -i "s/server_sftp_port/${FTP_PORT}/" /etc/proftpd.conf
-     sed -i "s/server_ip_address/${SERVER_IP_ADDR}/" /etc/proftpd.conf
-     sed -i "s/client_ip_address/${USER_IP}/" /etc/proftpd.conf
-     sed -i "s/geoip_country_code/${USER_GEOIP//,/}/" /etc/proftpd.conf
-     sed -i "s/sftp_domain/${MY_DOMAIN}/" /etc/proftpd.conf
-     sed -i "s/FTP_USER/${MY_DOMAIN%%.*}/" /etc/proftpd.conf
-     echo
-     ## plug in service status alert
-     cp /usr/lib/systemd/system/proftpd.service /etc/systemd/system/proftpd.service
-     sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/proftpd.service
-     systemctl daemon-reload
-     systemctl enable proftpd.service >/dev/null 2>&1
-     /bin/systemctl restart proftpd.service
-     echo
-     WHITETXT "We have created a user: ${REDBG}${MY_DOMAIN%%.*}"
-     WHITETXT "With a password: ${REDBG}${LINUX_USER_PASS}"
-     WHITETXT "FTP PORT: ${REDBG}${FTP_PORT}"
-     WHITETXT "Your GeoIP location: ${REDBG}${USER_GEOIP//,/}"
-     WHITETXT "PROFTPD config file /etc/proftpd.conf"
-echo
-GREENTXT "Installing phpMyAdmin - advanced MySQL interface"
-pause '------> Press [Enter] key to continue'
-echo
-     cd ${MY_SHOP_PATH}
-     PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)
-     BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-     yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
-     sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
-     sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m2/phpmyadmin.conf
-     echo
-     GREENTXT "phpMyAdmin was installed to http://www.${MY_DOMAIN}/mysql_${PMA_FOLDER}/"
-echo
-echo
-echo
-GREENTXT "INSTALLING OPCACHE GUI"
-pause '------> Press [Enter] key to continue'
-echo
-    cd ${MY_SHOP_PATH}/pub/
-    OPCACHE_FILE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
-    wget -qO ${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
-    echo
-    GREENTXT "OPCACHE interface was installed to http://www.${MY_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php"
-echo
-echo
-echo
-#GREENTXT "INSTALLING Magento folder monitor and opcache invalidation script"
-#pause '------> Press [Enter] key to continue'
-#cat > ${MY_SHOP_PATH}/zend_opcache.sh <<END
-##!/bin/bash
-### monitor magento folder and log modified files
-#/usr/bin/inotifywait -e modify,move \\
-#    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
-#    --excludei '/(cache|log|session|report|locks|media|skin|tmp)/|\.(xml|html?|css|js|gif|jpe?g|png|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|sh|pl)~?' \\
-#    ${MY_SHOP_PATH}/ | while read line; do
-#    echo "\$line " >> ${MY_SHOP_PATH}/var/log/zend_opcache_monitor.log
-#    FILE=\$(echo \${line} | cut -d' ' -f1 | sed -e 's/\/\./\//g' | cut -f1-2 -d'.')
-#    TARGETEXT="(php|phtml)"
-#    EXTENSION="\${FILE##*.}"
-#  if [[ "\$EXTENSION" =~ \$TARGETEXT ]];
-#    then
-#   curl --silent "http://www.${MY_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php?page=invalidate&file=\${FILE}" >/dev/null 2>&1
-# fi
-#done
-#END
-#echo
-#echo
-#    GREENTXT "Script was installed to ${MY_SHOP_PATH}/zend_opcache.sh"
-echo
-#echo
-#    echo "${MY_SHOP_PATH}/zend_opcache.sh &" >> /etc/rc.local
-#echo
-echo
-if yum list installed "varnish" >/dev/null 2>&1; then
-GREENTXT "VARNISH DAEMON CONFIGURATION FILE"
-echo
-wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
-sed -i "s,VCL_PATH,/etc/varnish/default.vcl,g" /etc/systemd/system/varnish.service
-systemctl daemon-reload >/dev/null 2>&1
-systemctl enable varnish >/dev/null 2>&1
-echo
-echo 'Varnish secret key -->'$(cat /etc/varnish/secret)'<-- copy it'
-echo
-WHITETXT "Varnish settings were loaded ${GREEN} [ok]"
-echo
-fi
-echo
-/bin/systemctl restart nginx.service >/dev/null 2>&1
-/bin/systemctl restart php-fpm.service >/dev/null 2>&1
-service redis-6379 restart  >/dev/null 2>&1
-service redis-6380 restart  >/dev/null 2>&1
-systemctl restart memcached  >/dev/null 2>&1
-echo
-GREENTXT "SYSTEM UPDATE CONFIGURATION YUM-CRON"
-echo
-sed -i '8s/.*/enabled=1/' /etc/yum.repos.d/remi-php70.repo
-sed -i '9s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
-echo
-sed -i 's/apply_updates = no/apply_updates = yes/' /etc/yum/yum-cron.conf
-sed -i "s/email_from = root@localhost/email_from = yum-cron@${MY_DOMAIN}/" /etc/yum/yum-cron.conf
-sed -i "s/email_to = root/email_to = admin@${MY_DOMAIN}/" /etc/yum/yum-cron.conf
-echo
-systemctl enable yum-cron
-systemctl restart yum-cron
-echo
-GREENTXT "LETSENCRYPT SSL CERTIFICATE REQUEST"
-echo
-DNS_DOMAIN=$(getent hosts ${MY_DOMAIN} | awk '{ print $1 }')
-SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
-
-if [ "${DNS_DOMAIN}" != "${SERVER_IP_ADDR}" ] ; then
-    echo
-        REDWTXT "DNS A record and your servers IP address do not match"
-	YELLOWTXT "Your servers ip address ${SERVER_IP_ADDR}"
-	YELLOWTXT "Domain ${MY_DOMAIN} resolves to ${DNS_DOMAIN}"
-	YELLOWTXT "Please change your DNS A record to this servers IP address"
-	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --standalone --email admin@${MY_DOMAIN} -d ${MY_DOMAIN} -d www.${MY_DOMAIN}"
-	echo
-	GREENTXT "WE CAN GENERATE DHPARAM FILE NOW"
-	echo
-        openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096
-        echo
-else
-    service nginx stop
-    /usr/bin/certbot certonly --standalone --email admin@${MY_DOMAIN} -d ${MY_DOMAIN} -d www.${MY_DOMAIN}
-    service nginx start
-fi
-echo
-echo "-------------------------------------------------------------------------------------"
-BLUEBG " CONFIGURATION IS COMPLETED "
-echo "-------------------------------------------------------------------------------------"
 echo
 pause '------> Press [Enter] key to show menu'
 printf "\033c"
@@ -1127,10 +953,9 @@ printf "\033c"
 "database")
 printf "\033c"
 WHITETXT "============================================================================="
+GREENTXT "CREATING MAGENTO DATABASE AND DATABASE USER"
+echo
 /bin/systemctl start mysql.service
-echo
-WHITETXT "CREATING MAGENTO DATABASE AND DATABASE USER"
-echo
 pause '------> Press [Enter] key to generate MySQL ROOT strong password'
    echo
        MYSQL_ROOT_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
@@ -1162,45 +987,38 @@ echo
 GREENTXT "MAGENTO DATABASE ${RED} ${MAGE_DB_NAME} ${GREEN}AND USER ${RED} ${MAGE_DB_USER_NAME} ${GREEN}CREATED, PASSWORD IS ${RED} ${MAGE_DB_PASS}"
 GREENTXT "MySQL ROOT password: ${REDBG}${MYSQL_ROOT_PASS}"
 echo
-
 cat > /root/.mytop <<END
 user=root
 pass=${MYSQL_ROOT_PASS}
 db=mysql
 END
-
 cat > /root/.my.cnf <<END
 [client]
 user=root
 password=${MYSQL_ROOT_PASS}
 END
-
 echo
 mkdir -p /root/mascm/
 cat >> /root/mascm/.mascm_index <<END
 database        ${MAGE_DB_HOST}   ${MAGE_DB_NAME}   ${MAGE_DB_USER_NAME}     ${MAGE_DB_PASS}    ${MYSQL_ROOT_PASS}
 END
 echo
-echo "the end"
 echo
-echo
-echo
-pause '---> Press [Enter] key to show the menu'
+pause '------> Press [Enter] key to show menu'
+printf "\033c"
 ;;
 ###################################################################################
 #                                MAGENTO INSTALLATION                             #
 ###################################################################################
 "install")
 printf "\033c"
-WHITETXT "============================================================================="
-WHITETXT "vvv   MAGENTO ${MAGENTO_VER} PACKAGES INSTALLATION WITH COMPOSER   vvv"
+echo "-------------------------------------------------------------------------------------"
+BLUEBG   "vvv   MAGENTO ${MAGENTO_VER} INSTALLATION WITH COMPOSER   vvv"
+echo "-------------------------------------------------------------------------------------"
 echo
 MY_SHOP_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
 cd ${MY_SHOP_PATH}
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
-echo
-echo
-WHITETXT "============================================================================="
 echo
 echo "---> ENTER SETUP INFORMATION"
 DB_HOST=$(awk '/database/ { print $2 }' /root/mascm/.mascm_index)
@@ -1234,7 +1052,7 @@ echo
 cat >> /root/mascm/.mascm_index <<END
 adminpass ${MAGE_ADMIN_PASS}
 END
-GREENTXT "NOW SETUP MAGENTO ${MAGENTO_VER} WITHOUT SAMPLE DATA"
+GREENTXT "INSTALL MAGENTO ${MAGENTO_VER} WITHOUT SAMPLE DATA"
 echo
 pause '---> Press [Enter] key to continue'
 echo
@@ -1256,13 +1074,148 @@ su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:install --base-url=${MAGE
 --use-rewrites=1"
 echo
 echo
-pause '---> Press [Enter] key to continue'
+pause '------> Press [Enter] key to show menu'
+printf "\033c"
+;;
+###################################################################################
+#                                SYSTEM CONFIGURATION                             #
+###################################################################################
+"postconfig")
+printf "\033c"
+echo "-------------------------------------------------------------------------------------"
+BLUEBG " POST-INSTALL CONFIGURATION "
+echo "-------------------------------------------------------------------------------------"
 echo
-WHITETXT "-= FINAL MAINTENANCE AND CLEANUP =-"
+echo
+## "NGINX CONFIGURATION"
+echo
+wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}fastcgi_params
+wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}nginx.conf
+
+mkdir -p /etc/nginx/sites-enabled
+mkdir -p /etc/nginx/sites-available && cd $_
+wget -q ${NGINX_BASE}sites-available/default.conf
+wget -q ${NGINX_BASE}sites-available/magento2.conf
+
+sed -i "s/example.com/${MY_DOMAIN}/g" /etc/nginx/sites-available/magento2.conf
+sed -i "s,/var/www/html,${MY_SHOP_PATH},g" /etc/nginx/sites-available/magento2.conf
+
+ln -s /etc/nginx/sites-available/magento2.conf /etc/nginx/sites-enabled/magento2.conf
+ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
+
+mkdir -p /etc/nginx/conf_m2 && cd /etc/nginx/conf_m2/
+for CONFIG in ${NGINX_EXTRA_CONF}
+do
+wget -q ${NGINX_EXTRA_CONF_URL}${CONFIG}
+done
+echo
+usermod -G ${MY_DOMAIN%%.*} nginx
+sed -i "s/user = apache/user = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
+sed -i "s/group = apache/group = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
+sed -i "s,.*php_value[session.save_path]    =.*,php_value[session.save_path] = ${MY_SHOP_PATH}/var/session," /etc/php-fpm.d/www.conf
+sed -i "s,.*php_value[soap.wsdl_cache_dir]  =.*,php_value[soap.wsdl_cache_dir] = ${MY_SHOP_PATH}/tmp," /etc/php-fpm.d/www.conf
+echo
+GREENTXT "PROFTPD CONFIGURATION"
+pause '------> Press [Enter] key to continue'
+echo
+     wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
+     ## change proftpd config
+     SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
+     USER_IP=$(last -i | grep "root.*still logged in" | awk 'NR==1{print $3}')
+     USER_GEOIP=$(geoiplookup ${USER_IP} | awk 'NR==1{print substr($4,1,2)}')
+     FTP_PORT=$(shuf -i 5121-5132 -n 1)
+     sed -i "s/server_sftp_port/${FTP_PORT}/" /etc/proftpd.conf
+     sed -i "s/server_ip_address/${SERVER_IP_ADDR}/" /etc/proftpd.conf
+     sed -i "s/client_ip_address/${USER_IP}/" /etc/proftpd.conf
+     sed -i "s/geoip_country_code/${USER_GEOIP}/" /etc/proftpd.conf
+     sed -i "s/sftp_domain/${MY_DOMAIN}/" /etc/proftpd.conf
+     sed -i "s/FTP_USER/${MY_DOMAIN%%.*}/" /etc/proftpd.conf
+     echo
+     ## plug in service status alert
+     cp /usr/lib/systemd/system/proftpd.service /etc/systemd/system/proftpd.service
+     sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/proftpd.service
+     systemctl daemon-reload
+     systemctl enable proftpd.service >/dev/null 2>&1
+     /bin/systemctl restart proftpd.service
+     echo
+     WHITETXT "We have created a user: ${REDBG}${MY_DOMAIN%%.*}"
+     WHITETXT "With a password: ${REDBG}${LINUX_USER_PASS}"
+     WHITETXT "FTP PORT: ${REDBG}${FTP_PORT}"
+     WHITETXT "Your GeoIP location: ${REDBG}${USER_GEOIP}"
+     WHITETXT "PROFTPD config file /etc/proftpd.conf"
+echo
+GREENTXT "INSTALLING PHPMYADMIN - ADVANCED MYSQL INTERFACE"
+pause '------> Press [Enter] key to continue'
+echo
+     cd ${MY_SHOP_PATH}
+     PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)
+     BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
+     yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
+     sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
+     sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m2/phpmyadmin.conf
+     echo
+     GREENTXT "phpMyAdmin was installed to http://www.${MY_DOMAIN}/mysql_${PMA_FOLDER}/"
 echo
 echo
-echo "---> CREATE SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
-cat >> /etc/logrotate.d/magento <<END
+echo
+GREENTXT "INSTALLING OPCACHE GUI"
+pause '------> Press [Enter] key to continue'
+echo
+    cd ${MY_SHOP_PATH}/pub/
+    OPCACHE_FILE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
+    wget -qO ${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
+    echo
+    GREENTXT "Opcache interface was installed to http://www.${MY_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php"
+echo
+echo
+if yum list installed "varnish" >/dev/null 2>&1; then
+GREENTXT "VARNISH DAEMON CONFIGURATION FILE"
+echo
+wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
+sed -i "s,VCL_PATH,/etc/varnish/default.vcl,g" /etc/systemd/system/varnish.service
+systemctl daemon-reload >/dev/null 2>&1
+systemctl enable varnish >/dev/null 2>&1
+echo
+echo 'Varnish secret key -->'$(cat /etc/varnish/secret)'<-- copy it'
+echo
+fi
+echo
+GREENTXT "SYSTEM UPDATE CONFIGURATION YUM-CRON"
+echo
+sed -i '8s/.*/enabled=1/' /etc/yum.repos.d/remi-php70.repo
+sed -i '9s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
+echo
+sed -i 's/apply_updates = no/apply_updates = yes/' /etc/yum/yum-cron.conf
+sed -i "s/email_from = root@localhost/email_from = yum-cron@${MY_DOMAIN}/" /etc/yum/yum-cron.conf
+sed -i "s/email_to = root/email_to = admin@${MY_DOMAIN}/" /etc/yum/yum-cron.conf
+echo
+systemctl enable yum-cron
+systemctl restart yum-cron
+echo
+GREENTXT "LETSENCRYPT SSL CERTIFICATE REQUEST"
+echo
+DNS_DOMAIN=$(getent hosts ${MY_DOMAIN} | awk '{ print $1 }')
+SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
+if [ "${DNS_DOMAIN}" != "${SERVER_IP_ADDR}" ] ; then
+    echo
+    REDTXT "DNS A record and your servers IP address do not match"
+	YELLOWTXT "Your servers ip address ${SERVER_IP_ADDR}"
+	YELLOWTXT "Domain ${MY_DOMAIN} resolves to ${DNS_DOMAIN}"
+	YELLOWTXT "Please change your DNS A record to this servers IP address"
+	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --standalone --email admin@${MY_DOMAIN} -d ${MY_DOMAIN} -d www.${MY_DOMAIN}"
+	echo
+	GREENTXT "WE CAN GENERATE DHPARAM FILE NOW"
+	echo
+        openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096
+        echo
+    else
+    service nginx stop
+    /usr/bin/certbot certonly --standalone --email admin@${MY_DOMAIN} -d ${MY_DOMAIN} -d www.${MY_DOMAIN}
+    service nginx start
+fi
+echo
+GREENTXT "CREATING SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
+cat > /etc/logrotate.d/magento <<END
 ${MY_SHOP_PATH}/var/log/*.log
 {
 weekly
@@ -1273,7 +1226,7 @@ compress
 }
 END
 echo
-echo "---> SETUP SERVICE STATUS WITH E-MAIL ALERTS"
+GREENTXT "SETUP SERVICE STATUS WITH E-MAIL ALERTS"
 echo
 wget -qO /etc/systemd/system/service-status-mail@.service ${STATUS_ALERT_SERVICE}
 wget -qO /bin/service-status-mail.sh ${STATUS_ALERT_SCRIPT}
@@ -1282,8 +1235,8 @@ sed -i "s/DOMAINNAME/${MY_DOMAIN}/" /bin/service-status-mail.sh
 chmod u+x /bin/service-status-mail.sh
 systemctl daemon-reload
 echo
-echo "---> SETUP REALTIME MALWARE MONITOR WITH E-MAIL ALERTS"
-REDTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
+GREENTXT "SETUP REALTIME MALWARE MONITOR WITH E-MAIL ALERTS"
+YELLOWTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
 echo
 cd /usr/local/src
 wget -q ${MALDET}
@@ -1305,66 +1258,43 @@ echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
 maldet --monitor /usr/local/maldetect/monitor_paths
 echo
 echo
-echo "---> DOWNLOADING NETZ98 MAGERUN CLI TOOLS FOR MAGENTO 2"
+GREENTXT "DOWNLOADING NETZ98 MAGERUN CLI TOOLS FOR MAGENTO 2"
 echo
 curl -o  /usr/local/bin/n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
 chmod u+x /usr/local/bin/n98-magerun2.phar
 echo
-echo "---> IMAGES OPTIMIZATION SCRIPT"
-wget -qO ${MY_SHOP_PATH}/wesley.pl ${REPO_MASCM_TMP}wesley.pl
-#echo
-#cat >> ${MY_SHOP_PATH}/images_opt.sh <<END
-##!/bin/bash
-## monitor media folder and optimize new images
-#/usr/bin/inotifywait -e create \\
-#    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
-#    --excludei '\.(xml|php|phtml|html?|css|js|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|opt|prog|crush)~?' \\
-#    ${MY_SHOP_PATH}/pub/media | while read line; do
-#    echo "\${line} " >> ${MY_SHOP_PATH}/var/log/images_optimization.log
-#    FILE=\$(echo \${line} | cut -d' ' -f1)
-#    TARGETEXT="(jpg|jpeg|png|gif)"
-#    EXTENSION="\${FILE##*.}"
-#  if [[ "\${EXTENSION}" =~ \${TARGETEXT} ]];
-#    then
-#   su ${MY_DOMAIN%%.*} -s /bin/bash -c "${MY_SHOP_PATH}/wesley.pl \${FILE} >/dev/null 2>&1"
-#  fi
-#done
-#END
-#echo "${MY_SHOP_PATH}/images_opt.sh &" >> /etc/rc.local
+GREENTXT "IMAGES OPTIMIZATION SCRIPT"
+wget -qO ${MY_SHOP_PATH}/imgopt.pl ${REPO_MASCM_TMP}wesley.pl
 chmod u+x /etc/rc.local
-#echo
-#cat >> ${MY_SHOP_PATH}/cron_check.sh <<END
-##!/bin/bash
-#pgrep images_opt.sh > /dev/null || ${MY_SHOP_PATH}/images_opt.sh &
-#pgrep zend_opcache.sh > /dev/null || ${MY_SHOP_PATH}/zend_opcache.sh &
-#END
 echo
         crontab -l -u ${MY_DOMAIN%%.*} > magecron
         echo "MAILTO="${MAGE_ADMIN_EMAIL}"" >> magecron
         echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/bin/magento cron:run" >> magecron
-	echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/update/cron.php" >> magecron
-	echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/bin/magento setup:cron:run" >> magecron
-        echo "5 8 * * 7 perl /etc/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
+	    echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/update/cron.php" >> magecron
+	    echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/bin/magento setup:cron:run" >> magecron
+        echo "5 8 * * 7 perl ${MY_SHOP_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
         crontab -u ${MY_DOMAIN%%.*} magecron
         rm magecron
 echo
 cd ${MY_SHOP_PATH}
 su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:static-content:deploy ${MAGE_LOCALE}"
 echo
-echo "---> FIXING PERMISSIONS "
+wget -qO ${MY_SHOP_PATH}/mysqltuner.pl ${MYSQL_TUNER}
+echo
 chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
-chmod u+x ${MY_SHOP_PATH}/{wesley.pl,bin/magento}
-## SERVER TIMEZONE SETUP
+chmod u+x ${MY_SHOP_PATH}/{imgopt.pl,mysqltuner.pl,bin/magento}
+echo
+GREENTXT "SERVER TIMEZONE SETUP"
 sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
 timedatectl set-timezone ${MAGE_TIMEZONE}
-#echo
-#${MY_SHOP_PATH}/zend_opcache.sh &
-#${MY_SHOP_PATH}/images_opt.sh &
 echo
 echo
     GREENTXT "NOW CHECK EVERYTHING AND LOGIN TO YOUR BACKEND"
     echo
   echo
+echo "-------------------------------------------------------------------------------------"
+BLUEBG " POST-INSTALL CONFIGURATION IS COMPLETED "
+echo "-------------------------------------------------------------------------------------"
 echo
 pause '---> Press [Enter] key to show menu'
 ;;
