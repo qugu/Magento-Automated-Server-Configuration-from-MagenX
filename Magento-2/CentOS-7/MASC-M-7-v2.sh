@@ -1053,7 +1053,6 @@ updown_menu "$(bin/magento info:currency:list | sed "s/[|+-]//g" | awk 'NR > 3 {
 updown_menu "$(bin/magento info:timezone:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_TIMEZONE
 echo
 echo
-END
 GREENTXT "INSTALL MAGENTO ${MAGENTO_VER} WITHOUT SAMPLE DATA"
 echo
 pause '---> Press [Enter] key to continue'
