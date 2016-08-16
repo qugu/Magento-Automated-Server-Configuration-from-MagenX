@@ -918,24 +918,24 @@ BLUEBG "| DOWNLOADING MAGENTO ${MAGENTO_VER} |"
 echo "-------------------------------------------------------------------------------------"
 echo
 echo
-     read -e -p "---> Enter your domain name (without www.): " -i "myshop.com" MY_DOMAIN
-     MY_SHOP_PATH="/home/${MY_DOMAIN%%.*}/public_html"
+     read -e -p "---> Enter your domain name (without www.): " -i "myshop.com" MAGE_DOMAIN
+     MAGE_WEB_ROOT_PATH="/home/${MAGE_DOMAIN%%.*}/public_html"
      echo
         echo "--->  Magento ${MAGENTO_VER} will be downloaded to:"
-        echo "--->  ${MY_SHOP_PATH}"
-        mkdir -p ${MY_SHOP_PATH} && cd $_
-        useradd -d ${MY_SHOP_PATH%/*} -s /sbin/nologin ${MY_DOMAIN%%.*}  >/dev/null 2>&1
-        LINUX_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
-        echo "${MY_DOMAIN%%.*}:${LINUX_USER_PASS}"  | chpasswd  >/dev/null 2>&1
-        chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
-        chmod 2770 ${MY_SHOP_PATH}
-        setfacl -Rdm u:${MY_DOMAIN%%.*}:rwx,g:${MY_DOMAIN%%.*}:rwx,g::rw-,o::- ${MY_SHOP_PATH}
+        echo "--->  ${MAGE_WEB_ROOT_PATH}"
+        mkdir -p ${MAGE_WEB_ROOT_PATH} && cd $_
+        useradd -d ${MAGE_WEB_ROOT_PATH%/*} -s /sbin/nologin ${MAGE_DOMAIN%%.*}  >/dev/null 2>&1
+        MAGE_WEB_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
+        echo "${MAGE_DOMAIN%%.*}:${MAGE_WEB_USER_PASS}"  | chpasswd  >/dev/null 2>&1
+        chown -R ${MAGE_DOMAIN%%.*}:${MAGE_DOMAIN%%.*} ${MAGE_WEB_ROOT_PATH%/*}
+        chmod 2770 ${MAGE_WEB_ROOT_PATH}
+        setfacl -Rdm u:${MAGE_DOMAIN%%.*}:rwx,g:${MAGE_DOMAIN%%.*}:rwx,g::rw-,o::- ${MAGE_WEB_ROOT_PATH}
         echo
         curl -sS https://getcomposer.org/installer | php >/dev/null 2>&1
         mv composer.phar /usr/local/bin/composer
         echo
         echo
-        su ${MY_DOMAIN%%.*} -s /bin/bash -c "${REPO_MAGENTO} ."
+        su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "${REPO_MAGENTO} ."
         echo
      echo
 WHITETXT "============================================================================="
@@ -943,7 +943,7 @@ GREENTXT "      == MAGENTO DOWNLOADED AND READY FOR INSTALLATION =="
 WHITETXT "============================================================================="
 mkdir -p /root/mascm/
 cat >> /root/mascm/.mascm_index <<END
-webshop ${MY_DOMAIN}    ${MY_SHOP_PATH}    ${MY_DOMAIN%%.*}   ${LINUX_USER_PASS}
+webshop ${MAGE_DOMAIN}    ${MAGE_WEB_ROOT_PATH}    ${MAGE_DOMAIN%%.*}   ${MAGE_WEB_USER_PASS}
 END
 echo
 pause '------> Press [Enter] key to show menu'
@@ -954,6 +954,7 @@ printf "\033c"
 ###################################################################################
 "database")
 printf "\033c"
+MAGE_WEB_USER=$(awk '/webshop/ { print $4 }' /root/mascm/.mascm_index)
 WHITETXT "============================================================================="
 GREENTXT "CREATING MAGENTO DATABASE AND DATABASE USER"
 echo
@@ -974,8 +975,8 @@ pause '------> Press [Enter] key to generate MySQL USER strong password'
    echo
 echo
 read -e -p "---> Enter Magento database host : " -i "localhost" MAGE_DB_HOST
-read -e -p "---> Enter Magento database name : " -i "magento2_${MY_DOMAIN%%.*}" MAGE_DB_NAME
-read -e -p "---> Enter Magento database user : " -i "${MY_DOMAIN%%.*}" MAGE_DB_USER_NAME
+read -e -p "---> Enter Magento database name : " -i "magento2_${MAGE_WEB_USER}" MAGE_DB_NAME
+read -e -p "---> Enter Magento database user : " -i "${MAGE_WEB_USER}" MAGE_DB_USER_NAME
 echo
 echo
 pause '------> Press [Enter] key to create MySQL database and user'
@@ -1002,7 +1003,7 @@ END
 echo
 mkdir -p /root/mascm/
 cat >> /root/mascm/.mascm_index <<END
-database        ${MAGE_DB_HOST}   ${MAGE_DB_NAME}   ${MAGE_DB_USER_NAME}     ${MAGE_DB_PASS}    ${MYSQL_ROOT_PASS}
+database   ${MAGE_DB_HOST}   ${MAGE_DB_NAME}   ${MAGE_DB_USER_NAME}     ${MAGE_DB_PASS}    ${MYSQL_ROOT_PASS}
 END
 echo
 echo
@@ -1015,19 +1016,21 @@ printf "\033c"
 "install")
 printf "\033c"
 echo "-------------------------------------------------------------------------------------"
-BLUEBG   "vvv   MAGENTO ${MAGENTO_VER} INSTALLATION WITH COMPOSER   vvv"
+BLUEBG   "   MAGENTO ${MAGENTO_VER} INSTALLATION WITH COMPOSER   "
 echo "-------------------------------------------------------------------------------------"
 echo
-MY_SHOP_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
-cd ${MY_SHOP_PATH}
-chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
-echo
-echo "---> ENTER SETUP INFORMATION"
+MAGE_WEB_ROOT_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
+MAGE_WEB_USER=$(awk '/webshop/ { print $4 }' /root/mascm/.mascm_index)
+MAGE_DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
 DB_HOST=$(awk '/database/ { print $2 }' /root/mascm/.mascm_index)
 DB_NAME=$(awk '/database/ { print $3 }' /root/mascm/.mascm_index)
 DB_USER_NAME=$(awk '/database/ { print $4 }' /root/mascm/.mascm_index)
 DB_PASS=$(awk '/database/ { print $5 }' /root/mascm/.mascm_index)
-MY_DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
+cd ${MAGE_WEB_ROOT_PATH}
+chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH}
+chmod u+x bin/magento
+echo
+echo "---> ENTER SETUP INFORMATION"
 echo
 WHITETXT "Database information"
 read -e -p "---> Enter your database host: " -i "${DB_HOST}"  MAGE_DB_HOST
@@ -1038,27 +1041,24 @@ echo
 WHITETXT "Administrator and domain"
 read -e -p "---> Enter your First Name: " -i "Name"  MAGE_ADMIN_FNAME
 read -e -p "---> Enter your Last Name: " -i "Lastname"  MAGE_ADMIN_LNAME
-read -e -p "---> Enter your email: " -i "admin@${MY_DOMAIN}"  MAGE_ADMIN_EMAIL
+read -e -p "---> Enter your email: " -i "admin@${MAGE_DOMAIN}"  MAGE_ADMIN_EMAIL
 read -e -p "---> Enter your admins login name: " -i "admin"  MAGE_ADMIN_LOGIN
-MAGE_ADMIN_PASSGEN=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 9 | head -n 1)
-read -e -p "---> Use generated admin password: " -i "${RANDOM}${MAGE_ADMIN_PASSGEN}"  MAGE_ADMIN_PASS
-read -e -p "---> Enter your shop url: " -i "http://www.${MY_DOMAIN}/"  MAGE_SITE_URL
+MAGE_ADMIN_PASSGEN=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
+read -e -p "---> Use generated admin password: " -i "${MAGE_ADMIN_PASSGEN}"  MAGE_ADMIN_PASS
+read -e -p "---> Enter your shop url: " -i "http://www.${MAGE_DOMAIN}/"  MAGE_SITE_URL
 echo
 WHITETXT "Language, Currency and Timezone settings"
-chmod u+x bin/magento
 updown_menu "$(bin/magento info:language:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_LOCALE
 updown_menu "$(bin/magento info:currency:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_CURRENCY
 updown_menu "$(bin/magento info:timezone:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_TIMEZONE
 echo
 echo
-cat >> /root/mascm/.mascm_index <<END
-adminpass ${MAGE_ADMIN_PASS}
 END
 GREENTXT "INSTALL MAGENTO ${MAGENTO_VER} WITHOUT SAMPLE DATA"
 echo
 pause '---> Press [Enter] key to continue'
 echo
-su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:install --base-url=${MAGE_SITE_URL} \
+su ${MAGE_WEB_USER} -s /bin/bash -c "bin/magento setup:install --base-url=${MAGE_SITE_URL} \
 --db-host=${MAGE_DB_HOST} \
 --db-name=${MAGE_DB_NAME} \
 --db-user=${MAGE_DB_USER_NAME} \
@@ -1075,6 +1075,9 @@ su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:install --base-url=${MAGE
 --session-save=files \
 --use-rewrites=1"
 echo
+cat >> /root/mascm/.mascm_index <<END
+mageadmin  ${MAGE_ADMIN_LOGIN}  ${MAGE_ADMIN_PASS}  ${MAGE_ADMIN_EMAIL}
+END
 echo
 pause '------> Press [Enter] key to show menu'
 printf "\033c"
@@ -1084,6 +1087,11 @@ printf "\033c"
 ###################################################################################
 "postconfig")
 printf "\033c"
+MAGE_DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
+MAGE_WEB_ROOT_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
+MAGE_WEB_USER=$(awk '/webshop/ { print $4 }' /root/mascm/.mascm_index)
+MAGE_WEB_USER_PASS=$(awk '/webshop/ { print $5 }' /root/mascm/.mascm_index)
+MAGE_ADMIN_EMAIL=$(awk '/mageadmin/ { print $4 }' /root/mascm/.mascm_index)
 echo "-------------------------------------------------------------------------------------"
 BLUEBG " POST-INSTALL CONFIGURATION "
 echo "-------------------------------------------------------------------------------------"
@@ -1099,8 +1107,8 @@ mkdir -p /etc/nginx/sites-available && cd $_
 wget -q ${NGINX_BASE}sites-available/default.conf
 wget -q ${NGINX_BASE}sites-available/magento2.conf
 
-sed -i "s/example.com/${MY_DOMAIN}/g" /etc/nginx/sites-available/magento2.conf
-sed -i "s,/var/www/html,${MY_SHOP_PATH},g" /etc/nginx/sites-available/magento2.conf
+sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/sites-available/magento2.conf
+sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/sites-available/magento2.conf
 
 ln -s /etc/nginx/sites-available/magento2.conf /etc/nginx/sites-enabled/magento2.conf
 ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
@@ -1111,11 +1119,11 @@ do
 wget -q ${NGINX_EXTRA_CONF_URL}${CONFIG}
 done
 echo
-usermod -G ${MY_DOMAIN%%.*} nginx
-sed -i "s/user = apache/user = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
-sed -i "s/group = apache/group = ${MY_DOMAIN%%.*}/" /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value\[session.save_path\].*,php_value\[session.save_path\] = ${MY_SHOP_PATH}/var/session," /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value\[soap.wsdl_cache_dir\].*,php_value\[soap.wsdl_cache_dir\] = ${MY_SHOP_PATH}/tmp," /etc/php-fpm.d/www.conf
+usermod -G ${MAGE_WEB_USER} nginx
+sed -i "s/user = apache/user = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
+sed -i "s/group = apache/group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
+sed -i "s,.*php_value\[session.save_path\].*,php_value\[session.save_path\] = ${MAGE_WEB_ROOT_PATH}/var/session," /etc/php-fpm.d/www.conf
+sed -i "s,.*php_value\[soap.wsdl_cache_dir\].*,php_value\[soap.wsdl_cache_dir\] = ${MAGE_WEB_ROOT_PATH}/tmp," /etc/php-fpm.d/www.conf
 echo
 GREENTXT "PROFTPD CONFIGURATION"
 pause '------> Press [Enter] key to continue'
@@ -1130,8 +1138,8 @@ echo
      sed -i "s/server_ip_address/${SERVER_IP_ADDR}/" /etc/proftpd.conf
      sed -i "s/client_ip_address/${USER_IP}/" /etc/proftpd.conf
      sed -i "s/geoip_country_code/${USER_GEOIP}/" /etc/proftpd.conf
-     sed -i "s/sftp_domain/${MY_DOMAIN}/" /etc/proftpd.conf
-     sed -i "s/FTP_USER/${MY_DOMAIN%%.*}/" /etc/proftpd.conf
+     sed -i "s/sftp_domain/${MAGE_DOMAIN}/" /etc/proftpd.conf
+     sed -i "s/FTP_USER/${MAGE_WEB_USER}/" /etc/proftpd.conf
      echo
      ## plug in service status alert
      cp /usr/lib/systemd/system/proftpd.service /etc/systemd/system/proftpd.service
@@ -1140,8 +1148,8 @@ echo
      systemctl enable proftpd.service >/dev/null 2>&1
      /bin/systemctl restart proftpd.service
      echo
-     WHITETXT "We have created a user: ${REDBG}${MY_DOMAIN%%.*}"
-     WHITETXT "With a password: ${REDBG}${LINUX_USER_PASS}"
+     WHITETXT "We have created a user: ${REDBG}${MAGE_WEB_USER}"
+     WHITETXT "With a password: ${REDBG}${MAGE_WEB_USER_PASS}"
      WHITETXT "FTP PORT: ${REDBG}${FTP_PORT}"
      WHITETXT "Your GeoIP location: ${REDBG}${USER_GEOIP}"
      WHITETXT "PROFTPD config file /etc/proftpd.conf"
@@ -1149,25 +1157,24 @@ echo
 GREENTXT "INSTALLING PHPMYADMIN - ADVANCED MYSQL INTERFACE"
 pause '------> Press [Enter] key to continue'
 echo
-     cd ${MY_SHOP_PATH}
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
      yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
      sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
      sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m2/phpmyadmin.conf
      echo
-     GREENTXT "phpMyAdmin was installed to http://www.${MY_DOMAIN}/mysql_${PMA_FOLDER}/"
+     GREENTXT "phpMyAdmin was installed to http://www.${MAGE_DOMAIN}/mysql_${PMA_FOLDER}/"
 echo
 echo
 echo
 GREENTXT "INSTALLING OPCACHE GUI"
 pause '------> Press [Enter] key to continue'
 echo
-    cd ${MY_SHOP_PATH}/pub/
+    cd ${MAGE_WEB_ROOT_PATH}/pub/
     OPCACHE_FILE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
     wget -qO ${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
     echo
-    GREENTXT "Opcache interface was installed to http://www.${MY_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php"
+    GREENTXT "Opcache interface was installed to http://www.${MAGE_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php"
 echo
 echo
 if yum list installed "varnish" >/dev/null 2>&1; then
@@ -1188,23 +1195,23 @@ sed -i '8s/.*/enabled=1/' /etc/yum.repos.d/remi-php70.repo
 sed -i '9s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
 echo
 sed -i 's/apply_updates = no/apply_updates = yes/' /etc/yum/yum-cron.conf
-sed -i "s/email_from = root@localhost/email_from = yum-cron@${MY_DOMAIN}/" /etc/yum/yum-cron.conf
-sed -i "s/email_to = root/email_to = admin@${MY_DOMAIN}/" /etc/yum/yum-cron.conf
+sed -i "s/email_from = root@localhost/email_from = yum-cron@${MAGE_DOMAIN}/" /etc/yum/yum-cron.conf
+sed -i "s/email_to = root/email_to = ${MAGE_ADMIN_EMAIL}/" /etc/yum/yum-cron.conf
 echo
 systemctl enable yum-cron
 systemctl restart yum-cron
 echo
 GREENTXT "LETSENCRYPT SSL CERTIFICATE REQUEST"
 echo
-DNS_DOMAIN=$(getent hosts ${MY_DOMAIN} | awk '{ print $1 }')
+DNS_A_RECORD=$(getent hosts ${MAGE_DOMAIN} | awk '{ print $1 }')
 SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
-if [ "${DNS_DOMAIN}" != "${SERVER_IP_ADDR}" ] ; then
+if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
     echo
     REDTXT "DNS A record and your servers IP address do not match"
 	YELLOWTXT "Your servers ip address ${SERVER_IP_ADDR}"
-	YELLOWTXT "Domain ${MY_DOMAIN} resolves to ${DNS_DOMAIN}"
+	YELLOWTXT "Domain ${MAGE_DOMAIN} resolves to ${DNS_A_RECORD}"
 	YELLOWTXT "Please change your DNS A record to this servers IP address"
-	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --standalone --email admin@${MY_DOMAIN} -d ${MY_DOMAIN} -d www.${MY_DOMAIN}"
+	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --standalone --email ${MAGE_ADMIN_EMAIL} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
 	echo
 	GREENTXT "WE CAN GENERATE DHPARAM FILE NOW"
 	echo
@@ -1212,13 +1219,13 @@ if [ "${DNS_DOMAIN}" != "${SERVER_IP_ADDR}" ] ; then
         echo
     else
     service nginx stop
-    /usr/bin/certbot certonly --standalone --email admin@${MY_DOMAIN} -d ${MY_DOMAIN} -d www.${MY_DOMAIN}
+    /usr/bin/certbot certonly --standalone --email ${MAGE_ADMIN_EMAIL} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
     service nginx start
 fi
 echo
 GREENTXT "CREATING SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
 cat > /etc/logrotate.d/magento <<END
-${MY_SHOP_PATH}/var/log/*.log
+${MAGE_WEB_ROOT_PATH}/var/log/*.log
 {
 weekly
 rotate 4
@@ -1233,7 +1240,7 @@ echo
 wget -qO /etc/systemd/system/service-status-mail@.service ${STATUS_ALERT_SERVICE}
 wget -qO /bin/service-status-mail.sh ${STATUS_ALERT_SCRIPT}
 sed -i "s/MAGEADMINEMAIL/${MAGE_ADMIN_EMAIL}/" /bin/service-status-mail.sh
-sed -i "s/DOMAINNAME/${MY_DOMAIN}/" /bin/service-status-mail.sh
+sed -i "s/DOMAINNAME/${MAGE_DOMAIN}/" /bin/service-status-mail.sh
 chmod u+x /bin/service-status-mail.sh
 systemctl daemon-reload
 echo
@@ -1251,7 +1258,7 @@ sed -i "s/you@domain.com/${MAGE_ADMIN_EMAIL}/" /usr/local/maldetect/conf.maldet
 sed -i 's/quarantine_hits="0"/quarantine_hits="1"/' /usr/local/maldetect/conf.maldet
 sed -i 's,# default_monitor_mode="/usr/local/maldetect/monitor_paths",default_monitor_mode="/usr/local/maldetect/monitor_paths",' /usr/local/maldetect/conf.maldet
 sed -i 's/inotify_base_watches="16384"/inotify_base_watches="35384"/' /usr/local/maldetect/conf.maldet
-echo -e "${MY_SHOP_PATH}\n\n/var/tmp/\n\n/tmp/" > /usr/local/maldetect/monitor_paths
+echo -e "${MAGE_WEB_ROOT_PATH}\n\n/var/tmp/\n\n/tmp/" > /usr/local/maldetect/monitor_paths
 echo
 sed -i "/^Example/d" /etc/clamd.d/scan.conf
 sed -i "/^Example/d" /etc/freshclam.conf
@@ -1266,25 +1273,25 @@ curl -o  /usr/local/bin/n98-magerun2.phar https://files.magerun.net/n98-magerun2
 chmod u+x /usr/local/bin/n98-magerun2.phar
 echo
 GREENTXT "IMAGES OPTIMIZATION SCRIPT"
-wget -qO ${MY_SHOP_PATH}/imgopt.pl ${REPO_MASCM_TMP}wesley.pl
+wget -qO ${MAGE_WEB_ROOT_PATH}/imgopt.pl ${REPO_MASCM_TMP}wesley.pl
 chmod u+x /etc/rc.local
 echo
-        crontab -l -u ${MY_DOMAIN%%.*} > magecron
+        crontab -l -u ${MAGE_WEB_USER} > magecron
         echo "MAILTO="${MAGE_ADMIN_EMAIL}"" >> magecron
-        echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/bin/magento cron:run" >> magecron
-	    echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/update/cron.php" >> magecron
-	    echo "* * * * * php -c /etc/php.ini ${MY_SHOP_PATH}/bin/magento setup:cron:run" >> magecron
-        echo "5 8 * * 7 perl ${MY_SHOP_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
-        crontab -u ${MY_DOMAIN%%.*} magecron
+        echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
+	    echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
+	    echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
+        echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
+        crontab -u ${MAGE_WEB_USER} magecron
         rm magecron
 echo
-cd ${MY_SHOP_PATH}
-su ${MY_DOMAIN%%.*} -s /bin/bash -c "bin/magento setup:static-content:deploy ${MAGE_LOCALE}"
+cd ${MAGE_WEB_ROOT_PATH}
+su ${MAGE_WEB_USER} -s /bin/bash -c "bin/magento setup:static-content:deploy ${MAGE_LOCALE}"
 echo
-wget -qO ${MY_SHOP_PATH}/mysqltuner.pl ${MYSQL_TUNER}
+wget -qO ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl ${MYSQL_TUNER}
 echo
-chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH}
-chmod u+x ${MY_SHOP_PATH}/{imgopt.pl,mysqltuner.pl,bin/magento}
+chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH}
+chmod u+x ${MAGE_WEB_ROOT_PATH}/{imgopt.pl,mysqltuner.pl,bin/magento}
 echo
 GREENTXT "SERVER TIMEZONE SETUP"
 sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
@@ -1510,7 +1517,7 @@ htpasswd -c /etc/nginx/.htpasswd ossec
 cat > /etc/nginx/sites-available/kibana.conf <<END
 server {
   listen ${KIBANA_PORT} ssl http2;
-  server_name           ossec.${MY_DOMAIN};
+  server_name           ossec.${MAGE_DOMAIN};
   access_log            /var/log/nginx/access.log;
   
   ## SSL CONFIGURATION
