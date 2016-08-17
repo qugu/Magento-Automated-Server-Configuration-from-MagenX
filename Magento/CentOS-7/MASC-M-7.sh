@@ -13,6 +13,7 @@ MASCM_BASE="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Co
 # Software versions
 #MAGENTO_VER=$(wget -q -O- http://connect20.magentocommerce.com/community/Mage_All_Latest/releases.xml | tail -6 | grep -Po '(?<=<v>).*(?=</v>)')
 MAGENTO_TMP_FILE="https://www.dropbox.com/s/oy4t5lzy1wfxqir/magento-1.9.2.4-2016-02-23-06-04-07.tar.gz"
+MAGENTO_FILE_MD5="0ee115245aea158b03d584dc6c1d5466"
 MAGENTO_VER="1.9.2.4"
 
 # Extra configs
