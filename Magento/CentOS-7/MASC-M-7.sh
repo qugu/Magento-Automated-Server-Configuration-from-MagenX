@@ -1376,7 +1376,7 @@ echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
 maldet --monitor /usr/local/maldetect/monitor_paths
 echo
 echo
-GREENTXT "DOWNLOADING NETZ98 MAGERUN CLI TOOLS FOR MAGENTO 2"
+GREENTXT "DOWNLOADING NETZ98 MAGERUN CLI TOOLS FOR MAGENTO"
 echo
 curl -o  /usr/local/bin/n98-magerun.phar https://files.magerun.net/n98-magerun.phar
 chmod u+x /usr/local/bin/n98-magerun.phar
