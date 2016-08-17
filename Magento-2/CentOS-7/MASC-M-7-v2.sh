@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="14.1"
+MASCM_VER="14.2"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -16,8 +16,6 @@ MAGENTO_VER="2.1.0"
 REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
 
 REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/"
-STATUS_ALERT_SERVICE="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/service-status-mail%40.service"
-STATUS_ALERT_SCRIPT="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/service-status-mail.sh"
 
 # Webmin Control Panel Nginx plugin
 WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.tar.gz"
@@ -954,7 +952,6 @@ printf "\033c"
 ###################################################################################
 "database")
 printf "\033c"
-MAGE_WEB_USER=$(awk '/webshop/ { print $4 }' /root/mascm/.mascm_index)
 WHITETXT "============================================================================="
 GREENTXT "CREATING MAGENTO DATABASE AND DATABASE USER"
 echo
@@ -975,8 +972,8 @@ pause '------> Press [Enter] key to generate MySQL USER strong password'
    echo
 echo
 read -e -p "---> Enter Magento database host : " -i "localhost" MAGE_DB_HOST
-read -e -p "---> Enter Magento database name : " -i "magento2_${MAGE_WEB_USER}" MAGE_DB_NAME
-read -e -p "---> Enter Magento database user : " -i "${MAGE_WEB_USER}" MAGE_DB_USER_NAME
+read -e -p "---> Enter Magento database name : " -i "magento2_${RANDOM}" MAGE_DB_NAME
+read -e -p "---> Enter Magento database user : " -i "magento2_${RANDOM}" MAGE_DB_USER_NAME
 echo
 echo
 pause '------> Press [Enter] key to create MySQL database and user'
@@ -987,8 +984,10 @@ GRANT ALL PRIVILEGES ON ${MAGE_DB_NAME}.* TO '${MAGE_DB_USER_NAME}'@'${MAGE_DB_H
 exit
 EOMYSQL
 echo
-GREENTXT "MAGENTO DATABASE ${RED} ${MAGE_DB_NAME} ${GREEN}AND USER ${RED} ${MAGE_DB_USER_NAME} ${GREEN}CREATED, PASSWORD IS ${RED} ${MAGE_DB_PASS}"
-GREENTXT "MySQL ROOT password: ${REDBG}${MYSQL_ROOT_PASS}"
+GREENTXT "MAGENTO DATABASE: ${REDBG}${MAGE_DB_NAME}"
+GREENTXT "MAGENTO DATABASE USER: ${REDBG}${MAGE_DB_USER_NAME}"
+GREENTXT "MAGENTO DATABASE PASSWORD: ${REDBG}${MAGE_DB_PASS}"
+GREENTXT "MYSQL ROOT PASSWORD: ${REDBG}${MYSQL_ROOT_PASS}"
 echo
 cat > /root/.mytop <<END
 user=root
@@ -1075,7 +1074,7 @@ su ${MAGE_WEB_USER} -s /bin/bash -c "bin/magento setup:install --base-url=${MAGE
 --use-rewrites=1"
 echo
 cat >> /root/mascm/.mascm_index <<END
-mageadmin  ${MAGE_ADMIN_LOGIN}  ${MAGE_ADMIN_PASS}  ${MAGE_ADMIN_EMAIL}
+mageadmin  ${MAGE_ADMIN_LOGIN}  ${MAGE_ADMIN_PASS}  ${MAGE_ADMIN_EMAIL}  ${MAGE_TIMEZONE}
 END
 echo
 pause '------> Press [Enter] key to show menu'
@@ -1091,6 +1090,7 @@ MAGE_WEB_ROOT_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
 MAGE_WEB_USER=$(awk '/webshop/ { print $4 }' /root/mascm/.mascm_index)
 MAGE_WEB_USER_PASS=$(awk '/webshop/ { print $5 }' /root/mascm/.mascm_index)
 MAGE_ADMIN_EMAIL=$(awk '/mageadmin/ { print $4 }' /root/mascm/.mascm_index)
+MAGE_TIMEZONE=$(awk '/mageadmin/ { print $5 }' /root/mascm/.mascm_index)
 echo "-------------------------------------------------------------------------------------"
 BLUEBG " POST-INSTALL CONFIGURATION "
 echo "-------------------------------------------------------------------------------------"
@@ -1147,11 +1147,11 @@ echo
      systemctl enable proftpd.service >/dev/null 2>&1
      /bin/systemctl restart proftpd.service
      echo
-     WHITETXT "We have created a user: ${REDBG}${MAGE_WEB_USER}"
-     WHITETXT "With a password: ${REDBG}${MAGE_WEB_USER_PASS}"
-     WHITETXT "FTP PORT: ${REDBG}${FTP_PORT}"
-     WHITETXT "Your GeoIP location: ${REDBG}${USER_GEOIP}"
-     WHITETXT "PROFTPD config file /etc/proftpd.conf"
+     WHITETXT "PROFTPD USER: ${REDBG}${MAGE_WEB_USER}"
+     WHITETXT "PROFTPD USER PASSWORD: ${REDBG}${MAGE_WEB_USER_PASS}"
+     WHITETXT "PROFTPD PORT: ${REDBG}${FTP_PORT}"
+     WHITETXT "GEOIP LOCATION: ${REDBG}${USER_GEOIP}"
+     WHITETXT "PROFTPD CONFIG FILE: /etc/proftpd.conf"
 echo
 GREENTXT "INSTALLING PHPMYADMIN - ADVANCED MYSQL INTERFACE"
 pause '------> Press [Enter] key to continue'
@@ -1236,8 +1236,8 @@ END
 echo
 GREENTXT "SETUP SERVICE STATUS WITH E-MAIL ALERTS"
 echo
-wget -qO /etc/systemd/system/service-status-mail@.service ${STATUS_ALERT_SERVICE}
-wget -qO /bin/service-status-mail.sh ${STATUS_ALERT_SCRIPT}
+wget -qO /etc/systemd/system/service-status-mail@.service ${REPO_MASCM_TMP}service-status-mail@.service
+wget -qO /bin/service-status-mail.sh ${REPO_MASCM_TMP}service-status-mail.sh
 sed -i "s/MAGEADMINEMAIL/${MAGE_ADMIN_EMAIL}/" /bin/service-status-mail.sh
 sed -i "s/DOMAINNAME/${MAGE_DOMAIN}/" /bin/service-status-mail.sh
 chmod u+x /bin/service-status-mail.sh
@@ -1278,8 +1278,8 @@ echo
         crontab -l -u ${MAGE_WEB_USER} > magecron
         echo "MAILTO="${MAGE_ADMIN_EMAIL}"" >> magecron
         echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
-	    echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
-	    echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
+	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
+	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
         echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
         crontab -u ${MAGE_WEB_USER} magecron
         rm magecron
@@ -1295,6 +1295,11 @@ echo
 GREENTXT "SERVER TIMEZONE SETUP"
 sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
 timedatectl set-timezone ${MAGE_TIMEZONE}
+systemctl daemon-reload
+/bin/systemctl restart nginx.service
+/bin/systemctl restart php-fpm.service
+/bin/systemctl restart redis-6379.service
+/bin/systemctl restart redis-6380.service
 echo
 echo
     GREENTXT "NOW CHECK EVERYTHING AND LOGIN TO YOUR BACKEND"
