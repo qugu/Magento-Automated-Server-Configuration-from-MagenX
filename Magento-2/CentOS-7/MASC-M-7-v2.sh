@@ -1095,8 +1095,81 @@ echo "--------------------------------------------------------------------------
 BLUEBG " POST-INSTALL CONFIGURATION "
 echo "-------------------------------------------------------------------------------------"
 echo
+GREENTXT "REDIS CACHE AND SESSION STORAGE"
 echo
-## "NGINX CONFIGURATION"
+sed -i -e '/session/{n;N;N;d}' ${MAGE_WEB_ROOT_PATH}app/etc/env.php
+sed -i "/.*session.*/a \\
+   array ( \\
+   'save' => 'redis', \\
+   'redis' => \\
+      array ( \\
+        'host' => '127.0.0.1', \\
+        'port' => '6379', \\
+        'password' => '', \\
+        'timeout' => '5', \\
+        'persistent_identifier' => 'db1', \\
+        'database' => '1', \\
+        'compression_threshold' => '2048', \\
+        'compression_library' => 'lzf', \\
+        'log_level' => '1', \\
+        'max_concurrency' => '6', \\
+        'break_after_frontend' => '5', \\
+        'break_after_adminhtml' => '30', \\
+        'first_lifetime' => '600', \\
+        'bot_first_lifetime' => '60', \\
+        'bot_lifetime' => '7200', \\
+        'disable_locking' => '0', \\
+        'min_lifetime' => '60', \\
+        'max_lifetime' => '2592000' \\
+    ), \\
+), \\
+'cache' =>  \\
+  array ( \\
+    'frontend' =>  \\
+    array ( \\
+      'default' =>  \\
+      array ( \\
+        'backend' => 'Cm_Cache_Backend_Redis', \\
+        'backend_options' =>  \\
+        array ( \\
+          'server' => '127.0.0.1', \\
+          'port' => '6380', \\
+          'persistent' => 'db1', \\
+          'database' => '1', \\
+          'force_standalone' => '0', \\
+          'connect_retries' => '2', \\
+          'read_timeout' => '10', \\
+          'automatic_cleaning_factor' => '0', \\
+          'compress_data' => '0', \\
+          'compress_tags' => '0', \\
+          'compress_threshold' => '20480', \\
+          'compression_lib' => 'lzf', \\
+        ), \\
+      ), \\
+      'page_cache' =>  \\
+      array ( \\
+        'backend' => 'Cm_Cache_Backend_Redis', \\
+        'backend_options' =>  \\
+        array ( \\
+          'server' => '127.0.0.1', \\
+          'port' => '6380', \\
+          'persistent' => 'db2', \\
+          'database' => '2', \\
+          'force_standalone' => '0', \\
+          'connect_retries' => '2', \\
+          'read_timeout' => '10', \\
+          'automatic_cleaning_factor' => '0', \\
+          'compress_data' => '1', \\
+          'compress_tags' => '1', \\
+          'compress_threshold' => '20480', \\
+          'compression_lib' => 'lzf', \\
+        ), \\
+      ), \\
+    ), \\
+  ), \\ " ${MAGE_WEB_ROOT_PATH}app/etc/env.php
+  echo
+echo
+GREENTXT "NGINX CONFIGURATION FILES"
 echo
 wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}fastcgi_params
 wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}nginx.conf
@@ -1121,8 +1194,7 @@ echo
 usermod -G ${MAGE_WEB_USER} nginx
 sed -i "s/user = apache/user = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
 sed -i "s/group = apache/group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value\[session.save_path\].*,php_value\[session.save_path\] = ${MAGE_WEB_ROOT_PATH}/var/session," /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value\[soap.wsdl_cache_dir\].*,php_value\[soap.wsdl_cache_dir\] = ${MAGE_WEB_ROOT_PATH}/tmp," /etc/php-fpm.d/www.conf
+sed -i -e :a -e '$d;N;2,7ba' -e 'P;D' /etc/php-fpm.d/www.conf
 echo
 GREENTXT "PROFTPD CONFIGURATION"
 pause '------> Press [Enter] key to continue'
@@ -1153,7 +1225,7 @@ echo
      WHITETXT "GEOIP LOCATION: ${REDBG}${USER_GEOIP}"
      WHITETXT "PROFTPD CONFIG FILE: /etc/proftpd.conf"
 echo
-GREENTXT "INSTALLING PHPMYADMIN - ADVANCED MYSQL INTERFACE"
+GREENTXT "PHPMYADMIN - ADVANCED MYSQL INTERFACE"
 pause '------> Press [Enter] key to continue'
 echo
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 5 | head -n 1)
@@ -1166,7 +1238,7 @@ echo
 echo
 echo
 echo
-GREENTXT "INSTALLING OPCACHE GUI"
+GREENTXT "OPCACHE GUI"
 pause '------> Press [Enter] key to continue'
 echo
     cd ${MAGE_WEB_ROOT_PATH}/pub/
@@ -1188,7 +1260,7 @@ echo 'Varnish secret key -->'$(cat /etc/varnish/secret)'<-- copy it'
 echo
 fi
 echo
-GREENTXT "SYSTEM UPDATE CONFIGURATION YUM-CRON"
+GREENTXT "SYSTEM AUTO UPDATE WITH YUM-CRON"
 echo
 sed -i '8s/.*/enabled=1/' /etc/yum.repos.d/remi-php70.repo
 sed -i '9s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
@@ -1222,7 +1294,7 @@ if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
     service nginx start
 fi
 echo
-GREENTXT "CREATING SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
+GREENTXT "SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
 cat > /etc/logrotate.d/magento <<END
 ${MAGE_WEB_ROOT_PATH}/var/log/*.log
 {
@@ -1234,7 +1306,7 @@ compress
 }
 END
 echo
-GREENTXT "SETUP SERVICE STATUS WITH E-MAIL ALERTS"
+GREENTXT "SERVICE STATUS WITH E-MAIL ALERTING"
 echo
 wget -qO /etc/systemd/system/service-status-mail@.service ${REPO_MASCM_TMP}service-status-mail@.service
 wget -qO /bin/service-status-mail.sh ${REPO_MASCM_TMP}service-status-mail.sh
@@ -1243,7 +1315,7 @@ sed -i "s/DOMAINNAME/${MAGE_DOMAIN}/" /bin/service-status-mail.sh
 chmod u+x /bin/service-status-mail.sh
 systemctl daemon-reload
 echo
-GREENTXT "SETUP REALTIME MALWARE MONITOR WITH E-MAIL ALERTS"
+GREENTXT "REALTIME MALWARE MONITOR WITH E-MAIL ALERTING"
 YELLOWTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
 echo
 cd /usr/local/src
