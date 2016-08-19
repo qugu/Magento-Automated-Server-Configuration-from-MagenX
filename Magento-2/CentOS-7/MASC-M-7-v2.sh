@@ -11,8 +11,8 @@ MASCM_BASE="https://masc.magenx.com"
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
 # Software versions
-MAGENTO_VER="2.1.0"
-#MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/releases 2>&1 | head -12 | grep 'tag_name' | grep -oP '(?<=")\d.*(?=")')
+#MAGENTO_VER="2.1.0"
+MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/tags 2>&1 | head -3 | grep 'name' | grep -oP '(?<=")\d.*(?=")')
 REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
 
 REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/"
