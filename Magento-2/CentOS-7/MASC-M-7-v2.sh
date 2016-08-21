@@ -1357,6 +1357,7 @@ echo
         rm magecron
 echo
 cd ${MAGE_WEB_ROOT_PATH}
+su ${MAGE_WEB_USER} -s /bin/bash -c "bin/magento deploy:mode:set developer && bin/magento cache:disable"
 su ${MAGE_WEB_USER} -s /bin/bash -c "bin/magento setup:static-content:deploy ${MAGE_LOCALE}"
 echo
 wget -qO ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl ${MYSQL_TUNER}
