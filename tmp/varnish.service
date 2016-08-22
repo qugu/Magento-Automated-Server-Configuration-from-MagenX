@@ -21,21 +21,13 @@ Type=forking
 PrivateTmp=false
 ExecStartPre=/usr/sbin/varnishd -C -f VCL_PATH
 ExecStart=/usr/sbin/varnishd \
-	-a :80 \
-	-T localhost:6082 \
-	-f 'VCL_PATH' \
-	-u varnish -g varnish \
-	-p thread_pool_min=200 \
-	-p thread_pool_max=4000 \
-	-p thread_pool_add_delay=2 \
-	-p cli_timeout=25 \
-	-p cli_buffer=26384 \
-	-p feature=+esi_disable_xml_check,+esi_ignore_other_elements \
-	-p vcc_allow_inline_c=on \
-	-p timeout_linger=100 \
-	-S /etc/varnish/secret \
 	-P /var/run/varnish.pid \
-	-s malloc,2G
+	-f $VARNISH_VCL_CONF \
+	-a ${VARNISH_LISTEN_ADDRESS}:${VARNISH_LISTEN_PORT} \
+	-T ${VARNISH_ADMIN_LISTEN_ADDRESS}:${VARNISH_ADMIN_LISTEN_PORT} \
+	-S $VARNISH_SECRET_FILE \
+	-s $VARNISH_STORAGE \
+	$DAEMON_OPTS
 	
 ExecReload=/usr/sbin/varnish_reload_vcl
 
