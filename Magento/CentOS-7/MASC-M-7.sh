@@ -1290,7 +1290,7 @@ if yum list installed "varnish" >/dev/null 2>&1; then
 GREENTXT "VARNISH DAEMON CONFIGURATION FILE"
 echo
 wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
-sed -i "s,VCL_PATH,/etc/varnish/default.vcl,g" /etc/systemd/system/varnish.service
+wget -qO /etc/varnish/varnish.params ${REPO_MASCM_TMP}varnish.params
 systemctl daemon-reload >/dev/null 2>&1
 systemctl enable varnish >/dev/null 2>&1
 echo
