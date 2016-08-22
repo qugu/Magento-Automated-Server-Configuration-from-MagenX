@@ -1097,7 +1097,7 @@ echo "--------------------------------------------------------------------------
 echo
 GREENTXT "REDIS CACHE AND SESSION STORAGE"
 echo
-sed -i -e '/session/{n;N;N;d}' ${MAGE_WEB_ROOT_PATH}app/etc/env.php
+sed -i -e '/session/{n;N;N;d}' ${MAGE_WEB_ROOT_PATH}/app/etc/env.php
 sed -i "/.*session.*/a \\
    array ( \\
    'save' => 'redis', \\
@@ -1166,7 +1166,7 @@ sed -i "/.*session.*/a \\
         ), \\
       ), \\
     ), \\
-  ), \\ " ${MAGE_WEB_ROOT_PATH}app/etc/env.php
+  ), \\ " ${MAGE_WEB_ROOT_PATH}/app/etc/env.php
   echo
 echo
 GREENTXT "NGINX CONFIGURATION FILES"
