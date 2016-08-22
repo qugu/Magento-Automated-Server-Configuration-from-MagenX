@@ -19,16 +19,15 @@ LimitCORE=infinity
 
 Type=forking
 PrivateTmp=false
-ExecStartPre=/usr/sbin/varnishd -C -f ${VARNISH_VCL_CONF}
+ExecStartPre=/usr/sbin/varnishd -C -f $VARNISH_VCL_CONF
 ExecStart=/usr/sbin/varnishd \
 	-P /var/run/varnish.pid \
-	-u ${VARNISH_USER} -g ${VARNISH_GROUP} \
-	-f ${VARNISH_VCL_CONF} \
+	-f $VARNISH_VCL_CONF \
 	-a ${VARNISH_LISTEN_ADDRESS}:${VARNISH_LISTEN_PORT} \
 	-T ${VARNISH_ADMIN_LISTEN_ADDRESS}:${VARNISH_ADMIN_LISTEN_PORT} \
-	-S ${VARNISH_SECRET_FILE} \
-	-s ${VARNISH_STORAGE} \
-	${DAEMON_OPTS}
+	-S $VARNISH_SECRET_FILE \
+	-s $VARNISH_STORAGE \
+	$DAEMON_OPTS
 	
 ExecReload=/usr/sbin/varnish_reload_vcl
 
