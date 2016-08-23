@@ -1345,11 +1345,10 @@ curl -o  /usr/local/bin/n98-magerun2.phar https://files.magerun.net/n98-magerun2
 chmod u+x /usr/local/bin/n98-magerun2.phar
 echo
 GREENTXT "IMAGES OPTIMIZATION SCRIPT"
-wget -qO ${MAGE_WEB_ROOT_PATH}/imgopt.pl ${REPO_MASCM_TMP}wesley.pl
+wget -O ${MAGE_WEB_ROOT_PATH}/imgopt.pl ${REPO_MASCM_TMP}wesley.pl
 chmod u+x /etc/rc.local
 echo
-        crontab -l -u ${MAGE_WEB_USER} > magecron
-        echo "MAILTO="${MAGE_ADMIN_EMAIL}"" >> magecron
+        echo "MAILTO=\"${MAGE_ADMIN_EMAIL}\"" >> magecron
         echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
 	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
 	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
