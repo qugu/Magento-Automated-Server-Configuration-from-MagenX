@@ -1401,7 +1401,7 @@ if [ "${csf_test}" == "y" ];then
                echo -n "     PROCESSING  "
                quick_progress &
                pid="$!"
-               wget -qO - http://www.configserver.com/free/csf.tgz | tar -xz
+               wget -qO - https://download.configserver.com/csf.tgz | tar -xz
                stop_progress "$pid"
                echo
                cd csf
