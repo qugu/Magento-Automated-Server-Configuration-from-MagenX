@@ -1387,9 +1387,9 @@ chmod u+x /etc/rc.local
 echo
 GREENTXT "CRONTAB JOBS"
 echo
-        crontab -l -u ${MAGE_WEB_USER} > magecron
         echo "MAILTO=${MAGE_ADMIN_EMAIL}" >> magecron
         echo "* * * * * ! test -e ${MAGE_WEB_ROOT_PATH}/maintenance.flag && /bin/bash ${MAGE_WEB_ROOT_PATH}/cron.sh  > /dev/null" >> magecron
+        echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
         crontab -u ${MAGE_WEB_USER} magecron
         rm magecron
 echo
