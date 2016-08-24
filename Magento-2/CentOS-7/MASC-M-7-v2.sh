@@ -11,7 +11,6 @@ MASCM_BASE="https://masc.magenx.com"
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
 # Software versions
-#MAGENTO_VER="2.1.0"
 MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/tags 2>&1 | head -3 | grep -oP '(?<=")\d.*(?=")')
 REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
 
@@ -128,7 +127,7 @@ updown_menu () {
 i=1;for items in $(echo $1); do item[$i]="${items}"; let i=$i+1; done
 i=1
 echo
-echo -e "\n---> Use up/down arrow keys then press enter to select $2"
+echo -e "\n---> Use up/down arrow keys then press Enter to select $2"
 while [ 0 ]; do
   if [ "$i" -eq 0 ]; then i=1; fi
   if [ ! "${item[$i]}" ]; then let i=i-1; fi
@@ -144,7 +143,7 @@ while [ 0 ]; do
         break
       else
         echo
-        echo -e "\n---> Use up/down arrow keys then press enter to select $2"
+        echo -e "\n---> Use up/down arrow keys then press Enter to select $2"
       fi
       ;;
   esac
