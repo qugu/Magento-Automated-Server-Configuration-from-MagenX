@@ -414,9 +414,9 @@ printf "\033c"
         echo
         WHITETXT "-> Install repository and LEMP packages :  ${YELLOW}\tlemp"
         WHITETXT "-> Download Magento latest packages     :  ${YELLOW}\t\tmagento"
-		WHITETXT "-> Setup Magento database               :  ${YELLOW}\t\t\tdatabase"
-		WHITETXT "-> Install Magento with Composer        :  ${YELLOW}\t\tinstall"
-		WHITETXT "-> Post-Install configuration           :  ${YELLOW}\t\tconfig"
+	WHITETXT "-> Setup Magento database               :  ${YELLOW}\t\t\tdatabase"
+	WHITETXT "-> Install Magento with Composer        :  ${YELLOW}\t\tinstall"
+	WHITETXT "-> Post-Install configuration           :  ${YELLOW}\t\tconfig"
         echo
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
         echo
@@ -532,7 +532,7 @@ if [ "${repo_percona_install}" == "y" ];then
                 echo
               echo
               ## get mysql tools
-			  cd /usr/local/src
+              cd /usr/local/src
               wget -qO - ${MYSQL_TOP} | tar -xzp && cd mytop*
               perl Makefile.PL && make && make install  >/dev/null 2>&1
               yum -y -q install percona-toolkit >/dev/null 2>&1
@@ -594,20 +594,20 @@ END
         then
           echo
             GREENTXT "NGINX HAS BEEN INSTALLED  -  OK"
-			echo
-			wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}fastcgi_params
-			wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}nginx.conf
-			mkdir -p /etc/nginx/sites-enabled
-			mkdir -p /etc/nginx/sites-available && cd $_
-			wget -q ${NGINX_BASE}sites-available/default.conf
-			wget -q ${NGINX_BASE}sites-available/magento2.conf
-			ln -s /etc/nginx/sites-available/magento2.conf /etc/nginx/sites-enabled/magento2.conf
-			ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
-			mkdir -p /etc/nginx/conf_m2 && cd /etc/nginx/conf_m2/
-			for CONFIG in ${NGINX_EXTRA_CONF}
-			do
-			wget -q ${NGINX_EXTRA_CONF_URL}${CONFIG}
-			done
+		echo
+		wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}fastcgi_params
+		wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}nginx.conf
+		mkdir -p /etc/nginx/sites-enabled
+		mkdir -p /etc/nginx/sites-available && cd $_
+		wget -q ${NGINX_BASE}sites-available/default.conf
+		wget -q ${NGINX_BASE}sites-available/magento2.conf
+		ln -s /etc/nginx/sites-available/magento2.conf /etc/nginx/sites-enabled/magento2.conf
+		ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
+		mkdir -p /etc/nginx/conf_m2 && cd /etc/nginx/conf_m2/
+		for CONFIG in ${NGINX_EXTRA_CONF}
+		do
+		wget -q ${NGINX_EXTRA_CONF_URL}${CONFIG}
+		done
             echo
             ## plug in service status alert
             cp /usr/lib/systemd/system/nginx.service /etc/systemd/system/nginx.service
@@ -752,7 +752,7 @@ if [ "${varnish_install}" == "y" ];then
       if [ "$?" = 0 ]
         then
           echo
-		    wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
+	    wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
             wget -qO /etc/varnish/varnish.params ${REPO_MASCM_TMP}varnish.params
             systemctl daemon-reload >/dev/null 2>&1
             systemctl enable varnish >/dev/null 2>&1
@@ -772,7 +772,7 @@ echo
 echo -n "---> Start HHVM installation? [y/n][n]:"
 read hhvm_install
 if [ "${hhvm_install}" == "y" ];then
-          echo
+echo
 cat > /etc/yum.repos.d/gleez.repo <<END
 [gleez]
 name=Gleez repo
@@ -1157,8 +1157,8 @@ upstream hhvm-phpfpm {
 END
 echo
 GREENTXT "PHPMYADMIN"
-	PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
-	BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
+     PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
+     BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
      yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
      sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
      sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m2/phpmyadmin.conf
@@ -1240,7 +1240,7 @@ echo
 GREENTXT "PROFTPD CONFIGURATION"
      wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
      ## change proftpd config
-	 SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
+     SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
      USER_IP=${SSH_CLIENT%% *}
      USER_GEOIP=$(geoiplookup ${USER_IP} | awk 'NR==1{print substr($4,1,2)}')
      FTP_PORT=$(shuf -i 5121-5132 -n 1)
@@ -1267,9 +1267,9 @@ echo
 echo
 GREENTXT "OPCACHE GUI, n98-MAGERUN, IMAGE OPTIMIZER, MYSQLTUNER, SSL DEBUG TOOLS"
      wget -qO opcache_$(openssl rand 2 -hex).php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
-	 wget -qO tlstest_$(openssl rand 2 -hex).php ${REPO_MASCM_TMP}tlstest.php
+     wget -qO tlstest_$(openssl rand 2 -hex).php ${REPO_MASCM_TMP}tlstest.php
      wget -qO wesley.pl ${REPO_MASCM_TMP}wesley.pl
-	 wget -qO mysqltuner.pl ${MYSQL_TUNER}
+     wget -qO mysqltuner.pl ${MYSQL_TUNER}
      curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
 echo
 GREENTXT "SYSTEM AUTO UPDATE WITH YUM-CRON"
@@ -1345,8 +1345,8 @@ echo
 GREENTXT "MAGENTO CRONJOBS"
         echo "MAILTO=\"${MAGE_ADMIN_EMAIL}\"" >> magecron
         echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
-	    echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
-	    echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
+	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
+	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
         echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
         crontab -u ${MAGE_WEB_USER} magecron
         rm magecron
