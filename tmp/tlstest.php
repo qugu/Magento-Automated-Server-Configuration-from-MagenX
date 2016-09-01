@@ -11,12 +11,22 @@
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  * @version $Id: Author: DrByte  Wed Mar 16 16:12:21 2016 -0500  New in v1.5.5 $
  */
+ //collection of allowed IP addresses
+$allowlist = array(
+    'CLIENTIP',
+    'CLIENTIP'
+);
+
+//if users IP is not in allowed list kill the script
+if(!in_array($_SERVER['REMOTE_ADDR'],$allowlist)){
+    die('This website cannot be accessed from your location.');
+}
+
 // don't show error messages to browser
 ini_set('display_errors', 0);
 
 // no caching
 header('Cache-Control: no-cache, no-store, must-revalidate');
-
 
 $url = 'https://tlstest.paypal.com';
 $ch = curl_init();
