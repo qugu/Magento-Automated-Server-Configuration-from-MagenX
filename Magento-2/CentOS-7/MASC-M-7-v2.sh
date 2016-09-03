@@ -1407,9 +1407,10 @@ if [ "${csf_test}" == "y" ];then
                cd csf
                GREENTXT "NEXT, TEST IF YOU HAVE THE REQUIRED IPTABLES MODULES"
                echo
-        if perl csftest.pl | grep "FATAL" ; then
+           if perl csftest.pl | grep "FATAL" ; then
                perl csftest.pl
                echo
+               REDTXT "You can try to fix this and reinstall later, or install FAIL2BAN"
                pause '---> Press [Enter] key to show menu'
            exit
            else
@@ -1472,7 +1473,10 @@ rpm --import http://www.webmin.com/jcameron-key.asc
             cd /usr/local/src/
             wget -q ${WEBMIN_NGINX} -O webmin_nginx
             perl /usr/libexec/webmin/install-module.pl $_ >/dev/null 2>&1
-            perl /usr/libexec/webmin/install-module.pl /usr/local/csf/csfwebmin.tgz >/dev/null 2>&1
+            if [ -f "/usr/local/csf/csfwebmin.tgz" ]
+		then
+    		perl /usr/libexec/webmin/install-module.pl /usr/local/csf/csfwebmin.tgz >/dev/null 2>&1
+            fi
             sed -i 's/root/webadmin/' /etc/webmin/miniserv.users
             sed -i 's/root:/webadmin:/' /etc/webmin/webmin.acl
             WEBADMIN_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
