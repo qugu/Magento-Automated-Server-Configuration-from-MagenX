@@ -1549,7 +1549,7 @@ gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
 enabled=1
 END
 echo
-yum -y -q install elasticsearch
+yum -y -q install elasticsearch >/dev/null 2>&1
 echo
 systemctl daemon-reload
 systemctl enable elasticsearch.service
@@ -1560,14 +1560,14 @@ sed -i "s/.*network.host.*/network.host: 127.0.0.1/" /etc/elasticsearch/elastics
 sed -i "s/.*http.port.*/http.port: 9200/" /etc/elasticsearch/elasticsearch.yml
 chown -R :elasticsearch /etc/elasticsearch/*
 service elasticsearch restart
-sleep 2
+sleep 5
 echo
 cd /usr/local/src/ossec_tmp/ossec-wazuh/extensions/elasticsearch/ && curl -XPUT "http://localhost:9200/_template/ossec/" -d "@elastic-ossec-template.json"
 echo
 echo
 GREENTXT "Lets install Kibana:"
 cd /usr/local/src/ossec_tmp/
-wget https://download.elastic.co/kibana/kibana/kibana-4.3.1-linux-x64.tar.gz
+wget -q https://download.elastic.co/kibana/kibana/kibana-4.3.1-linux-x64.tar.gz
 tar xf kibana-*.tar.gz && sudo mkdir -p /opt/kibana && sudo cp -R kibana-4*/* /opt/kibana/
 cat > /etc/systemd/system/kibana4.service <<END
 [Service]
