@@ -755,7 +755,6 @@ if [ "${varnish_install}" == "y" ];then
 	    wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
             wget -qO /etc/varnish/varnish.params ${REPO_MASCM_TMP}varnish.params
             systemctl daemon-reload >/dev/null 2>&1
-            systemctl enable varnish >/dev/null 2>&1
             GREENTXT "VARNISH HAS BEEN INSTALLED  -  OK"
                else
               echo
