@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="16.8"
+MASCM_VER="16.9"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -1140,6 +1140,7 @@ php_admin_value[session.save_path] = "tcp://127.0.0.1:6379"
 END
 sed -i "s/nginx/${MAGE_WEB_USER}/" /etc/systemd/system/hhvm.service
 sed -i "s/daemon/server/" /etc/systemd/system/hhvm.service
+sed -i "/.*hhvm.server.port.*/a hhvm.server.ip = 127.0.0.1" /etc/hhvm/server.ini
 sed -i '/.*hhvm.jit_a_size.*/,$d' /etc/hhvm/server.ini
 echo
 GREENTXT "NGINX SETTINGS"
@@ -1581,6 +1582,9 @@ Environment=NODE_ENV=production
 [Install]
 WantedBy=multi-user.target
 END
+echo
+sed -i "s/.*server.port.*/server.port: 5601/" /opt/kibana/config/kibana.yml
+sed -i 's/.*server.host.*/server.host: "127.0.0.1"/' /opt/kibana/config/kibana.yml
 echo
 systemctl daemon-reload
 systemctl enable kibana4.service
