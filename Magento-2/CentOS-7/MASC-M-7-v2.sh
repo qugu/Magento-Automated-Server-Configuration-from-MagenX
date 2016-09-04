@@ -16,8 +16,9 @@ REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/
 
 REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/"
 
-# Webmin Control Panel Nginx plugin
+# Webmin Control Panel plugins:
 WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.tar.gz"
+WEBMIN_FAIL2BAN="http://download.webmin.com/download/modules/fail2ban.wbm.gz"
 
 # Repositories
 REPO_PERCONA="http://www.percona.com/redir/downloads/percona-release/redhat/latest/percona-release-0.1-3.noarch.rpm"
@@ -420,7 +421,7 @@ printf "\033c"
         echo
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
         echo
-        WHITETXT "-> Install CSF Firewall                 :  ${YELLOW}\t\t\tfirewall"
+        WHITETXT "-> Install CSF Firewall or Fail2Ban     :  ${YELLOW}\t\tfirewall"
         WHITETXT "-> Install Webmin control panel         :  ${YELLOW}\t\twebmin"
         WHITETXT "-> Install Ossec ELK stack              :  ${YELLOW}\t\t\tossec"
         echo
@@ -1391,7 +1392,9 @@ pause '---> Press [Enter] key to show menu'
 "firewall")
 WHITETXT "============================================================================="
 echo
-echo -n "---> Would you like to install CSF firewall? [y/n][n]:"
+YELLOWTXT "If you are going to use services like CloudFlare - install Fail2Ban"
+echo
+echo -n "---> Would you like to install CSF firewall? (answer n for Fail2Ban) [y/n][n]:"
 read csf_test
 if [ "${csf_test}" == "y" ];then
            echo
@@ -1410,9 +1413,16 @@ if [ "${csf_test}" == "y" ];then
            if perl csftest.pl | grep "FATAL" ; then
                perl csftest.pl
                echo
-               REDTXT "You can try to fix this and reinstall later, or install FAIL2BAN"
+               REDTXT "CSF FILERWALL HAS FATAL ERRORS INSTALL FAIL2BAN INSTEAD"
+               echo -n "     PROCESSING  "
+               quick_progress &
+               pid="$!"
+               yum -q -y install fail2ban >/dev/null 2>&1
+               stop_progress "$pid"
+               echo
+               GREENTXT "FAIL2BAN HAS BEEN INSTALLED OK"
+               echo
                pause '---> Press [Enter] key to show menu'
-           exit
            else
                perl csftest.pl
                echo
@@ -1429,6 +1439,18 @@ if [ "${csf_test}" == "y" ];then
                GREENTXT "CSF FIREWALL HAS BEEN INSTALLED OK"
                echo
     fi
+    else
+    echo
+    GREENTXT "FAIL2BAN INSTALLATION"
+    echo
+    echo -n "     PROCESSING  "
+    quick_progress &
+    pid="$!"
+    yum -q -y install fail2ban >/dev/null 2>&1
+    stop_progress "$pid"
+    echo
+    GREENTXT "FAIL2BAN HAS BEEN INSTALLED OK"
+    echo
 fi
 echo
 echo
@@ -1476,6 +1498,12 @@ rpm --import http://www.webmin.com/jcameron-key.asc
             if [ -f "/usr/local/csf/csfwebmin.tgz" ]
 		then
     		perl /usr/libexec/webmin/install-module.pl /usr/local/csf/csfwebmin.tgz >/dev/null 2>&1
+    		GREENTXT "INSTALLED WEBMIN CSF FIREWALL PLUGIN"
+    		else
+    		cd /usr/local/src
+    		wget -q ${WEBMIN_FAIL2BAN} -O fail2ban.wbm.gz
+    		perl /usr/libexec/webmin/install-module.pl $_ >/dev/null 2>&1
+    		GREENTXT "INSTALLED WEBMIN FAIL2BAN PLUGIN"
             fi
             sed -i 's/root/webadmin/' /etc/webmin/miniserv.users
             sed -i 's/root:/webadmin:/' /etc/webmin/webmin.acl
