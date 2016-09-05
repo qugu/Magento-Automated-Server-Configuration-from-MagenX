@@ -1267,6 +1267,7 @@ GREENTXT "PROFTPD CONFIGURATION"
 echo
 echo
 GREENTXT "OPCACHE GUI, n98-MAGERUN, IMAGE OPTIMIZER, MYSQLTUNER, SSL DEBUG TOOLS"
+     cd ${MAGE_WEB_ROOT_PATH}
      wget -qO opcache_$(openssl rand 2 -hex).php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
      wget -qO tlstest_$(openssl rand 2 -hex).php ${REPO_MASCM_TMP}tlstest.php
      wget -qO wesley.pl ${REPO_MASCM_TMP}wesley.pl
