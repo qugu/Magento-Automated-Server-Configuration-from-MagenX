@@ -1424,11 +1424,8 @@ if [ "${csf_test}" == "y" ];then
                echo
                pause '---> Press [Enter] key to show menu'
            else
-               perl csftest.pl
                echo
-               pause '---> Press [Enter] key to continue'
-               echo
-               GREENTXT "Running CSF installation"
+               GREENTXT "CSF FIREWALL INSTALLATION"
                echo
                echo -n "     PROCESSING  "
                quick_progress &
@@ -1498,12 +1495,12 @@ rpm --import http://www.webmin.com/jcameron-key.asc
             if [ -f "/usr/local/csf/csfwebmin.tgz" ]
 		then
     		perl /usr/libexec/webmin/install-module.pl /usr/local/csf/csfwebmin.tgz >/dev/null 2>&1
-    		GREENTXT "INSTALLED WEBMIN CSF FIREWALL PLUGIN"
+    		GREENTXT "INSTALLED CSF FIREWALL PLUGIN"
     		else
     		cd /usr/local/src
     		wget -q ${WEBMIN_FAIL2BAN} -O fail2ban.wbm.gz
     		perl /usr/libexec/webmin/install-module.pl $_ >/dev/null 2>&1
-    		GREENTXT "INSTALLED WEBMIN FAIL2BAN PLUGIN"
+    		GREENTXT "INSTALLED FAIL2BAN PLUGIN"
             fi
             sed -i 's/root/webadmin/' /etc/webmin/miniserv.users
             sed -i 's/root:/webadmin:/' /etc/webmin/webmin.acl
