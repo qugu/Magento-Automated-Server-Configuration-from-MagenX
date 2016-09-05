@@ -779,6 +779,7 @@ name=Gleez repo
 baseurl=https://yum.gleez.com/7/x86_64/
 gpgcheck=0
 enabled=1
+includepkgs=hhvm
 END
 echo
             GREENTXT "Installation of HHVM package:"
