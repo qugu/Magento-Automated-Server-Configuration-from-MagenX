@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="16.9"
+MASCM_VER="16.9.1"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -26,7 +26,7 @@ REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
 REPO_FAN="http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-1-13.rhel7.noarch.rpm"
 
 # WebStack Packages
-EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate goaccess unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle ncurses-devel GeoIP GeoIP-devel GeoIP-update ImageMagick libjpeg-turbo-utils pngcrush lsof net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron sysstat attr iotop"
+EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate goaccess unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle ncurses-devel GeoIP GeoIP-devel GeoIP-update ImageMagick libjpeg-turbo-utils pngcrush lsof net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron sysstat attr iotop expect"
 PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl gmp php-gettext phpseclib recode symfony-class-loader symfony-common tcpdf tcpdf-dejavu-sans-fonts tidy udan11-sql-parser) 
 PHP_PECL_PACKAGES=(pecl-redis pecl-lzf pecl-geoip pecl-zip pecl-memcache)
 PERCONA_PACKAGES=(client-56 server-56)
@@ -974,20 +974,35 @@ WHITETXT "======================================================================
 GREENTXT "MAGENTO DATABASE AND DATABASE USER"
 echo
 /bin/systemctl start mysql.service
-pause '------> Press [Enter] key to generate MySQL ROOT strong password'
-   echo
-       MYSQL_ROOT_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
-       WHITETXT "MySQL ROOT password: ${REDBG}${MYSQL_ROOT_PASS}"
-       GREENTXT "!REMEMBER IT AND KEEP IT SAFE!"
-   echo
-pause '------> Press [Enter] key to start MySQL Secure Installation'
-mysql_secure_installation
+
+MYSQL_ROOT_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
+MAGE_DB_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
+
+MYSQL_SECURE_INSTALLATION=$(expect -c "
+set timeout 5
+log_user 0
+spawn mysql_secure_installation
+expect \"Enter current password for root (enter for none):\"
+send \"\r\"
+expect \"Set root password?\"
+send \"y\r\"
+expect \"New password:\"
+send \"${MYSQL_ROOT_PASS}\r\"
+expect \"Re-enter new password:\"
+send \"${MYSQL_ROOT_PASS}\r\"
+expect \"Remove anonymous users?\"
+send \"y\r\"
+expect \"Disallow root login remotely?\"
+send \"y\r\"
+expect \"Remove test database and access to it?\"
+send \"y\r\"
+expect \"Reload privilege tables now?\"
+send \"y\r\"
+expect eof
+")
+
+echo "${MYSQL_SECURE_INSTALLATION}"
 echo
-echo
-pause '------> Press [Enter] key to generate MySQL USER strong password'
-   MAGE_DB_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
-   WHITETXT "MySQL USER password: ${REDBG}${MAGE_DB_PASS}"
-   echo
 echo
 read -e -p "---> Enter Magento database host : " -i "localhost" MAGE_DB_HOST
 read -e -p "---> Enter Magento database name : " -i "m2d_$(openssl rand 1 -hex)_$(date +%Y%m%d)" MAGE_DB_NAME
@@ -1004,7 +1019,7 @@ EOMYSQL
 echo
 WHITETXT "MAGENTO DATABASE: ${REDBG}${MAGE_DB_NAME}"
 WHITETXT "MAGENTO DATABASE USER: ${REDBG}${MAGE_DB_USER_NAME}"
-WHITETXT "MAGENTO DATABASE PASSWORD: ${REDBG}${MAGE_DB_PASS}"
+WHITETXT "MAGENTO DATABASE PASS: ${REDBG}${MAGE_DB_PASS}"
 WHITETXT "MYSQL ROOT PASSWORD: ${REDBG}${MYSQL_ROOT_PASS}"
 echo
 cat > /root/.mytop <<END
@@ -1180,7 +1195,7 @@ sed -i "/.*session.*/a \\
         'persistent_identifier' => 'db1', \\
         'database' => '1', \\
         'compression_threshold' => '2048', \\
-        'compression_library' => 'lzf', \\
+        'compression_library' => 'gzip', \\
         'log_level' => '1', \\
         'max_concurrency' => '6', \\
         'break_after_frontend' => '5', \\
@@ -1213,7 +1228,7 @@ sed -i "/.*session.*/a \\
           'compress_data' => '0', \\
           'compress_tags' => '0', \\
           'compress_threshold' => '20480', \\
-          'compression_lib' => 'lzf', \\
+          'compression_lib' => 'gzip', \\
         ), \\
       ), \\
       'page_cache' =>  \\
@@ -1232,7 +1247,7 @@ sed -i "/.*session.*/a \\
           'compress_data' => '1', \\
           'compress_tags' => '1', \\
           'compress_threshold' => '20480', \\
-          'compression_lib' => 'lzf', \\
+          'compression_lib' => 'gzip', \\
         ), \\
       ), \\
     ), \\
@@ -1260,10 +1275,10 @@ GREENTXT "PROFTPD CONFIGURATION"
      /bin/systemctl restart proftpd.service
      echo
      WHITETXT "PROFTPD USER: ${REDBG}${MAGE_WEB_USER}"
-     WHITETXT "PROFTPD USER PASSWORD: ${REDBG}${MAGE_WEB_USER_PASS}"
+     WHITETXT "PROFTPD USER PASS: ${REDBG}${MAGE_WEB_USER_PASS}"
      WHITETXT "PROFTPD PORT: ${REDBG}${FTP_PORT}"
      WHITETXT "GEOIP LOCATION: ${REDBG}${USER_GEOIP}"
-     WHITETXT "PROFTPD CONFIG FILE: ${REDBG}/etc/proftpd.conf"
+     WHITETXT "PROFTPD CONFIG: ${REDBG}/etc/proftpd.conf"
 echo
 echo
 GREENTXT "OPCACHE GUI, n98-MAGERUN, IMAGE OPTIMIZER, MYSQLTUNER, SSL DEBUG TOOLS"
