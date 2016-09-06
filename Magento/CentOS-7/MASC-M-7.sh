@@ -932,10 +932,10 @@ echo
         echo -n "      DOWNLOADING MAGENTO  "
         long_progress &
         pid="$!"
-        su ${MY_DOMAIN%%.*} -s /bin/bash -c "wget -qO - ${MAGENTO_TMP_FILE} | tar -xzp --strip-components 1"
+        su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "wget -qO - ${MAGENTO_TMP_FILE} | tar -xzp --strip-components 1"
         stop_progress "$pid"
-        su ${MY_DOMAIN%%.*} -s /bin/bash -c "wget -qO shell/fixSUPEE6788.php https://raw.githubusercontent.com/rhoerr/supee-6788-toolbox/master/fixSUPEE6788.php"
-        chown -R ${MY_DOMAIN%%.*}:${MY_DOMAIN%%.*} ${MY_SHOP_PATH%/*}
+        su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "wget -qO shell/fixSUPEE6788.php https://raw.githubusercontent.com/rhoerr/supee-6788-toolbox/master/fixSUPEE6788.php"
+        chown -R ${MAGE_DOMAIN%%.*}:${MAGE_DOMAIN%%.*} ${MAGE_WEB_ROOT_PATH%/*}
         echo
      echo
 WHITETXT "============================================================================="
