@@ -740,6 +740,9 @@ if [ "${varnish_install}" == "y" ];then
         then
           echo
             GREENTXT "VARNISH HAS BEEN INSTALLED  -  OK"
+            wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
+            wget -qO /etc/varnish/varnish.params ${REPO_MASCM_TMP}varnish.params
+            systemctl daemon-reload >/dev/null 2>&1
                else
               echo
             REDTXT "VARNISH INSTALLATION ERROR"
@@ -1128,6 +1131,31 @@ echo "--------------------------------------------------------------------------
 BLUEBG " POST-INSTALL CONFIGURATION "
 echo "-------------------------------------------------------------------------------------"
 echo
+echo
+GREENTXT "SERVER TIMEZONE SETUP"
+timedatectl set-timezone ${MAGE_TIMEZONE}
+echo
+GREENTXT "PHP-FPM SETTINGS"
+sed -i "s/\[www\]/\[${MAGE_WEB_USER}\]/" /etc/php-fpm.d/www.conf
+sed -i "s/user = apache/user = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
+sed -i "s/group = apache/group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
+sed -i "s/;listen.owner = nobody/listen.group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
+sed -i "s/;listen.group = nobody/listen.group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
+sed -i "s/;listen.mode = 0660/listen.mode = 0660/" /etc/php-fpm.d/www.conf
+sed -i "s,session.save_handler = files,session.save_handler = redis," /etc/php.ini
+sed -i 's,;session.save_path = "/tmp",session.save_path = "tcp://127.0.0.1:6379",' /etc/php.ini
+sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
+sed -i '/sendmail_path/,$d' /etc/php-fpm.d/www.conf
+cat >> /etc/php-fpm.d/www.conf <<END
+;;
+;; Custom pool settings
+php_flag[display_errors] = off
+php_admin_flag[log_errors] = on
+php_admin_value[error_log] = ${MAGE_WEB_ROOT_PATH}/var/log/php-fpm-error.log
+php_admin_value[memory_limit] = 1024M
+php_admin_value[date.timezone] = ${MAGE_TIMEZONE}
+END
+echo
 GREENTXT "CHANGING YOUR local.xml FILE WITH REDIS SESSIONS AND CACHE BACKEND"
 echo
 sed -i '/<session_save>/d' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml
@@ -1206,7 +1234,7 @@ rm -rf  ${MAGE_WEB_ROOT_PATH}/var/locks/*
 su ${MAGE_WEB_USER} -s /bin/bash -c "php ${MAGE_WEB_ROOT_PATH}/shell/indexer.php --reindexall"
 echo
 echo
-## "NGINX CONFIGURATION"
+GREENTXT "NGINX CONFIGURATION"
 echo
 wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}fastcgi_params
 wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}nginx.conf
@@ -1228,19 +1256,13 @@ do
 wget -q ${NGINX_EXTRA_CONF_URL}${CONFIG}
 done
 echo
-usermod -G ${MAGE_WEB_USER} nginx
-sed -i "s/user = apache/user = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
-sed -i "s/group = apache/group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value\[session.save_path\].*,php_value\[session.save_path\] = ${MAGE_WEB_ROOT_PATH}/var/session," /etc/php-fpm.d/www.conf
-sed -i "s,.*php_value\[soap.wsdl_cache_dir\].*,php_value\[soap.wsdl_cache_dir\] = ${MAGE_WEB_ROOT_PATH}/tmp," /etc/php-fpm.d/www.conf
-echo
 GREENTXT "PROFTPD CONFIGURATION"
 pause '------> Press [Enter] key to continue'
 echo
      wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
      ## change proftpd config
      SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
-     USER_IP=$(last -i | grep "root.*still logged in" | awk 'NR==1{print $3}')
+     USER_IP=${SSH_CLIENT%% *}
      USER_GEOIP=$(geoiplookup ${USER_IP} | awk 'NR==1{print substr($4,1,2)}')
      FTP_PORT=$(shuf -i 5121-5132 -n 1)
      sed -i "s/server_sftp_port/${FTP_PORT}/" /etc/proftpd.conf
@@ -1274,8 +1296,6 @@ echo
      echo
      GREENTXT "phpMyAdmin was installed to http://www.${MAGE_DOMAIN}/mysql_${PMA_FOLDER}/"
 echo
-echo
-echo
 GREENTXT "INSTALLING OPCACHE GUI"
 pause '------> Press [Enter] key to continue'
 echo
@@ -1284,19 +1304,6 @@ echo
     wget -qO ${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
     echo
     GREENTXT "Opcache interface was installed to http://www.${MAGE_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php"
-echo
-echo
-if yum list installed "varnish" >/dev/null 2>&1; then
-GREENTXT "VARNISH DAEMON CONFIGURATION FILE"
-echo
-wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
-wget -qO /etc/varnish/varnish.params ${REPO_MASCM_TMP}varnish.params
-systemctl daemon-reload >/dev/null 2>&1
-systemctl enable varnish >/dev/null 2>&1
-echo
-echo 'Varnish secret key -->'$(cat /etc/varnish/secret)'<-- copy it'
-echo
-fi
 echo
 GREENTXT "SYSTEM UPDATE CONFIGURATION YUM-CRON"
 echo
@@ -1400,9 +1407,6 @@ chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH%/*}
 rm -rf index.php.sample LICENSE_AFL.txt LICENSE.html LICENSE.txt RELEASE_NOTES.txt php.ini.sample dev
 chmod u+x mage cron.sh imgopt.pl mysqltuner.pl
 echo
-GREENTXT "SERVER TIMEZONE SETUP"
-sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
-timedatectl set-timezone ${MAGE_TIMEZONE}
 systemctl daemon-reload
 /bin/systemctl restart nginx.service
 /bin/systemctl restart php-fpm.service
@@ -1617,13 +1621,16 @@ Environment=NODE_ENV=production
 WantedBy=multi-user.target
 END
 echo
+sed -i "s/.*server.port.*/server.port: 5601/" /opt/kibana/config/kibana.yml
+sed -i 's/.*server.host.*/server.host: "127.0.0.1"/' /opt/kibana/config/kibana.yml
+echo
 systemctl daemon-reload
 systemctl enable kibana4.service
 systemctl restart kibana4.service
 service logstash restart
 echo
 KIBANA_PORT=$(shuf -i 10322-10539 -n 1)
-USER_IP=$(last -i | grep "root.*still logged in" | awk '{print $3}')
+USER_IP=${SSH_CLIENT%% *}
 MAGE_DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
 echo "Create password for Kibana interface http authentication:"
 htpasswd -c /etc/nginx/.htpasswd ossec
