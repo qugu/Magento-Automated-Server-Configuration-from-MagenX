@@ -6,4 +6,14 @@ SERVICE=$1
 
 SERVICE_STATUS=$(systemctl status ${SERVICE})
 
-echo " ${SERVICE_STATUS} " | mail -s "${SERVICE} entered failed state on ${MAILFROM} IP:${SERVER_IP_ADDR}" ${MAILTO}
+sendmail ${MAILTO} <<EOF
+From:${MAILFROM}
+To:${MAILTO}
+Subject:[ ! ALERT ! ] - ${SERVICE} failed to start on ${MAILFROM} ${SERVER_IP_ADDR}
+Importance: High
+Content-type: text/plain
+
+Status report for unit: ${SERVICE}
+
+${SERVICE_STATUS}
+EOF
