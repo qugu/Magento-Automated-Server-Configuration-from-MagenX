@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="16.9.2"
+MASCM_VER="16.9.3"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -511,10 +511,12 @@ if [ "${repo_percona_install}" == "y" ];then
               echo
               ## plug in service status alert
               cp /usr/lib/systemd/system/mysqld.service /etc/systemd/system/mysqld.service
-              sed -i "/Restart=always/d" /etc/systemd/system/mysqld.service
-              sed -i "/Restart=always/d" /etc/systemd/system/mysql.service
-              sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/mysqld.service
-              sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/mysql.service
+              sed -i "s/^Restart=always/Restart=on-failure/" /etc/systemd/system/mysqld.service
+              sed -i "s/^Restart=always/Restart=on-failure/" /etc/systemd/system/mysql.service
+              sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/mysqld.service
+              sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/mysql.service
+              sed -i "/Restart=on-failure/a RestartSec=10" /etc/systemd/system/mysqld.service
+              sed -i "/Restart=on-failure/a RestartSec=10" /etc/systemd/system/mysql.service
               systemctl daemon-reload
               systemctl enable mysql >/dev/null 2>&1
               echo
@@ -612,7 +614,8 @@ END
             echo
             ## plug in service status alert
             cp /usr/lib/systemd/system/nginx.service /etc/systemd/system/nginx.service
-            sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/nginx.service
+            sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/nginx.service
+            sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" 
             sed -i "s,PIDFile=/run/nginx.pid,PIDFile=/var/run/nginx.pid," /etc/systemd/system/nginx.service
             sed -i "s/PrivateTmp=true/PrivateTmp=false/" /etc/systemd/system/nginx.service
             systemctl daemon-reload
@@ -661,7 +664,8 @@ if [ "${repo_remi_install}" == "y" ];then
              ## plug in service status alert
              cp /usr/lib/systemd/system/php-fpm.service /etc/systemd/system/php-fpm.service
              sed -i "s/PrivateTmp=true/PrivateTmp=false/" /etc/systemd/system/php-fpm.service
-             sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/php-fpm.service
+             sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/php-fpm.service
+             sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/php-fpm.service
              systemctl daemon-reload
              systemctl enable php-fpm >/dev/null 2>&1
              systemctl disable httpd >/dev/null 2>&1
@@ -701,7 +705,8 @@ sed -i "s/^logfile.*/logfile \/var\/log\/redis\/redis-${REDISPORT}.log/"  /etc/r
 sed -i "s/^pidfile.*/pidfile \/var\/run\/redis\/redis-${REDISPORT}.pid/"  /etc/redis-${REDISPORT}.conf
 sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis-${REDISPORT}.conf
 sed -i "s/redis.conf/redis-${REDISPORT}.conf/" /etc/systemd/system/redis-${REDISPORT}.service
-sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/redis-${REDISPORT}.service
+sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/redis-${REDISPORT}.service
+sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/redis-${REDISPORT}.service
 done
 echo
 cat > /etc/sysconfig/memcached <<END
@@ -714,8 +719,10 @@ END
 ## plug in service status alert
 cp /usr/lib/systemd/system/memcached.service /etc/systemd/system/memcached.service
 cp /usr/lib/systemd/system/searchd.service /etc/systemd/system/searchd.service
-sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/memcached.service
-sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/searchd.service
+sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/memcached.service
+sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/memcached.service
+sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/searchd.service
+sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/searchd.service
 systemctl daemon-reload
 systemctl enable redis-6379 >/dev/null 2>&1
 systemctl enable redis-6380 >/dev/null 2>&1
@@ -798,6 +805,7 @@ echo
             ## plug in service status alert
             cp /usr/lib/systemd/system/hhvm.service /etc/systemd/system/hhvm.service
             sed -i "/^Description=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/hhvm.service
+            sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/hhvm.service
             systemctl daemon-reload
             systemctl enable hhvm >/dev/null 2>&1
                else
@@ -1270,7 +1278,8 @@ GREENTXT "PROFTPD CONFIGURATION"
      echo
      ## plug in service status alert
      cp /usr/lib/systemd/system/proftpd.service /etc/systemd/system/proftpd.service
-     sed -i "/^After=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/proftpd.service
+     sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/proftpd.service
+     sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/proftpd.service
      systemctl daemon-reload
      systemctl enable proftpd.service >/dev/null 2>&1
      /bin/systemctl restart proftpd.service
