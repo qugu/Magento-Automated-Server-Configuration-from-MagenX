@@ -31,5 +31,8 @@ ExecStart=/usr/sbin/varnishd \
 	
 ExecReload=/usr/sbin/varnish_reload_vcl
 
+Restart=on-failure
+RestartSec=10
+
 [Install]
 WantedBy=multi-user.target
