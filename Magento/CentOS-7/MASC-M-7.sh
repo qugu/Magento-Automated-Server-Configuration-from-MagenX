@@ -1030,6 +1030,7 @@ DB_HOST=$(awk '/database/ { print $2 }' /root/mascm/.mascm_index)
 DB_NAME=$(awk '/database/ { print $3 }' /root/mascm/.mascm_index)
 DB_USER_NAME=$(awk '/database/ { print $4 }' /root/mascm/.mascm_index)
 DB_PASS=$(awk '/database/ { print $5 }' /root/mascm/.mascm_index)
+MAGE_ADMIN_PATH=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
 echo
 GREENTXT "ENTER SETUP INFORMATION"
 echo
