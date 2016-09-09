@@ -8,7 +8,7 @@ MASC-M<sup>™</sup>
 #### MagenX - Automated Server Configuration for Magento
 Get a fully pre-configured server with Magento and LEMP stack in just 15 minutes.
 
-Magento 2 installation including: <br/>
+Magento installation including: <br/>
 - WEBMIN CONTROL PANEL
 - HHVM
 - VARNISH
@@ -26,7 +26,7 @@ Magento 2 installation including: <br/>
 - PHPMYADMIN
 - CSF FIREWALL
 - [OSSEC + ELK STACK (JAVA,LOGSTASH,KIBANA 4,ELASTICSEARCH)](http://www.wazuh.com/)
-- MAGERUN 2
+- MAGERUN
 
 Complete linux stack including: <br/>
 - linux and webstack settings optimization
