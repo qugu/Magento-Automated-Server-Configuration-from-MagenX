@@ -1,18 +1,24 @@
 #!/bin/bash
 #====================================================================#
-#  MagenX - Automated Server Configuration for Magento v2            #
+#  MagenX - Automated Server Configuration for Magento 1+2           #
 #    Copyright (C) 2016 admin@magenx.com                             #
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="16.9.3"
+MASCM_VER="20.3.1"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
 # Software versions
-MAGENTO_VER=$(curl -s https://api.github.com/repos/magento/magento2/tags 2>&1 | head -3 | grep -oP '(?<=")\d.*(?=")')
-REPO_MAGENTO="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
+# Magento 1
+MAGE_TMP_FILE="https://www.dropbox.com/s/oy4t5lzy1wfxqir/magento-1.9.2.4-2016-02-23-06-04-07.tar.gz"
+MAGE_FILE_MD5="0ee115245aea158b03d584dc6c1d5466"
+MAGE_VER_1="1.9.2.4"
+
+# Magento 2
+MAGE_VER_2=$(curl -s https://api.github.com/repos/magento/magento2/tags 2>&1 | head -3 | grep -oP '(?<=")\d.*(?=")')
+REPO_MAGE="composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition"
 
 REPO_MASCM_TMP="https://raw.githubusercontent.com/magenx/Magento-Automated-Server-Configuration-from-MagenX/master/tmp/"
 
@@ -27,15 +33,14 @@ REPO_FAN="http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-1-13
 
 # WebStack Packages
 EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate goaccess unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle ncurses-devel GeoIP GeoIP-devel GeoIP-update ImageMagick libjpeg-turbo-utils pngcrush lsof net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron sysstat attr iotop expect"
-PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl gmp php-gettext phpseclib recode symfony-class-loader symfony-common tcpdf tcpdf-dejavu-sans-fonts tidy udan11-sql-parser) 
+PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl gmp php-gettext phpseclib recode symfony-class-loader symfony-common tcpdf tcpdf-dejavu-sans-fonts tidy udan11-sql-parser snappy lz4) 
 PHP_PECL_PACKAGES=(pecl-redis pecl-lzf pecl-geoip pecl-zip pecl-memcache)
 PERCONA_PACKAGES=(client-56 server-56)
 PERL_MODULES=(libwww-perl Template-Toolkit Time-HiRes ExtUtils-CBuilder ExtUtils-MakeMaker TermReadKey DBI DBD-MySQL Digest-HMAC Digest-SHA1 Test-Simple Moose Net-SSLeay)
 
 # Nginx extra configuration
-NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento2/"
-NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf status.conf setup.conf hhvm.conf php_backend.conf phpmyadmin.conf maintenance.conf multishop.conf spider.conf"
-NGINX_EXTRA_CONF_URL="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/magento2/conf_m2/"
+NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/"
+NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf export.conf status.conf setup.conf hhvm.conf php_backend.conf phpmyadmin.conf maintenance.conf multishop.conf spider.conf"
 
 # Debug Tools
 MYSQL_TUNER="https://raw.githubusercontent.com/major/MySQLTuner-perl/master/mysqltuner.pl"
@@ -410,14 +415,14 @@ showMenu () {
 printf "\033c"
     echo
       echo
-        echo -e "${DGREYBG}${BOLD}  MAGENTO ${MAGENTO_VER} SERVER CONFIGURATION v.${MASCM_VER}  ${RESET}"
+        echo -e "${DGREYBG}${BOLD}  MAGENTO SERVER CONFIGURATION v.${MASCM_VER}  ${RESET}"
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
         echo
         WHITETXT "-> Install repository and LEMP packages :  ${YELLOW}\tlemp"
         WHITETXT "-> Download Magento latest packages     :  ${YELLOW}\t\tmagento"
-	WHITETXT "-> Setup Magento database               :  ${YELLOW}\t\t\tdatabase"
-	WHITETXT "-> Install Magento with Composer        :  ${YELLOW}\t\tinstall"
-	WHITETXT "-> Post-Install configuration           :  ${YELLOW}\t\tconfig"
+	    WHITETXT "-> Setup Magento database               :  ${YELLOW}\t\t\tdatabase"
+	    WHITETXT "-> Install Magento with Composer        :  ${YELLOW}\t\tinstall"
+	    WHITETXT "-> Post-Install configuration           :  ${YELLOW}\t\tconfig"
         echo
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
         echo
@@ -597,25 +602,11 @@ END
         then
           echo
             GREENTXT "NGINX HAS BEEN INSTALLED  -  OK"
-		echo
-		wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}fastcgi_params
-		wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}nginx.conf
-		mkdir -p /etc/nginx/sites-enabled
-		mkdir -p /etc/nginx/sites-available && cd $_
-		wget -q ${NGINX_BASE}sites-available/default.conf
-		wget -q ${NGINX_BASE}sites-available/magento2.conf
-		ln -s /etc/nginx/sites-available/magento2.conf /etc/nginx/sites-enabled/magento2.conf
-		ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
-		mkdir -p /etc/nginx/conf_m2 && cd /etc/nginx/conf_m2/
-		for CONFIG in ${NGINX_EXTRA_CONF}
-		do
-		wget -q ${NGINX_EXTRA_CONF_URL}${CONFIG}
-		done
             echo
             ## plug in service status alert
             cp /usr/lib/systemd/system/nginx.service /etc/systemd/system/nginx.service
             sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/nginx.service
-            sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" 
+            sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/nginx.service
             sed -i "s,PIDFile=/run/nginx.pid,PIDFile=/var/run/nginx.pid," /etc/systemd/system/nginx.service
             sed -i "s/PrivateTmp=true/PrivateTmp=false/" /etc/systemd/system/nginx.service
             systemctl daemon-reload
@@ -939,15 +930,18 @@ printf "\033c"
 ###################################################################################
 echo
 echo "-------------------------------------------------------------------------------------"
-BLUEBG "| DOWNLOADING MAGENTO ${MAGENTO_VER} |"
+BLUEBG "|   SELECT TO DOWNLOAD MAGENTO 1 (${MAGE_VER_1}) OR 2 (${MAGE_VER_2})  |"
 echo "-------------------------------------------------------------------------------------"
 echo
 echo
-     read -e -p "---> Enter your domain name (without www.): " -i "myshop.com" MAGE_DOMAIN
+     read -e -p "---> SELECT MAGENTO TO DOWNLOAD 1 OR 2: " -i "2"  MAGE_SEL_VER
+	 MAGE_VER=MAGE_VER_${MAGE_SEL_VER}
+	 echo
+     read -e -p "---> ENTER YOUR DOMAIN NAME (without www.): " -i "myshop.com" MAGE_DOMAIN
      MAGE_WEB_ROOT_PATH="/home/${MAGE_DOMAIN%%.*}/public_html"
+	 echo "------> MAGENTO ${MAGE_SEL_VER} (${!MAGE_VER})"
+	 echo "------> WILL BE DOWNLOADED TO ${MAGE_WEB_ROOT_PATH}"
      echo
-        echo "--->  Magento ${MAGENTO_VER} will be downloaded to:"
-        echo "--->  ${MAGE_WEB_ROOT_PATH}"
         mkdir -p ${MAGE_WEB_ROOT_PATH} && cd $_
         useradd -d ${MAGE_WEB_ROOT_PATH%/*} -s /sbin/nologin ${MAGE_DOMAIN%%.*}  >/dev/null 2>&1
         MAGE_WEB_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
@@ -956,11 +950,20 @@ echo
         chmod 2770 ${MAGE_WEB_ROOT_PATH}
         setfacl -Rdm u:${MAGE_DOMAIN%%.*}:rwx,g:${MAGE_DOMAIN%%.*}:rwx,g::rw-,o::- ${MAGE_WEB_ROOT_PATH}
         echo
-        curl -sS https://getcomposer.org/installer | php >/dev/null 2>&1
-        mv composer.phar /usr/local/bin/composer
-        echo
-        echo
-        su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "${REPO_MAGENTO} ."
+		if [ "${MAGE_SEL_VER}" = "1" ]; then
+			echo -n "      DOWNLOADING MAGENTO"
+			long_progress &
+			pid="$!"
+			su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "wget -qO - ${MAGE_TMP_FILE} | tar -xzp --strip-components 1"
+			stop_progress "$pid"
+			su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "wget -qO shell/fixSUPEE6788.php https://raw.githubusercontent.com/rhoerr/supee-6788-toolbox/master/fixSUPEE6788.php"
+        else
+			curl -sS https://getcomposer.org/installer | php >/dev/null 2>&1
+			mv composer.phar /usr/local/bin/composer
+			echo
+			echo
+			su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "${REPO_MAGE} ."
+		fi
         echo
      echo
 WHITETXT "============================================================================="
@@ -968,7 +971,7 @@ GREENTXT "      == MAGENTO DOWNLOADED AND READY FOR INSTALLATION =="
 WHITETXT "============================================================================="
 mkdir -p /root/mascm/
 cat >> /root/mascm/.mascm_index <<END
-webshop ${MAGE_DOMAIN}    ${MAGE_WEB_ROOT_PATH}    ${MAGE_DOMAIN%%.*}   ${MAGE_WEB_USER_PASS}
+webshop ${MAGE_DOMAIN}    ${MAGE_WEB_ROOT_PATH}    ${MAGE_DOMAIN%%.*}   ${MAGE_WEB_USER_PASS}  ${MAGE_SEL_VER}  ${!MAGE_VER}
 END
 echo
 pause '------> Press [Enter] key to show menu'
@@ -983,7 +986,7 @@ WHITETXT "======================================================================
 GREENTXT "MAGENTO DATABASE AND DATABASE USER"
 echo
 /bin/systemctl start mysql.service
-
+MAGE_SEL_VER=$(awk '/webshop/ { print $6 }' /root/mascm/.mascm_index)
 MYSQL_ROOT_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
 MAGE_DB_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
 
@@ -1014,8 +1017,8 @@ echo "${MYSQL_SECURE_INSTALLATION}"
 echo
 echo
 read -e -p "---> Enter Magento database host : " -i "localhost" MAGE_DB_HOST
-read -e -p "---> Enter Magento database name : " -i "m2d_$(openssl rand 1 -hex)_$(date +%Y%m%d)" MAGE_DB_NAME
-read -e -p "---> Enter Magento database user : " -i "m2u_$(openssl rand 1 -hex)_$(date +%Y%m%d)" MAGE_DB_USER_NAME
+read -e -p "---> Enter Magento database name : " -i "m${MAGE_SEL_VER}d_$(openssl rand 2 -hex)_$(date +%y%m%d)" MAGE_DB_NAME
+read -e -p "---> Enter Magento database user : " -i "m${MAGE_SEL_VER}u_$(openssl rand 2 -hex)_$(date +%y%m%d)" MAGE_DB_USER_NAME
 echo
 echo
 pause '------> Press [Enter] key to create MySQL database and user'
@@ -1056,8 +1059,10 @@ printf "\033c"
 ###################################################################################
 "install")
 printf "\033c"
+MAGE_SEL_VER=$(awk '/webshop/ { print $6 }' /root/mascm/.mascm_index)
+MAGE_VER=$(awk '/webshop/ { print $7 }' /root/mascm/.mascm_index)
 echo "-------------------------------------------------------------------------------------"
-BLUEBG   "|   MAGENTO ${MAGENTO_VER} INSTALLATION WITH COMPOSER   |"
+BLUEBG   "|  MAGENTO ${MAGE_SEL_VER} (${MAGE_VER}) INSTALLATION  |"
 echo "-------------------------------------------------------------------------------------"
 echo
 MAGE_WEB_ROOT_PATH=$(awk '/webshop/ { print $3 }' /root/mascm/.mascm_index)
@@ -1067,9 +1072,9 @@ DB_HOST=$(awk '/database/ { print $2 }' /root/mascm/.mascm_index)
 DB_NAME=$(awk '/database/ { print $3 }' /root/mascm/.mascm_index)
 DB_USER_NAME=$(awk '/database/ { print $4 }' /root/mascm/.mascm_index)
 DB_PASS=$(awk '/database/ { print $5 }' /root/mascm/.mascm_index)
+
 cd ${MAGE_WEB_ROOT_PATH}
 chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH}
-chmod u+x bin/magento
 echo
 echo "---> ENTER SETUP INFORMATION"
 echo
@@ -1089,12 +1094,64 @@ read -e -p "---> Use generated admin password: " -i "${MAGE_ADMIN_PASSGEN}"  MAG
 read -e -p "---> Enter your shop url: " -i "http://www.${MAGE_DOMAIN}/"  MAGE_SITE_URL
 echo
 WHITETXT "Language, Currency and Timezone settings"
+if [ "${MAGE_SEL_VER}" = "1" ]; then
+MAGE_ADMIN_PATH=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 6 | head -n 1)
+updown_menu "$(curl -s ${REPO_MASCM_TMP}magento-locale | sort )" MAGE_LOCALE
+updown_menu "$(curl -s ${REPO_MASCM_TMP}magento-currency | sort )" MAGE_CURRENCY
+updown_menu "$(timedatectl list-timezones | sort )" MAGE_TIMEZONE
+echo
+echo
+chmod u+x mage
+# pre-fix php 7
+sed -i "s/CURLOPT_SSL_CIPHER_LIST, 'TLSv1'/CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1/" downloader/lib/Mage/HTTP/Client/Curl.php
+sed -i '555s/.*/$out .= $this->getBlock($callback[0])->{$callback[1]}();/' app/code/core/Mage/Core/Model/Layout.php
+sed -i '274s/.*/$params['object']->{$params['method']}($this->_file['tmp_name']);/' lib/Varien/File/Uploader.php
+# pre-fix php 7
+su ${MAGE_WEB_USER} -s /bin/bash -c "./mage mage-setup ."
+su ${MAGE_WEB_USER} -s /bin/bash -c "php -f install.php -- \
+--license_agreement_accepted "yes" \
+--locale "${MAGE_LOCALE}" \
+--timezone "${MAGE_TIMEZONE}" \
+--default_currency "${MAGE_CURRENCY}" \
+--db_host "${MAGE_DB_HOST}" \
+--db_name "${MAGE_DB_NAME}" \
+--db_user "${MAGE_DB_USER_NAME}" \
+--db_pass "${MAGE_DB_PASS}" \
+--url "${MAGE_SITE_URL}" \
+--use_rewrites "yes" \
+--use_secure "no" \
+--secure_base_url "" \
+--skip_url_validation "yes" \
+--use_secure_admin "no" \
+--admin_frontname "${MAGE_ADMIN_PATH}" \
+--admin_firstname "${MAGE_ADMIN_FNAME}" \
+--admin_lastname "${MAGE_ADMIN_LNAME}" \
+--admin_email "${MAGE_ADMIN_EMAIL}" \
+--admin_username "${MAGE_ADMIN_LOGIN}" \
+--admin_password "${MAGE_ADMIN_PASS}""
+    echo
+    WHITETXT "============================================================================="
+    echo
+    GREENTXT "INSTALLED MAGENTO ${MAGE_SEL_VER} (${MAGE_VER}) WITHOUT SAMPLE DATA"
+    echo
+    WHITETXT "============================================================================="
+    WHITETXT " MAGENTO ADMIN ACCOUNT"
+	echo
+    echo "      Admin path: ${MAGE_SITE_URL}${MAGE_ADMIN_PATH}"
+    echo "      Username: ${MAGE_ADMIN_LOGIN}"
+    echo "      Password: ${MAGE_ADMIN_PASS}"
+    echo
+    WHITETXT "============================================================================="
+ echo
+echo
+	else
+chmod u+x bin/magento
 updown_menu "$(bin/magento info:language:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_LOCALE
 updown_menu "$(bin/magento info:currency:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_CURRENCY
 updown_menu "$(bin/magento info:timezone:list | sed "s/[|+-]//g" | awk 'NR > 3 {print $NF}' | sort )" MAGE_TIMEZONE
 echo
 echo
-GREENTXT "INSTALL MAGENTO ${MAGENTO_VER} WITHOUT SAMPLE DATA"
+GREENTXT "SETUP MAGENTO ${MAGE_SEL_VER} (${MAGE_VER}) WITHOUT SAMPLE DATA"
 echo
 pause '---> Press [Enter] key to run setup'
 echo
@@ -1114,11 +1171,12 @@ su ${MAGE_WEB_USER} -s /bin/bash -c "bin/magento setup:install --base-url=${MAGE
 --cleanup-database \
 --session-save=files \
 --use-rewrites=1"
-echo
+fi
+
 cat >> /root/mascm/.mascm_index <<END
 mageadmin  ${MAGE_ADMIN_LOGIN}  ${MAGE_ADMIN_PASS}  ${MAGE_ADMIN_EMAIL}  ${MAGE_TIMEZONE}  ${MAGE_LOCALE}
 END
-echo
+
 pause '------> Press [Enter] key to show menu'
 printf "\033c"
 ;;
@@ -1134,16 +1192,17 @@ MAGE_WEB_USER_PASS=$(awk '/webshop/ { print $5 }' /root/mascm/.mascm_index)
 MAGE_ADMIN_EMAIL=$(awk '/mageadmin/ { print $4 }' /root/mascm/.mascm_index)
 MAGE_TIMEZONE=$(awk '/mageadmin/ { print $5 }' /root/mascm/.mascm_index)
 MAGE_LOCALE=$(awk '/mageadmin/ { print $6 }' /root/mascm/.mascm_index)
-
+MAGE_SEL_VER=$(awk '/webshop/ { print $6 }' /root/mascm/.mascm_index)
+MAGE_VER=$(awk '/webshop/ { print $7 }' /root/mascm/.mascm_index)
 echo "-------------------------------------------------------------------------------------"
-BLUEBG "| POST-INSTALL CONFIGURATION |"
+BLUEBG "| POST-INSTALLATION CONFIGURATION |"
 echo "-------------------------------------------------------------------------------------"
 echo
 echo
-GREENTXT "SERVER TIMEZONE SETUP"
+GREENTXT "SERVER TIMEZONE SETTINGS"
 timedatectl set-timezone ${MAGE_TIMEZONE}
 echo
-GREENTXT "PHP-FPM SETTINGS"
+GREENTXT "HHVM AND PHP-FPM SETTINGS"
 sed -i "s/\[www\]/\[${MAGE_WEB_USER}\]/" /etc/php-fpm.d/www.conf
 sed -i "s/user = apache/user = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
 sed -i "s/group = apache/group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
@@ -1169,11 +1228,24 @@ sed -i "/.*hhvm.server.port.*/a hhvm.server.ip = 127.0.0.1" /etc/hhvm/server.ini
 sed -i '/.*hhvm.jit_a_size.*/,$d' /etc/hhvm/server.ini
 echo
 GREENTXT "NGINX SETTINGS"
+wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}magento${MAGE_SEL_VER}/fastcgi_params
+wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}magento${MAGE_SEL_VER}/nginx.conf
+mkdir -p /etc/nginx/sites-enabled
+mkdir -p /etc/nginx/sites-available && cd $_
+wget -q ${NGINX_BASE}magento${MAGE_SEL_VER}/sites-available/default.conf
+wget -q ${NGINX_BASE}magento${MAGE_SEL_VER}/sites-available/magento${MAGE_SEL_VER}.conf
+ln -s /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf /etc/nginx/sites-enabled/magento${MAGE_SEL_VER}.conf
+ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
+mkdir -p /etc/nginx/conf_m${MAGE_SEL_VER} && cd /etc/nginx/conf_m${MAGE_SEL_VER}/
+for CONFIG in ${NGINX_EXTRA_CONF}
+do
+wget -q ${NGINX_BASE}magento${MAGE_SEL_VER}/conf_m${MAGE_SEL_VER}/${CONFIG}
+done
 sed -i "s/user  nginx;/user  ${MAGE_WEB_USER};/" /etc/nginx/nginx.conf
-sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/sites-available/magento2.conf
-sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/sites-available/magento2.conf
-sed -i "s/127.0.0.1:9000/hhvm-phpfpm/" /etc/nginx/conf_m2/php_backend.conf
-cat >> /etc/nginx/conf_m2/hhvm.conf <<END
+sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
+sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
+sed -i "s/127.0.0.1:9000/hhvm-phpfpm/" /etc/nginx/conf_m${MAGE_SEL_VER}/php_backend.conf
+cat >> /etc/nginx/conf_m${MAGE_SEL_VER}/hhvm.conf <<END
 upstream hhvm-phpfpm {
         server 127.0.0.1:9001; #hhvm
         server 127.0.0.1:9000 backup; #php-fpm
@@ -1181,16 +1253,208 @@ upstream hhvm-phpfpm {
         }
 END
 echo
-GREENTXT "PHPMYADMIN"
+GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
      yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
      sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
-     sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m2/phpmyadmin.conf
+     sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m${MAGE_SEL_VER}/phpmyadmin.conf
      echo
      WHITETXT "phpMyAdmin was installed to http://www.${MAGE_DOMAIN}/mysql_${PMA_FOLDER}/"
 echo
+GREENTXT "PROFTPD CONFIGURATION"
+     wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
+     ## change proftpd config
+     SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
+     USER_IP=${SSH_CLIENT%% *}
+     USER_GEOIP=$(geoiplookup ${USER_IP} | awk 'NR==1{print substr($4,1,2)}')
+     FTP_PORT=$(shuf -i 5121-5132 -n 1)
+     sed -i "s/server_sftp_port/${FTP_PORT}/" /etc/proftpd.conf
+     sed -i "s/server_ip_address/${SERVER_IP_ADDR}/" /etc/proftpd.conf
+     sed -i "s/client_ip_address/${USER_IP}/" /etc/proftpd.conf
+     sed -i "s/geoip_country_code/${USER_GEOIP}/" /etc/proftpd.conf
+     sed -i "s/sftp_domain/${MAGE_DOMAIN}/" /etc/proftpd.conf
+     sed -i "s/FTP_USER/${MAGE_WEB_USER}/" /etc/proftpd.conf
+     echo
+     ## plug in service status alert
+     cp /usr/lib/systemd/system/proftpd.service /etc/systemd/system/proftpd.service
+     sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/proftpd.service
+     sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/proftpd.service
+     systemctl daemon-reload
+     systemctl enable proftpd.service >/dev/null 2>&1
+     /bin/systemctl restart proftpd.service
+     echo
+     WHITETXT "PROFTPD USER: ${REDBG}${MAGE_WEB_USER}"
+     WHITETXT "PROFTPD USER PASS: ${REDBG}${MAGE_WEB_USER_PASS}"
+     WHITETXT "PROFTPD PORT: ${REDBG}${FTP_PORT}"
+     WHITETXT "GEOIP LOCATION: ${REDBG}${USER_GEOIP}"
+     WHITETXT "PROFTPD CONFIG: ${REDBG}/etc/proftpd.conf"
+echo
+echo
+GREENTXT "OPCACHE GUI, n98-MAGERUN, IMAGE OPTIMIZER, MYSQLTUNER, SSL DEBUG TOOLS"
+     cd ${MAGE_WEB_ROOT_PATH}
+     wget -qO opcache_$(openssl rand 2 -hex).php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
+     wget -qO tlstest_$(openssl rand 2 -hex).php ${REPO_MASCM_TMP}tlstest.php
+     wget -qO wesley.pl ${REPO_MASCM_TMP}wesley.pl
+     wget -qO mysqltuner.pl ${MYSQL_TUNER}
+echo
+GREENTXT "SYSTEM AUTO UPDATE WITH YUM-CRON"
+sed -i '8s/.*/enabled=1/' /etc/yum.repos.d/remi-php70.repo
+sed -i '9s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
+sed -i 's/apply_updates = no/apply_updates = yes/' /etc/yum/yum-cron.conf
+sed -i "s/email_from = root@localhost/email_from = yum-cron@${MAGE_DOMAIN}/" /etc/yum/yum-cron.conf
+sed -i "s/email_to = root/email_to = ${MAGE_ADMIN_EMAIL}/" /etc/yum/yum-cron.conf
+systemctl enable yum-cron
+systemctl restart yum-cron
+echo
+GREENTXT "LETSENCRYPT SSL CERTIFICATE REQUEST"
+DNS_A_RECORD=$(getent hosts ${MAGE_DOMAIN} | awk '{ print $1 }')
+SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
+if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
+    echo
+        REDTXT "DNS A record and your servers IP address do not match"
+	YELLOWTXT "Your servers ip address ${SERVER_IP_ADDR}"
+	YELLOWTXT "Domain ${MAGE_DOMAIN} resolves to ${DNS_A_RECORD}"
+	YELLOWTXT "Please change your DNS A record to this servers IP address"
+	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --standalone --email ${MAGE_ADMIN_EMAIL} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
+	echo
+	GREENTXT "GENERATE DHPARAM FILE NOW"
+    openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096      
+    else
+    service nginx stop
+    /usr/bin/certbot certonly --standalone --email ${MAGE_ADMIN_EMAIL} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
+    service nginx start
+fi
+echo
+GREENTXT "SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
+cat > /etc/logrotate.d/magento <<END
+${MAGE_WEB_ROOT_PATH}/var/log/*.log
+{
+weekly
+rotate 4
+notifempty
+missingok
+compress
+}
+END
+echo
+GREENTXT "SERVICE STATUS WITH E-MAIL ALERTING"
+wget -qO /etc/systemd/system/service-status-mail@.service ${REPO_MASCM_TMP}service-status-mail@.service
+wget -qO /bin/service-status-mail.sh ${REPO_MASCM_TMP}service-status-mail.sh
+sed -i "s/MAGEADMINEMAIL/${MAGE_ADMIN_EMAIL}/" /bin/service-status-mail.sh
+sed -i "s/DOMAINNAME/${MAGE_DOMAIN}/" /bin/service-status-mail.sh
+chmod u+x /bin/service-status-mail.sh
+systemctl daemon-reload
+echo
+GREENTXT "REALTIME MALWARE MONITOR WITH E-MAIL ALERTING"
+YELLOWTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
+cd /usr/local/src
+wget -q ${MALDET}
+tar -zxf maldetect-current.tar.gz
+cd maldetect-*
+./install.sh >/dev/null 2>&1
+
+sed -i 's/email_alert="0"/email_alert="1"/' /usr/local/maldetect/conf.maldet
+sed -i "s/you@domain.com/${MAGE_ADMIN_EMAIL}/" /usr/local/maldetect/conf.maldet
+sed -i 's/quarantine_hits="0"/quarantine_hits="1"/' /usr/local/maldetect/conf.maldet
+sed -i 's,# default_monitor_mode="/usr/local/maldetect/monitor_paths",default_monitor_mode="/usr/local/maldetect/monitor_paths",' /usr/local/maldetect/conf.maldet
+sed -i 's/inotify_base_watches="16384"/inotify_base_watches="85384"/' /usr/local/maldetect/conf.maldet
+echo -e "${MAGE_WEB_ROOT_PATH%/*}\n\n/var/tmp/\n\n/tmp/" > /usr/local/maldetect/monitor_paths
+
+sed -i "/^Example/d" /etc/clamd.d/scan.conf
+sed -i "/^Example/d" /etc/freshclam.conf
+sed -i "/^FRESHCLAM_DELAY/d" /etc/sysconfig/freshclam
+echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
+maldet --monitor /usr/local/maldetect/monitor_paths >/dev/null 2>&1
+chmod u+x /etc/rc.local
+echo
+GREENTXT "MAGENTO CRONJOBS"
+if [ "${MAGE_SEL_VER}" = "1" ]; then
+        echo "MAILTO=${MAGE_ADMIN_EMAIL}" >> magecron
+        echo "* * * * * ! test -e ${MAGE_WEB_ROOT_PATH}/maintenance.flag && /bin/bash ${MAGE_WEB_ROOT_PATH}/cron.sh  > /dev/null" >> magecron
+        echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
+	else
+        echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
+	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
+	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
+        echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron     
+fi
+crontab -u ${MAGE_WEB_USER} magecron
+rm magecron
+echo
 GREENTXT "REDIS CACHE AND SESSION STORAGE"
+if [ "${MAGE_SEL_VER}" = "1" ]; then
+sed -i '/<session_save>/d' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml
+sed -i '/<global>/ a\
+ <session_save>db</session_save> \
+    <redis_session> \
+        <host>127.0.0.1</host> \
+        <port>6379</port> \
+        <password></password> \
+        <timeout>10</timeout> \
+	<persistent><![CDATA[db1]]></persistent> \
+	<db>1</db> \
+	<compression_threshold>2048</compression_threshold> \
+	<compression_lib>gzip</compression_lib> \
+	<log_level>1</log_level> \
+	<max_concurrency>64</max_concurrency> \
+	<break_after_frontend>5</break_after_frontend> \
+	<break_after_adminhtml>30</break_after_adminhtml> \
+        <first_lifetime>600</first_lifetime> \
+	<bot_first_lifetime>60</bot_first_lifetime> \
+	<bot_lifetime>7200</bot_lifetime> \
+	<disable_locking>0</disable_locking> \
+	<min_lifetime>86400</min_lifetime> \
+	<max_lifetime>2592000</max_lifetime> \
+    </redis_session> \
+    <cache> \
+        <backend>Cm_Cache_Backend_Redis</backend> \
+        <backend_options> \
+          <default_priority>10</default_priority> \
+          <auto_refresh_fast_cache>1</auto_refresh_fast_cache> \
+            <server>127.0.0.1</server> \
+            <port>6380</port> \
+            <persistent><![CDATA[db1]]></persistent> \
+            <database>1</database> \
+            <password></password> \
+            <force_standalone>0</force_standalone> \
+            <connect_retries>1</connect_retries> \
+            <read_timeout>10</read_timeout> \
+            <automatic_cleaning_factor>0</automatic_cleaning_factor> \
+            <compress_data>1</compress_data> \
+            <compress_tags>1</compress_tags> \
+            <compress_threshold>204800</compress_threshold> \
+            <compression_lib>gzip</compression_lib> \
+        </backend_options> \
+    </cache>' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml
+echo
+GREENTXT "DISABLE MAGENTO DATABASE LOGGING"
+echo
+sed -i '/<\/admin>/ a\
+<frontend> \
+        <events> \
+            <controller_action_predispatch> \
+            <observers><log><type>disabled</type></log></observers> \
+            </controller_action_predispatch> \
+            <controller_action_postdispatch> \
+            <observers><log><type>disabled</type></log></observers> \
+            </controller_action_postdispatch> \
+            <customer_login> \
+            <observers><log><type>disabled</type></log></observers> \
+            </customer_login> \
+            <customer_logout> \
+            <observers><log><type>disabled</type></log></observers> \
+            </customer_logout> \
+            <sales_quote_save_after> \
+            <observers><log><type>disabled</type></log></observers> \
+            </sales_quote_save_after> \
+            <checkout_quote_destroy> \
+            <observers><log><type>disabled</type></log></observers> \
+            </checkout_quote_destroy> \
+        </events> \
+</frontend>' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml
+echo
+	else
 sed -i -e '/session/{n;N;N;d}' ${MAGE_WEB_ROOT_PATH}/app/etc/env.php
 sed -i "/.*session.*/a \\
    array ( \\
@@ -1261,153 +1525,51 @@ sed -i "/.*session.*/a \\
       ), \\
     ), \\
   ), \\ " ${MAGE_WEB_ROOT_PATH}/app/etc/env.php
-echo
-GREENTXT "PROFTPD CONFIGURATION"
-     wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
-     ## change proftpd config
-     SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
-     USER_IP=${SSH_CLIENT%% *}
-     USER_GEOIP=$(geoiplookup ${USER_IP} | awk 'NR==1{print substr($4,1,2)}')
-     FTP_PORT=$(shuf -i 5121-5132 -n 1)
-     sed -i "s/server_sftp_port/${FTP_PORT}/" /etc/proftpd.conf
-     sed -i "s/server_ip_address/${SERVER_IP_ADDR}/" /etc/proftpd.conf
-     sed -i "s/client_ip_address/${USER_IP}/" /etc/proftpd.conf
-     sed -i "s/geoip_country_code/${USER_GEOIP}/" /etc/proftpd.conf
-     sed -i "s/sftp_domain/${MAGE_DOMAIN}/" /etc/proftpd.conf
-     sed -i "s/FTP_USER/${MAGE_WEB_USER}/" /etc/proftpd.conf
-     echo
-     ## plug in service status alert
-     cp /usr/lib/systemd/system/proftpd.service /etc/systemd/system/proftpd.service
-     sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/proftpd.service
-     sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/proftpd.service
-     systemctl daemon-reload
-     systemctl enable proftpd.service >/dev/null 2>&1
-     /bin/systemctl restart proftpd.service
-     echo
-     WHITETXT "PROFTPD USER: ${REDBG}${MAGE_WEB_USER}"
-     WHITETXT "PROFTPD USER PASS: ${REDBG}${MAGE_WEB_USER_PASS}"
-     WHITETXT "PROFTPD PORT: ${REDBG}${FTP_PORT}"
-     WHITETXT "GEOIP LOCATION: ${REDBG}${USER_GEOIP}"
-     WHITETXT "PROFTPD CONFIG: ${REDBG}/etc/proftpd.conf"
-echo
-echo
-GREENTXT "OPCACHE GUI, n98-MAGERUN, IMAGE OPTIMIZER, MYSQLTUNER, SSL DEBUG TOOLS"
-     cd ${MAGE_WEB_ROOT_PATH}
-     wget -qO opcache_$(openssl rand 2 -hex).php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
-     wget -qO tlstest_$(openssl rand 2 -hex).php ${REPO_MASCM_TMP}tlstest.php
-     wget -qO wesley.pl ${REPO_MASCM_TMP}wesley.pl
-     wget -qO mysqltuner.pl ${MYSQL_TUNER}
-     curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
-echo
-GREENTXT "SYSTEM AUTO UPDATE WITH YUM-CRON"
-sed -i '8s/.*/enabled=1/' /etc/yum.repos.d/remi-php70.repo
-sed -i '9s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
-sed -i 's/apply_updates = no/apply_updates = yes/' /etc/yum/yum-cron.conf
-sed -i "s/email_from = root@localhost/email_from = yum-cron@${MAGE_DOMAIN}/" /etc/yum/yum-cron.conf
-sed -i "s/email_to = root/email_to = ${MAGE_ADMIN_EMAIL}/" /etc/yum/yum-cron.conf
-systemctl enable yum-cron
-systemctl restart yum-cron
-echo
-GREENTXT "LETSENCRYPT SSL CERTIFICATE REQUEST"
-DNS_A_RECORD=$(getent hosts ${MAGE_DOMAIN} | awk '{ print $1 }')
-SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
-if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
-    echo
-    REDTXT "DNS A record and your servers IP address do not match"
-	YELLOWTXT "Your servers ip address ${SERVER_IP_ADDR}"
-	YELLOWTXT "Domain ${MAGE_DOMAIN} resolves to ${DNS_A_RECORD}"
-	YELLOWTXT "Please change your DNS A record to this servers IP address"
-	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --standalone --email ${MAGE_ADMIN_EMAIL} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
-	echo
-	GREENTXT "GENERATE DHPARAM FILE NOW"
-    openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096      
-    else
-    service nginx stop
-    /usr/bin/certbot certonly --standalone --email ${MAGE_ADMIN_EMAIL} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
-    service nginx start
-fi
-echo
-GREENTXT "SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
-cat > /etc/logrotate.d/magento <<END
-${MAGE_WEB_ROOT_PATH}/var/log/*.log
-{
-weekly
-rotate 4
-notifempty
-missingok
-compress
-}
-END
-echo
-GREENTXT "SERVICE STATUS WITH E-MAIL ALERTING"
-wget -qO /etc/systemd/system/service-status-mail@.service ${REPO_MASCM_TMP}service-status-mail@.service
-wget -qO /bin/service-status-mail.sh ${REPO_MASCM_TMP}service-status-mail.sh
-sed -i "s/MAGEADMINEMAIL/${MAGE_ADMIN_EMAIL}/" /bin/service-status-mail.sh
-sed -i "s/DOMAINNAME/${MAGE_DOMAIN}/" /bin/service-status-mail.sh
-chmod u+x /bin/service-status-mail.sh
-systemctl daemon-reload
-echo
-GREENTXT "REALTIME MALWARE MONITOR WITH E-MAIL ALERTING"
-YELLOWTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
-cd /usr/local/src
-wget -q ${MALDET}
-tar -zxf maldetect-current.tar.gz
-cd maldetect-*
-./install.sh >/dev/null 2>&1
-
-sed -i 's/email_alert="0"/email_alert="1"/' /usr/local/maldetect/conf.maldet
-sed -i "s/you@domain.com/${MAGE_ADMIN_EMAIL}/" /usr/local/maldetect/conf.maldet
-sed -i 's/quarantine_hits="0"/quarantine_hits="1"/' /usr/local/maldetect/conf.maldet
-sed -i 's,# default_monitor_mode="/usr/local/maldetect/monitor_paths",default_monitor_mode="/usr/local/maldetect/monitor_paths",' /usr/local/maldetect/conf.maldet
-sed -i 's/inotify_base_watches="16384"/inotify_base_watches="85384"/' /usr/local/maldetect/conf.maldet
-echo -e "${MAGE_WEB_ROOT_PATH%/*}\n\n/var/tmp/\n\n/tmp/" > /usr/local/maldetect/monitor_paths
-
-sed -i "/^Example/d" /etc/clamd.d/scan.conf
-sed -i "/^Example/d" /etc/freshclam.conf
-sed -i "/^FRESHCLAM_DELAY/d" /etc/sysconfig/freshclam
-echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
-maldet --monitor /usr/local/maldetect/monitor_paths >/dev/null 2>&1
-chmod u+x /etc/rc.local
-echo
-GREENTXT "MAGENTO CRONJOBS"
-        echo "MAILTO=\"${MAGE_ADMIN_EMAIL}\"" >> magecron
-        echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
-	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
-	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
-        echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
-        crontab -u ${MAGE_WEB_USER} magecron
-        rm magecron
-echo
-GREENTXT "DISABLE MAGENTO CACHE AND GENERATE STATIC FILES"
-cd ${MAGE_WEB_ROOT_PATH}
-rm -rf var/*
+fi	
+	
 systemctl daemon-reload
 /bin/systemctl restart hhvm.service
 /bin/systemctl restart nginx.service
 /bin/systemctl restart php-fpm.service
 /bin/systemctl restart redis-6379.service
 /bin/systemctl restart redis-6380.service
+
+cd ${MAGE_WEB_ROOT_PATH}
+chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH%/*}
+
+if [ "${MAGE_SEL_VER}" = "1" ]; then
+su ${MAGE_WEB_USER} -s /bin/bash -c "mkdir -p var/log"
+curl -s -o n98-magerun.phar https://files.magerun.net/n98-magerun.phar
+rm -rf index.php.sample LICENSE_AFL.txt LICENSE.html LICENSE.txt RELEASE_NOTES.txt php.ini.sample dev
+GREENTXT "CLEANING UP INDEXES LOCKS AND RUNNING RE-INDEX ALL"
 echo
+rm -rf  ${MAGE_WEB_ROOT_PATH}/var/locks/*
+su ${MAGE_WEB_USER} -s /bin/bash -c "php ${MAGE_WEB_ROOT_PATH}/shell/indexer.php --reindexall"
+echo
+	else
+GREENTXT "DISABLE MAGENTO CACHE AND GENERATE STATIC FILES"
+rm -rf var/*
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:clean"
-echo
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:disable"
-echo
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento deploy:mode:set developer"
-echo
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento setup:static-content:deploy ${MAGE_LOCALE} en_US"
 echo
+curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
+chmod u+x bin/magento
+rm -rf CHANGELOG.md CONTRIBUTING.md COPYING.txt ISSUE_TEMPLATE.md LICENSE.txt LICENSE_AFL.txt nginx.conf.sample php.ini.sample
+fi
+echo
 GREENTXT "FIXING PERMISSIONS"
-chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH}
+chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH%/*}
 find . -type f -exec chmod 660 {} \;
 find . -type d -exec chmod 2770 {} \;
-chmod u+x bin/magento wesley.pl mysqltuner.pl n98-magerun2.phar
-rm -rf CHANGELOG.md CONTRIBUTING.md COPYING.txt ISSUE_TEMPLATE.md LICENSE.txt LICENSE_AFL.txt nginx.conf.sample php.ini.sample
+chmod u+x wesley.pl mysqltuner.pl
 echo
 GREENTXT "NOW CHECK EVERYTHING AND LOGIN TO YOUR BACKEND"
     echo
   echo
 echo "-------------------------------------------------------------------------------------"
-BLUEBG "| POST-INSTALL CONFIGURATION IS COMPLETED |"
+BLUEBG "| POST-INSTALLATION CONFIGURATION IS COMPLETED |"
 echo "-------------------------------------------------------------------------------------"
 echo
 pause '---> Press [Enter] key to show menu'
@@ -1519,24 +1681,24 @@ rpm --import http://www.webmin.com/jcameron-key.asc
             wget -q ${WEBMIN_NGINX} -O webmin_nginx
             perl /usr/libexec/webmin/install-module.pl $_ >/dev/null 2>&1
             if [ -f "/usr/local/csf/csfwebmin.tgz" ]
-		then
-    		perl /usr/libexec/webmin/install-module.pl /usr/local/csf/csfwebmin.tgz >/dev/null 2>&1
-    		GREENTXT "INSTALLED CSF FIREWALL PLUGIN"
+				then
+				perl /usr/libexec/webmin/install-module.pl /usr/local/csf/csfwebmin.tgz >/dev/null 2>&1
+				GREENTXT "INSTALLED CSF FIREWALL PLUGIN"
     		else
-    		cd /usr/local/src
-    		wget -q ${WEBMIN_FAIL2BAN} -O fail2ban.wbm.gz
-    		perl /usr/libexec/webmin/install-module.pl $_ >/dev/null 2>&1
-    		GREENTXT "INSTALLED FAIL2BAN PLUGIN"
+				cd /usr/local/src
+				wget -q ${WEBMIN_FAIL2BAN} -O fail2ban.wbm.gz
+				perl /usr/libexec/webmin/install-module.pl $_ >/dev/null 2>&1
+				GREENTXT "INSTALLED FAIL2BAN PLUGIN"
             fi
             sed -i 's/root/webadmin/' /etc/webmin/miniserv.users
             sed -i 's/root:/webadmin:/' /etc/webmin/webmin.acl
             WEBADMIN_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
-            /usr/libexec/webmin/changepass.pl /etc/webmin/ webadmin ${WEBADMIN_PASS}
+            /usr/libexec/webmin/changepass.pl /etc/webmin/ webadmin ${WEBADMIN_PASS} >/dev/null 2>&1
             chkconfig webmin on >/dev/null 2>&1
             service webmin restart  >/dev/null 2>&1
             YELLOWTXT "Access Webmin on port: ${WEBMIN_PORT}"
             YELLOWTXT "User: webadmin , Password: ${WEBADMIN_PASS}"
-            REDTXT "Please enable Two-factor authentication"
+            REDTXT "PLEASE ENABLE TWO-FACTOR AUTHENTICATION!"
                else
               echo
             REDTXT "WEBMIN INSTALLATION ERROR"
@@ -1618,7 +1780,7 @@ chown -R :elasticsearch /etc/elasticsearch/*
 service elasticsearch restart
 sleep 5
 echo
-cd /usr/local/src/ossec_tmp/ossec-wazuh/extensions/elasticsearch/ && curl -XPUT "http://localhost:9200/_template/ossec/" -d "@elastic-ossec-template.json"
+cd /usr/local/src/ossec_tmp/ossec-wazuh/extensions/elasticsearch/ && curl -XPUT "http://127.0.0.1:9200/_template/ossec/" -d "@elastic-ossec-template.json"
 echo
 echo
 GREENTXT "Lets install Kibana:"
