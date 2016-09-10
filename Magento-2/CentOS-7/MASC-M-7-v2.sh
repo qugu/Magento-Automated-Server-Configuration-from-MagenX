@@ -420,9 +420,9 @@ printf "\033c"
         echo
         WHITETXT "-> Install repository and LEMP packages :  ${YELLOW}\tlemp"
         WHITETXT "-> Download Magento latest packages     :  ${YELLOW}\t\tmagento"
-	    WHITETXT "-> Setup Magento database               :  ${YELLOW}\t\t\tdatabase"
-	    WHITETXT "-> Install Magento with Composer        :  ${YELLOW}\t\tinstall"
-	    WHITETXT "-> Post-Install configuration           :  ${YELLOW}\t\tconfig"
+        WHITETXT "-> Setup Magento database               :  ${YELLOW}\t\t\tdatabase"
+        WHITETXT "-> Install Magento no sample data       :  ${YELLOW}\t\tinstall"
+        WHITETXT "-> Post-Install configuration           :  ${YELLOW}\t\tconfig"
         echo
         BLUETXT ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
         echo
