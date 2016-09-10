@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="20.3.1"
+MASCM_VER="20.3.2"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -687,8 +687,9 @@ do
 mkdir -p /var/lib/redis-${REDISPORT}
 chmod 755 /var/lib/redis-${REDISPORT}
 chown redis /var/lib/redis-${REDISPORT}
-\cp -rf /etc/redis.conf /etc/redis-${REDISPORT}.conf
-\cp -rf /usr/lib/systemd/system/redis.service /etc/systemd/system/redis-${REDISPORT}.service
+cp -rf /etc/redis.conf /etc/redis-${REDISPORT}.conf
+chmod 644 /etc/redis-${REDISPORT}.conf
+cp -rf /usr/lib/systemd/system/redis.service /etc/systemd/system/redis-${REDISPORT}.service
 sed -i "s/daemonize no/daemonize yes/"  /etc/redis-${REDISPORT}.conf
 sed -i "s/^bind 127.0.0.1.*/bind 127.0.0.1/"  /etc/redis-${REDISPORT}.conf
 sed -i "s/^dir.*/dir \/var\/lib\/redis-${REDISPORT}\//"  /etc/redis-${REDISPORT}.conf
