@@ -940,8 +940,9 @@ echo
 	 echo
      read -e -p "---> ENTER YOUR DOMAIN NAME (without www.): " -i "myshop.com" MAGE_DOMAIN
      MAGE_WEB_ROOT_PATH="/home/${MAGE_DOMAIN%%.*}/public_html"
-	 echo "------> MAGENTO ${MAGE_SEL_VER} (${!MAGE_VER})"
-	 echo "------> WILL BE DOWNLOADED TO ${MAGE_WEB_ROOT_PATH}"
+     echo
+	 echo "---> MAGENTO ${MAGE_SEL_VER} (${!MAGE_VER})"
+	 echo "---> WILL BE DOWNLOADED TO ${MAGE_WEB_ROOT_PATH}"
      echo
         mkdir -p ${MAGE_WEB_ROOT_PATH} && cd $_
         useradd -d ${MAGE_WEB_ROOT_PATH%/*} -s /sbin/nologin ${MAGE_DOMAIN%%.*}  >/dev/null 2>&1
@@ -961,8 +962,6 @@ echo
         else
 			curl -sS https://getcomposer.org/installer | php >/dev/null 2>&1
 			mv composer.phar /usr/local/bin/composer
-			echo
-			echo
 			su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "${REPO_MAGE} ."
 		fi
         echo
