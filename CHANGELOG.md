@@ -1,5 +1,11 @@
 # Change Log
 
+### RELEASE-20.3.3
+
+  * phpmyadmin nginx basic auth
+  * csf firewall optimization
+  * minor code cleaning
+
 ### RELEASE-20.3.2
 
   * fixed redis config permissions
