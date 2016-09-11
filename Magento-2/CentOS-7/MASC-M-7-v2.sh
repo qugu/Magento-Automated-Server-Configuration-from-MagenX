@@ -32,7 +32,7 @@ REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
 REPO_FAN="http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-1-13.rhel7.noarch.rpm"
 
 # WebStack Packages
-EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools net-tools mcrypt mlocate goaccess unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle ncurses-devel GeoIP GeoIP-devel GeoIP-update ImageMagick libjpeg-turbo-utils pngcrush lsof net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron sysstat attr iotop expect"
+EXTRA_PACKAGES="dejavu-fonts-common dejavu-sans-fonts libtidy recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools smartmontools net-tools mcrypt mlocate goaccess unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle ncurses-devel GeoIP GeoIP-devel GeoIP-update ImageMagick libjpeg-turbo-utils pngcrush lsof net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron sysstat attr iotop expect"
 PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl gmp php-gettext phpseclib recode symfony-class-loader symfony-common tcpdf tcpdf-dejavu-sans-fonts tidy udan11-sql-parser snappy lz4) 
 PHP_PECL_PACKAGES=(pecl-redis pecl-lzf pecl-geoip pecl-zip pecl-memcache)
 PERCONA_PACKAGES=(client-56 server-56)
@@ -1136,10 +1136,10 @@ su ${MAGE_WEB_USER} -s /bin/bash -c "php -f install.php -- \
     echo
     WHITETXT "============================================================================="
     WHITETXT " MAGENTO ADMIN ACCOUNT"
-	echo
-    echo "      Admin path: ${MAGE_SITE_URL}${MAGE_ADMIN_PATH}"
-    echo "      Username: ${MAGE_ADMIN_LOGIN}"
-    echo "      Password: ${MAGE_ADMIN_PASS}"
+    echo
+    echo "---> Admin path: ${MAGE_SITE_URL}${MAGE_ADMIN_PATH}"
+    echo "---> Username: ${MAGE_ADMIN_LOGIN}"
+    echo "---> Password: ${MAGE_ADMIN_PASS}"
     echo
     WHITETXT "============================================================================="
  echo
@@ -1201,6 +1201,7 @@ echo
 echo
 GREENTXT "SERVER TIMEZONE SETTINGS"
 timedatectl set-timezone ${MAGE_TIMEZONE}
+
 echo
 GREENTXT "HHVM AND PHP-FPM SETTINGS"
 sed -i "s/\[www\]/\[${MAGE_WEB_USER}\]/" /etc/php-fpm.d/www.conf
@@ -1213,6 +1214,7 @@ sed -i "s,session.save_handler = files,session.save_handler = redis," /etc/php.i
 sed -i 's,;session.save_path = "/tmp",session.save_path = "tcp://127.0.0.1:6379",' /etc/php.ini
 sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
 sed -i '/sendmail_path/,$d' /etc/php-fpm.d/www.conf
+
 cat >> /etc/php-fpm.d/www.conf <<END
 ;;
 ;; Custom pool settings
@@ -1222,6 +1224,7 @@ php_admin_value[error_log] = ${MAGE_WEB_ROOT_PATH}/var/log/php-fpm-error.log
 php_admin_value[memory_limit] = 1024M
 php_admin_value[date.timezone] = ${MAGE_TIMEZONE}
 END
+
 sed -i "s/nginx/${MAGE_WEB_USER}/" /etc/systemd/system/hhvm.service
 sed -i "s/daemon/server/" /etc/systemd/system/hhvm.service
 sed -i "/.*hhvm.server.port.*/a hhvm.server.ip = 127.0.0.1" /etc/hhvm/server.ini
@@ -1261,7 +1264,7 @@ GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
 	 
      sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
      sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m${MAGE_SEL_VER}/phpmyadmin.conf
-	 sed -i "5i satisfy any; \\
+     sed -i "5i satisfy any; \\
            allow ${SSH_CLIENT%% *}/32; \\
            deny  all; \\
            auth_basic  \"please login\"; \\
@@ -1270,8 +1273,8 @@ GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
      htpasswd -b -c /etc/nginx/.mysql mysql ${PMA_PASSWD}
      echo
      WHITETXT "phpMyAdmin was installed to http://www.${MAGE_DOMAIN}/mysql_${PMA_FOLDER}/"
-	 WHITETXT "HTTP basic auth with User: mysql"
-	 WHITETXT "Password: ${PMA_PASSWD}"
+     WHITETXT "HTTP basic auth with User: mysql"
+     WHITETXT "Password: ${PMA_PASSWD}"
 echo
 GREENTXT "PROFTPD CONFIGURATION"
      wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
@@ -1636,15 +1639,15 @@ if [ "${csf_test}" == "y" ];then
                stop_progress "$pid"
                echo
                GREENTXT "CSF FIREWALL HAS BEEN INSTALLED OK"
-			   echo
-               YELLOWTXT "Add ip addresses to whitelist/ignore (api,erp,backup,github,etc)"
-			   echo
-			   read -e -p "---> Enter ip address/cidr each after space: " -i "173.0.80.0/20 64.4.244.0/21 " IP_ADDR_IGNORE
-			   for ip_addr_ignore in "${IP_ADDR_IGNORE}"; do csf -a ${ip_addr_ignore}; done
+                   echo
+                   YELLOWTXT "Add ip addresses to whitelist/ignore (api,erp,backup,github,etc)"
+                   echo
+                   read -e -p "---> Enter ip address/cidr each after space: " -i "173.0.80.0/20 64.4.244.0/21 " IP_ADDR_IGNORE
+                   for ip_addr_ignore in ${IP_ADDR_IGNORE}; do csf -a ${ip_addr_ignore}; done
 			   
-			       ### csf firewall optimization
-				   sed -i 's/^TESTING = "1"/TESTING = "0"/' /etc/csf/csf.conf
-			       sed -i 's/^CT_LIMIT =.*/CT_LIMIT = "300"/' /etc/csf/csf.conf
+                   ### csf firewall optimization
+                   sed -i 's/^TESTING = "1"/TESTING = "0"/' /etc/csf/csf.conf
+                   sed -i 's/^CT_LIMIT =.*/CT_LIMIT = "300"/' /etc/csf/csf.conf
                    sed -i 's/^CT_INTERVAL =.*/CT_INTERVAL = "30"/' /etc/csf/csf.conf
                    sed -i 's/^PS_INTERVAL =.*/PS_INTERVAL = "120"/' /etc/csf/csf.conf
                    sed -i 's/^PS_LIMIT =.*/PS_LIMIT = "10"/' /etc/csf/csf.conf
@@ -1653,16 +1656,15 @@ if [ "${csf_test}" == "y" ];then
                    sed -i "s/^LF_ALERT_TO =.*/LF_ALERT_TO = \"${MAGE_ADMIN_EMAIL}\"/" /etc/csf/csf.conf
                    sed -i "s/^LF_ALERT_FROM =.*/LF_ALERT_FROM = \"firewall@${MAGE_DOMAIN}\"/" /etc/csf/csf.conf
 				   
-				   ### csf firewall optimization
+                   ### csf firewall optimization
                 if lsmod | grep "ip_set" &> /dev/null ; then 
                    sed -i 's/^DENY_IP_LIMIT =.*/DENY_IP_LIMIT = "50000"/' /etc/csf/csf.conf
                    sed -i 's/^DENY_TEMP_IP_LIMIT =.*/DENY_TEMP_IP_LIMIT = "200"/' /etc/csf/csf.conf
                    sed -i 's/^LF_IPSET =.*/LF_IPSET = "1"/' /etc/csf/csf.conf
-				   ### this line will block every blacklisted ip address
+                   ### this line will block every blacklisted ip address
                    sed -i "/|0|/s/^#//g" /etc/csf/csf.blocklists
                 fi
-				
-				csf -r
+        csf -r
     fi
     else
     echo
