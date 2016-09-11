@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="20.3.2"
+MASCM_VER="20.3.3"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -1255,12 +1255,23 @@ END
 echo
 GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
+	 PMA_PASSWD=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
      yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
+	 
      sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
      sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m${MAGE_SEL_VER}/phpmyadmin.conf
+	 sed -i "5i satisfy any; \\
+           allow ${SSH_CLIENT%% *}/32; \\
+           deny  all; \\
+           auth_basic  \"please login\"; \\
+           auth_basic_user_file .mysql;"  /etc/nginx/conf_m${MAGE_SEL_VER}/phpmyadmin.conf
+	 	   
+     htpasswd -b -c /etc/nginx/.mysql mysql ${PMA_PASSWD}
      echo
      WHITETXT "phpMyAdmin was installed to http://www.${MAGE_DOMAIN}/mysql_${PMA_FOLDER}/"
+	 WHITETXT "HTTP basic auth with User: mysql"
+	 WHITETXT "Password: ${PMA_PASSWD}"
 echo
 GREENTXT "PROFTPD CONFIGURATION"
      wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
@@ -1312,7 +1323,7 @@ DNS_A_RECORD=$(getent hosts ${MAGE_DOMAIN} | awk '{ print $1 }')
 SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
 if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
     echo
-        REDTXT "DNS A record and your servers IP address do not match"
+    REDTXT "DNS A record and your servers IP address do not match"
 	YELLOWTXT "Your servers ip address ${SERVER_IP_ADDR}"
 	YELLOWTXT "Domain ${MAGE_DOMAIN} resolves to ${DNS_A_RECORD}"
 	YELLOWTXT "Please change your DNS A record to this servers IP address"
@@ -1580,6 +1591,9 @@ pause '---> Press [Enter] key to show menu'
 "firewall")
 WHITETXT "============================================================================="
 echo
+MAGE_DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
+MAGE_ADMIN_EMAIL=$(awk '/mageadmin/ { print $4 }' /root/mascm/.mascm_index)
+
 YELLOWTXT "If you are going to use services like CloudFlare - install Fail2Ban"
 echo
 echo -n "---> Would you like to install CSF firewall? (answer n for Fail2Ban) [y/n][n]:"
@@ -1622,7 +1636,33 @@ if [ "${csf_test}" == "y" ];then
                stop_progress "$pid"
                echo
                GREENTXT "CSF FIREWALL HAS BEEN INSTALLED OK"
-               echo
+			   echo
+               YELLOWTXT "Add ip addresses to whitelist/ignore (api,erp,backup,github,etc)"
+			   echo
+			   read -e -p "---> Enter ip address/cidr each after space: " -i "173.0.80.0/20 64.4.244.0/21 " IP_ADDR_IGNORE
+			   for ip_addr_ignore in "${IP_ADDR_IGNORE}"; do csf -a ${ip_addr_ignore}; done
+			   
+			       ### csf firewall optimization
+				   sed -i 's/^TESTING = "1"/TESTING = "0"/' /etc/csf/csf.conf
+			       sed -i 's/^CT_LIMIT =.*/CT_LIMIT = "300"/' /etc/csf/csf.conf
+                   sed -i 's/^CT_INTERVAL =.*/CT_INTERVAL = "30"/' /etc/csf/csf.conf
+                   sed -i 's/^PS_INTERVAL =.*/PS_INTERVAL = "120"/' /etc/csf/csf.conf
+                   sed -i 's/^PS_LIMIT =.*/PS_LIMIT = "10"/' /etc/csf/csf.conf
+                   sed -i 's/^LF_WEBMIN =.*/LF_WEBMIN = "5"/' /etc/csf/csf.conf
+                   sed -i 's/^LF_WEBMIN_EMAIL_ALERT =.*/LF_WEBMIN_EMAIL_ALERT = "1"/' /etc/csf/csf.conf
+                   sed -i "s/^LF_ALERT_TO =.*/LF_ALERT_TO = \"${MAGE_ADMIN_EMAIL}\"/" /etc/csf/csf.conf
+                   sed -i "s/^LF_ALERT_FROM =.*/LF_ALERT_FROM = \"firewall@${MAGE_DOMAIN}\"/" /etc/csf/csf.conf
+				   
+				   ### csf firewall optimization
+                if lsmod | grep "ip_set" &> /dev/null ; then 
+                   sed -i 's/^DENY_IP_LIMIT =.*/DENY_IP_LIMIT = "50000"/' /etc/csf/csf.conf
+                   sed -i 's/^DENY_TEMP_IP_LIMIT =.*/DENY_TEMP_IP_LIMIT = "200"/' /etc/csf/csf.conf
+                   sed -i 's/^LF_IPSET =.*/LF_IPSET = "1"/' /etc/csf/csf.conf
+				   ### this line will block every blacklisted ip address
+                   sed -i "/|0|/s/^#//g" /etc/csf/csf.blocklists
+                fi
+				
+				csf -r
     fi
     else
     echo
