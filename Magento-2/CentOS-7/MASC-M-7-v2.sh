@@ -1089,8 +1089,8 @@ read -e -p "---> Enter your First Name: " -i "Name"  MAGE_ADMIN_FNAME
 read -e -p "---> Enter your Last Name: " -i "Lastname"  MAGE_ADMIN_LNAME
 read -e -p "---> Enter your email: " -i "admin@${MAGE_DOMAIN}"  MAGE_ADMIN_EMAIL
 read -e -p "---> Enter your admins login name: " -i "admin"  MAGE_ADMIN_LOGIN
-MAGE_ADMIN_PASSGEN=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
-read -e -p "---> Use generated admin password: " -i "${MAGE_ADMIN_PASSGEN}"  MAGE_ADMIN_PASS
+MAGE_ADMIN_PASSGEN=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
+read -e -p "---> Use generated admin password: " -i "${MAGE_ADMIN_PASSGEN}${RANDOM}"  MAGE_ADMIN_PASS
 read -e -p "---> Enter your shop url: " -i "http://www.${MAGE_DOMAIN}/"  MAGE_SITE_URL
 echo
 WHITETXT "Language, Currency and Timezone settings"
