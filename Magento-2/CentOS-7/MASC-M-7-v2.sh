@@ -1640,11 +1640,10 @@ if [ "${csf_test}" == "y" ];then
                echo
                GREENTXT "CSF FIREWALL HAS BEEN INSTALLED OK"
                    echo
-                   YELLOWTXT "Add ip addresses to whitelist/ignore (api,erp,backup,github,etc)"
+                   YELLOWTXT "Add ip addresses to whitelist/ignore (paypal,api,erp,backup,github,etc)"
                    echo
                    read -e -p "---> Enter ip address/cidr each after space: " -i "173.0.80.0/20 64.4.244.0/21 " IP_ADDR_IGNORE
                    for ip_addr_ignore in ${IP_ADDR_IGNORE}; do csf -a ${ip_addr_ignore}; done
-			   
                    ### csf firewall optimization
                    sed -i 's/^TESTING = "1"/TESTING = "0"/' /etc/csf/csf.conf
                    sed -i 's/^CT_LIMIT =.*/CT_LIMIT = "300"/' /etc/csf/csf.conf
@@ -1655,9 +1654,6 @@ if [ "${csf_test}" == "y" ];then
                    sed -i 's/^LF_WEBMIN_EMAIL_ALERT =.*/LF_WEBMIN_EMAIL_ALERT = "1"/' /etc/csf/csf.conf
                    sed -i "s/^LF_ALERT_TO =.*/LF_ALERT_TO = \"${MAGE_ADMIN_EMAIL}\"/" /etc/csf/csf.conf
                    sed -i "s/^LF_ALERT_FROM =.*/LF_ALERT_FROM = \"firewall@${MAGE_DOMAIN}\"/" /etc/csf/csf.conf
-				   
-                   ### csf firewall optimization
-                if lsmod | grep "ip_set" &> /dev/null ; then 
                    sed -i 's/^DENY_IP_LIMIT =.*/DENY_IP_LIMIT = "50000"/' /etc/csf/csf.conf
                    sed -i 's/^DENY_TEMP_IP_LIMIT =.*/DENY_TEMP_IP_LIMIT = "200"/' /etc/csf/csf.conf
                    sed -i 's/^LF_IPSET =.*/LF_IPSET = "1"/' /etc/csf/csf.conf
