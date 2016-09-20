@@ -1,5 +1,11 @@
 # Change Log
 
+### RELEASE-20.3.4
+
+  * add email alerting to maldet
+  * csf firewall optimization
+  * minor code cleaning
+  
 ### RELEASE-20.3.3
 
   * phpmyadmin nginx basic auth
