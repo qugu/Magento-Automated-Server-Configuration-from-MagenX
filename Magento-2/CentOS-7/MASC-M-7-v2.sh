@@ -27,7 +27,7 @@ WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.t
 WEBMIN_FAIL2BAN="http://download.webmin.com/download/modules/fail2ban.wbm.gz"
 
 # Repositories
-REPO_PERCONA="http://www.percona.com/redir/downloads/percona-release/redhat/latest/percona-release-0.1-3.noarch.rpm"
+REPO_PERCONA="https://www.percona.com/redir/downloads/percona-release/redhat/percona-release-0.1-4.noarch.rpm"
 REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
 REPO_FAN="http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-1-13.rhel7.noarch.rpm"
 
