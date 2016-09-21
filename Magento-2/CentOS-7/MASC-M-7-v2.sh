@@ -1664,7 +1664,6 @@ if [ "${csf_test}" == "y" ];then
                    sed -i 's/^LF_IPSET =.*/LF_IPSET = "1"/' /etc/csf/csf.conf
                    ### this line will block every blacklisted ip address
                    sed -i "/|0|/s/^#//g" /etc/csf/csf.blocklists
-                fi
         csf -r
     fi
     else
