@@ -1210,8 +1210,8 @@ sed -i "s/group = apache/group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
 sed -i "s/;listen.owner = nobody/listen.group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
 sed -i "s/;listen.group = nobody/listen.group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
 sed -i "s/;listen.mode = 0660/listen.mode = 0660/" /etc/php-fpm.d/www.conf
-sed -i "s,session.save_handler = files,session.save_handler = redis," /etc/php.ini
-sed -i 's,;session.save_path = "/tmp",session.save_path = "tcp://127.0.0.1:6379",' /etc/php.ini
+#sed -i "s,session.save_handler = files,session.save_handler = redis," /etc/php.ini
+#sed -i 's,;session.save_path = "/tmp",session.save_path = "tcp://127.0.0.1:6379",' /etc/php.ini
 sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
 sed -i '/sendmail_path/,$d' /etc/php-fpm.d/www.conf
 
@@ -1229,6 +1229,14 @@ sed -i "s/nginx/${MAGE_WEB_USER}/" /etc/systemd/system/hhvm.service
 sed -i "s/daemon/server/" /etc/systemd/system/hhvm.service
 sed -i "/.*hhvm.server.port.*/a hhvm.server.ip = 127.0.0.1" /etc/hhvm/server.ini
 sed -i '/.*hhvm.jit_a_size.*/,$d' /etc/hhvm/server.ini
+cat >> /etc/hhvm/server.ini <<END
+## Extra settings
+session.save_handler =  redis
+session.save_path = "tcp://127.0.0.1:6379"
+display_errors = 0
+date.timezone = ${MAGE_TIMEZONE}
+max_execution_time = 600
+END
 echo
 GREENTXT "NGINX SETTINGS"
 wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}magento${MAGE_SEL_VER}/fastcgi_params
