@@ -1266,7 +1266,7 @@ END
 echo
 GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
-	 PMA_PASSWD=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
+     PMA_PASSWD=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
      yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
 	 
@@ -1278,7 +1278,7 @@ GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
            auth_basic  \"please login\"; \\
            auth_basic_user_file .mysql;"  /etc/nginx/conf_m${MAGE_SEL_VER}/phpmyadmin.conf
 	 	   
-     htpasswd -b -c /etc/nginx/.mysql mysql ${PMA_PASSWD}
+     htpasswd -b -c /etc/nginx/.mysql mysql ${PMA_PASSWD}  >/dev/null 2>&1
      echo
      WHITETXT "phpMyAdmin was installed to http://www.${MAGE_DOMAIN}/mysql_${PMA_FOLDER}/"
      WHITETXT "HTTP basic auth with User: mysql"
@@ -1577,8 +1577,6 @@ echo
 GREENTXT "DISABLE MAGENTO CACHE AND GENERATE STATIC FILES"
 rm -rf var/*
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:clean"
-su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:disable"
-su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento deploy:mode:set developer"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento setup:static-content:deploy ${MAGE_LOCALE} en_US"
 echo
 curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
