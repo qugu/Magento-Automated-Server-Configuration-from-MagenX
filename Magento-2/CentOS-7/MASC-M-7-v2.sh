@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="20.3.4"
+MASCM_VER="20.3.5"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -1210,8 +1210,8 @@ sed -i "s/group = apache/group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
 sed -i "s/;listen.owner = nobody/listen.group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
 sed -i "s/;listen.group = nobody/listen.group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
 sed -i "s/;listen.mode = 0660/listen.mode = 0660/" /etc/php-fpm.d/www.conf
-#sed -i "s,session.save_handler = files,session.save_handler = redis," /etc/php.ini
-#sed -i 's,;session.save_path = "/tmp",session.save_path = "tcp://127.0.0.1:6379",' /etc/php.ini
+sed -i "s,session.save_handler = files,session.save_handler = redis," /etc/php.ini
+sed -i 's,;session.save_path = "/tmp",session.save_path = "tcp://127.0.0.1:6379",' /etc/php.ini
 sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
 sed -i '/sendmail_path/,$d' /etc/php-fpm.d/www.conf
 
@@ -1233,7 +1233,6 @@ cat >> /etc/hhvm/server.ini <<END
 ## Extra settings
 session.save_handler =  redis
 session.save_path = "tcp://127.0.0.1:6379"
-display_errors = 0
 date.timezone = ${MAGE_TIMEZONE}
 max_execution_time = 600
 END
@@ -1258,8 +1257,8 @@ sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/sites-available/mage
 sed -i "s/127.0.0.1:9000/hhvm-phpfpm/" /etc/nginx/conf_m${MAGE_SEL_VER}/php_backend.conf
 cat >> /etc/nginx/conf_m${MAGE_SEL_VER}/hhvm.conf <<END
 upstream hhvm-phpfpm {
-        server 127.0.0.1:9001; #hhvm
-        server 127.0.0.1:9000 backup; #php-fpm
+        server 127.0.0.1:9000; # php-fpm master port
+        server 127.0.0.1:9001; # hhvm only for testing
         keepalive 25;
         }
 END
@@ -1519,7 +1518,7 @@ sed -i "/.*session.*/a \\
         array ( \\
           'server' => '127.0.0.1', \\
           'port' => '6380', \\
-          'persistent' => 'db1', \\
+          'persistent' => '', \\
           'database' => '1', \\
           'force_standalone' => '0', \\
           'connect_retries' => '2', \\
@@ -1538,7 +1537,7 @@ sed -i "/.*session.*/a \\
         array ( \\
           'server' => '127.0.0.1', \\
           'port' => '6380', \\
-          'persistent' => 'db2', \\
+          'persistent' => '', \\
           'database' => '2', \\
           'force_standalone' => '0', \\
           'connect_retries' => '2', \\
@@ -1553,7 +1552,7 @@ sed -i "/.*session.*/a \\
     ), \\
   ), \\ " ${MAGE_WEB_ROOT_PATH}/app/etc/env.php
 fi	
-	
+
 systemctl daemon-reload
 /bin/systemctl restart hhvm.service
 /bin/systemctl restart nginx.service
@@ -1576,7 +1575,12 @@ echo
 	else
 GREENTXT "DISABLE MAGENTO CACHE AND GENERATE STATIC FILES"
 rm -rf var/*
-su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:clean"
+su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:flush"
+su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:disable"
+su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento deploy:mode:set developer"
+/bin/systemctl restart php-fpm.service
+/bin/systemctl restart redis-6379.service
+/bin/systemctl restart redis-6380.service
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento setup:static-content:deploy ${MAGE_LOCALE} en_US"
 echo
 curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
