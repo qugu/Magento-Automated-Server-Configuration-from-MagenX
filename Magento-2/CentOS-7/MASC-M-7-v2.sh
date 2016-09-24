@@ -1575,12 +1575,12 @@ echo
 	else
 GREENTXT "DISABLE MAGENTO CACHE AND GENERATE STATIC FILES"
 rm -rf var/*
+su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento deploy:mode:set developer"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:flush"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:disable"
-su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento deploy:mode:set developer"
+
 /bin/systemctl restart php-fpm.service
-/bin/systemctl restart redis-6379.service
-/bin/systemctl restart redis-6380.service
+
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento setup:static-content:deploy ${MAGE_LOCALE} en_US"
 echo
 curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
