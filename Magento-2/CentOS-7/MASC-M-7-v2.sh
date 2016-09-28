@@ -1258,7 +1258,7 @@ sed -i "s/127.0.0.1:9000/hhvm-phpfpm/" /etc/nginx/conf_m${MAGE_SEL_VER}/php_back
 cat >> /etc/nginx/conf_m${MAGE_SEL_VER}/hhvm.conf <<END
 upstream hhvm-phpfpm {
         server 127.0.0.1:9000; # php-fpm master port
-        server 127.0.0.1:9001; # hhvm only for testing
+        server 127.0.0.1:9001 down; # hhvm disabled. only for testing
         keepalive 25;
         }
 END
