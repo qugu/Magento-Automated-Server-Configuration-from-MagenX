@@ -799,7 +799,7 @@ echo
             sed -i "/^Description=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/hhvm.service
             sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/hhvm.service
             systemctl daemon-reload
-            systemctl enable hhvm >/dev/null 2>&1
+            systemctl disable hhvm >/dev/null 2>&1
                else
               echo
             REDTXT "HHVM INSTALLATION ERROR"
@@ -1554,7 +1554,6 @@ sed -i "/.*session.*/a \\
 fi	
 
 systemctl daemon-reload
-/bin/systemctl restart hhvm.service
 /bin/systemctl restart nginx.service
 /bin/systemctl restart php-fpm.service
 /bin/systemctl restart redis-6379.service
