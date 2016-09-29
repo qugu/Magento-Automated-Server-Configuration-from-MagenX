@@ -1580,8 +1580,6 @@ su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:flush"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:disable"
 
 /bin/systemctl restart php-fpm.service
-
-su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento setup:static-content:deploy ${MAGE_LOCALE} en_US"
 echo
 curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
 chmod u+x bin/magento
