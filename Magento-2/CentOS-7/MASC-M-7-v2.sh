@@ -5,16 +5,16 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="20.3.5"
+MASCM_VER="20.3.6"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
 
 # Software versions
 # Magento 1
-MAGE_TMP_FILE="https://www.dropbox.com/s/oy4t5lzy1wfxqir/magento-1.9.2.4-2016-02-23-06-04-07.tar.gz"
-MAGE_FILE_MD5="0ee115245aea158b03d584dc6c1d5466"
-MAGE_VER_1="1.9.2.4"
+MAGE_TMP_FILE="https://www.dropbox.com/s/0d16mfst9436xvo/magento-1.9.3.0-2016-10-11-06-05-14.tar.gz"
+MAGE_FILE_MD5="3cdbc03b9dac8e1c6f137f533a333de5"
+MAGE_VER_1="1.9.3.0"
 
 # Magento 2
 MAGE_VER_2=$(curl -s https://api.github.com/repos/magento/magento2/tags 2>&1 | head -3 | grep -oP '(?<=")\d.*(?=")')
