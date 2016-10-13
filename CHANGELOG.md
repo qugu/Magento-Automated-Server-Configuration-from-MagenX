@@ -1,5 +1,10 @@
 # Change Log
 
+### RELEASE-20.3.6
+
+  * magento 1.9.3.0
+  * minor code cleaning
+
 ### RELEASE-20.3.5
 
   * php-fpm master port now, (hhvm only for testing)
