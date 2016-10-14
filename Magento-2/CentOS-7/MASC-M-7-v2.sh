@@ -1416,7 +1416,7 @@ sed -i '/<global>/ a\
 	<persistent><![CDATA[db1]]></persistent> \
 	<db>1</db> \
 	<compression_threshold>2048</compression_threshold> \
-	<compression_lib>gzip</compression_lib> \
+	<compression_lib>lzf</compression_lib> \
 	<log_level>1</log_level> \
 	<max_concurrency>64</max_concurrency> \
 	<break_after_frontend>5</break_after_frontend> \
@@ -1445,7 +1445,7 @@ sed -i '/<global>/ a\
             <compress_data>1</compress_data> \
             <compress_tags>1</compress_tags> \
             <compress_threshold>204800</compress_threshold> \
-            <compression_lib>gzip</compression_lib> \
+            <compression_lib>lzf</compression_lib> \
         </backend_options> \
     </cache>' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml
 echo
@@ -1489,7 +1489,7 @@ sed -i "/.*session.*/a \\
         'persistent_identifier' => 'db1', \\
         'database' => '1', \\
         'compression_threshold' => '2048', \\
-        'compression_library' => 'gzip', \\
+        'compression_library' => 'lzf', \\
         'log_level' => '1', \\
         'max_concurrency' => '6', \\
         'break_after_frontend' => '5', \\
@@ -1522,7 +1522,7 @@ sed -i "/.*session.*/a \\
           'compress_data' => '0', \\
           'compress_tags' => '0', \\
           'compress_threshold' => '20480', \\
-          'compression_lib' => 'gzip', \\
+          'compression_lib' => 'lzf', \\
         ), \\
       ), \\
       'page_cache' =>  \\
@@ -1541,7 +1541,7 @@ sed -i "/.*session.*/a \\
           'compress_data' => '1', \\
           'compress_tags' => '1', \\
           'compress_threshold' => '20480', \\
-          'compression_lib' => 'gzip', \\
+          'compression_lib' => 'lzf', \\
         ), \\
       ), \\
     ), \\
