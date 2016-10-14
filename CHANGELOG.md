@@ -1,5 +1,10 @@
 # Change Log
 
+### RELEASE-20.3.7
+
+  * magento 1.9.3.0 now has php 7 suppot
+  * redis lzf compression (you can set snappy, php module available)
+
 ### RELEASE-20.3.6
 
   * magento 1.9.3.0
