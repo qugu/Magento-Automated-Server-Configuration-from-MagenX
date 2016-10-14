@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="20.3.6"
+MASCM_VER="20.3.7"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -1102,11 +1102,6 @@ updown_menu "$(timedatectl list-timezones | sort )" MAGE_TIMEZONE
 echo
 echo
 chmod u+x mage
-# pre-fix php 7
-sed -i "s/CURLOPT_SSL_CIPHER_LIST, 'TLSv1'/CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1/" downloader/lib/Mage/HTTP/Client/Curl.php
-sed -i '555s/.*/$out .= $this->getBlock($callback[0])->{$callback[1]}();/' app/code/core/Mage/Core/Model/Layout.php
-sed -i '274s/.*/$params['object']->{$params['method']}($this->_file['tmp_name']);/' lib/Varien/File/Uploader.php
-# pre-fix php 7
 su ${MAGE_WEB_USER} -s /bin/bash -c "./mage mage-setup ."
 su ${MAGE_WEB_USER} -s /bin/bash -c "php -f install.php -- \
 --license_agreement_accepted "yes" \
