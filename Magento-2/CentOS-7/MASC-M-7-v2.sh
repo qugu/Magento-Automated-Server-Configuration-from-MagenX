@@ -962,6 +962,7 @@ echo
         else
 			curl -sS https://getcomposer.org/installer | php >/dev/null 2>&1
 			mv composer.phar /usr/local/bin/composer
+			[ -f "/usr/local/bin/composer" ] || { echo "---> COMPOSER INSTALLATION ERROR" ; exit 1 ;}
 			su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "${REPO_MAGE} ."
 		fi
         echo
