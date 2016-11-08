@@ -1333,14 +1333,22 @@ if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
 	YELLOWTXT "Your servers ip address ${SERVER_IP_ADDR}"
 	YELLOWTXT "Domain ${MAGE_DOMAIN} resolves to ${DNS_A_RECORD}"
 	YELLOWTXT "Please change your DNS A record to this servers IP address"
-	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --standalone --email ${MAGE_ADMIN_EMAIL} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
+	if [ "${MAGE_SEL_VER}" = "1" ]; then
+	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
+	else
+	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
+	fi
 	echo
 	GREENTXT "GENERATE DHPARAM FILE NOW"
     openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096      
     else
-    service nginx stop
-    /usr/bin/certbot certonly --standalone --email ${MAGE_ADMIN_EMAIL} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
-    service nginx start
+    if [ "${MAGE_SEL_VER}" = "1" ]; then
+    /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
+    service nginx restart
+    else
+    /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
+    service nginx restart
+    fi
 fi
 echo
 GREENTXT "SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
