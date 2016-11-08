@@ -1,5 +1,9 @@
 # Change Log
 
+### RELEASE-20.3.8
+
+  * better certbot/letsencrypt integration
+
 ### RELEASE-20.3.7
 
   * magento 1.9.3.0 now has php 7 support
