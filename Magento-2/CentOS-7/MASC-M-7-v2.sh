@@ -1344,11 +1344,12 @@ if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
     else
     if [ "${MAGE_SEL_VER}" = "1" ]; then
     /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
-    service nginx restart
+    service nginx reload
     else
     /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
-    service nginx restart
+    service nginx reload
     fi
+    echo '45 5 * * 1 root /usr/bin/certbot renew --quiet --post-hook "service nginx reload" >> /var/log/letsencrypt-renew.log' >> /etc/crontab
 fi
 echo
 GREENTXT "SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
