@@ -1208,6 +1208,7 @@ sed -i "s/;listen.group = nobody/listen.group = ${MAGE_WEB_USER}/" /etc/php-fpm.
 sed -i "s/;listen.mode = 0660/listen.mode = 0660/" /etc/php-fpm.d/www.conf
 sed -i "s,session.save_handler = files,session.save_handler = redis," /etc/php.ini
 sed -i 's,;session.save_path = "/tmp",session.save_path = "tcp://127.0.0.1:6379",' /etc/php.ini
+sed -i '/PHPSESSID/d' /etc/php.ini
 sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
 sed -i '/sendmail_path/,$d' /etc/php-fpm.d/www.conf
 
