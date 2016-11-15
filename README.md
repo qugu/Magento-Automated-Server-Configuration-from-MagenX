@@ -7,6 +7,7 @@ MASC-M<sup>™</sup>
 ---->> Magento **2.1.x**
 
 * during installation select your Magento version: 1 or 2
+
 <br/>
 #### MagenX - Automated Server Configuration for Magento
 Get a fully pre-configured server with Magento and LEMP stack in just 15 minutes.
