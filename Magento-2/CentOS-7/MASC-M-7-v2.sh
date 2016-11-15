@@ -12,9 +12,9 @@ MASCM_BASE="https://masc.magenx.com"
 
 # Software versions
 # Magento 1
-MAGE_TMP_FILE="https://www.dropbox.com/s/0d16mfst9436xvo/magento-1.9.3.0-2016-10-11-06-05-14.tar.gz"
-MAGE_FILE_MD5="3cdbc03b9dac8e1c6f137f533a333de5"
-MAGE_VER_1="1.9.3.0"
+MAGE_TMP_FILE="https://www.dropbox.com/s/6pwsg25axxie2ec/magento-1.9.3.1-2016-11-14-06-03-27.tar.gz"
+MAGE_FILE_MD5="551f91e70efb9ea6fe3c8d70e8d5e033"
+MAGE_VER_1="1.9.3.1"
 
 # Magento 2
 MAGE_VER_2=$(curl -s https://api.github.com/repos/magento/magento2/tags 2>&1 | head -3 | grep -oP '(?<=")\d.*(?=")')
