@@ -5,7 +5,7 @@
 #       All rights reserved.                                         #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="20.3.8"
+MASCM_VER="20.3.9"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -173,8 +173,8 @@ if [[ ${EUID} -ne 0 ]]; then
 fi
 
 # network is up?
-host1=74.125.24.106
-host2=208.80.154.225
+host1=209.85.202.91
+host2=151.101.193.69
 RESULT=$(((ping -w3 -c2 ${host1} || ping -w3 -c2 ${host2}) > /dev/null 2>&1) && echo "up" || (echo "down" && exit 1))
 if [[ ${RESULT} == up ]]; then
   GREENTXT "PASS: NETWORK IS UP. GREAT, LETS START!"
