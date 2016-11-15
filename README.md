@@ -6,7 +6,7 @@ MASC-M<sup>™</sup>
 ---->> Magento **1.9.3.x**<br/>
 ---->> Magento **2.1.x**
 
-* during installation select your Magento version: 1 or 2
+*** during installation select your Magento version: 1 or 2
 
 <br/>
 #### MagenX - Automated Server Configuration for Magento
