@@ -1459,6 +1459,8 @@ sed -i '/<global>/ a\
             <compression_lib>lzf</compression_lib> \
         </backend_options> \
     </cache>' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml
+  
+    sed -i "s/false/true/" ${MAGE_WEB_ROOT_PATH}/app/etc/modules/Cm_RedisSession.xml
 echo
 GREENTXT "DISABLE MAGENTO DATABASE LOGGING"
 echo
