@@ -1835,7 +1835,7 @@ sed -i "s/.*network.host.*/network.host: 127.0.0.1/" /etc/elasticsearch/elastics
 sed -i "s/.*http.port.*/http.port: 9200/" /etc/elasticsearch/elasticsearch.yml
 chown -R :elasticsearch /etc/elasticsearch/*
 service elasticsearch restart
-sleep 5
+sleep 15
 echo
 cd /usr/local/src/ossec_tmp/ossec-wazuh/extensions/elasticsearch/ && curl -XPUT "http://127.0.0.1:9200/_template/ossec/" -d "@elastic-ossec-template.json"
 echo
