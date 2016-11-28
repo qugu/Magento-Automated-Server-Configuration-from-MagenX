@@ -296,12 +296,12 @@ echo
     echo
     echo
 
-    if [ ${io:0:3} -le 200 ] ; then
-        IO_COLOR="${RED}$io - very bad result"
-    elif [ ${io:0:3} -le 250 ] ; then
+    if [ ${io% *} -ge 250 ] ; then
+        IO_COLOR="${GREEN}$io - excellent result"
+    elif [ ${io% *} -ge 200 ] ; then
         IO_COLOR="${YELLOW}$io - average result"
     else
-        IO_COLOR="${GREEN}$io - excellent result"
+        IO_COLOR="${RED}$io - very bad result"
     fi
 
     if [ ${tf%.*} -ge 10 ] ; then
