@@ -1265,11 +1265,11 @@ GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
      PMA_PASSWD=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
      yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
-	 
+     USER_IP=${SSH_CLIENT%% *} 
      sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
      sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m${MAGE_SEL_VER}/phpmyadmin.conf
      sed -i "5i satisfy any; \\
-           allow ${SSH_CLIENT%% *}/32; \\
+           allow ${USER_IP}/32; \\
            deny  all; \\
            auth_basic  \"please login\"; \\
            auth_basic_user_file .mysql;"  /etc/nginx/conf_m${MAGE_SEL_VER}/phpmyadmin.conf
