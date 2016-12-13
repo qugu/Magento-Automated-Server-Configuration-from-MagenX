@@ -1602,6 +1602,7 @@ echo
 GREENTXT "NOW CHECK EVERYTHING AND LOGIN TO YOUR BACKEND"
     echo
   echo
+  usermod -G apache ${MAGE_WEB_USER}
 echo "-------------------------------------------------------------------------------------"
 BLUEBG "| POST-INSTALLATION CONFIGURATION IS COMPLETED |"
 echo "-------------------------------------------------------------------------------------"
