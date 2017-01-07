@@ -450,31 +450,13 @@ echo
 else
 ## install all extra packages
 GREENTXT "SYSTEM PACKAGES INSTALLATION. PLEASE WAIT"
+yum -q -y upgrade >/dev/null 2>&1
 yum -q -y install ${REPO_FAN} >/dev/null 2>&1
 sed -i '0,/gpgkey/s//includepkgs=curl libmetalink libpsl libcurl libssh2\n&/' /etc/yum.repos.d/city-fan.org.repo
 yum -q -y install ${EXTRA_PACKAGES} ${PERL_MODULES[@]/#/perl-} >/dev/null 2>&1
 echo
-GREENTXT "CHECKING UPDATES. PLEASE WAIT"
-## checking updates
-UPDATES=$(yum check-update | grep -c updates$)
-KERNEL=$(yum check-update | grep -c ^kernel)
-if [ "${UPDATES}" -gt 0 ] || [ "${KERNEL}" -gt 0 ]; then
+echo "yes" > /root/mascm/.sysupdate
 echo
-YELLOWTXT "---> NEW UPDATED PKGS: ${UPDATES}"
-YELLOWTXT "---> NEW KERNEL PKGS: ${KERNEL}"
-echo
-GREENTXT "THE UPDATES ARE BEING INSTALLED"
-            echo
-            echo -n "     PROCESSING  "
-            long_progress &
-            pid="$!"
-            yum -y -q update >/dev/null 2>&1
-            stop_progress "$pid"
-            echo
-            GREENTXT "THE SYSTEM IS UP TO DATE  -  OK"
-            echo "yes" > /root/mascm/.sysupdate
-            echo
-fi
 fi
 echo
 echo
