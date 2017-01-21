@@ -1573,7 +1573,6 @@ su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:disable"
 echo
 curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
 chmod u+x bin/magento
-rm -rf CHANGELOG.md CONTRIBUTING.md COPYING.txt ISSUE_TEMPLATE.md LICENSE.txt LICENSE_AFL.txt nginx.conf.sample php.ini.sample
 GREENTXT "SAVING COMPOSER JSON AND LOCK"
 cp composer.json ../composer.json.saved
 cp composer.lock ../composer.lock.saved
