@@ -12,8 +12,8 @@ MASCM_BASE="https://masc.magenx.com"
 
 # Software versions
 # Magento 1
-MAGE_TMP_FILE="https://www.dropbox.com/s/2783x24ml07ng7t/magento-1.9.3.2-2017-02-07-01-49-34.zip"
-MAGE_FILE_MD5="84d127c7eefe1be54b8e69f49d16880b"
+MAGE_TMP_FILE="https://www.dropbox.com/s/5julyfcw36v4ie0/magento-1.9.3.2-2017-02-07-01-55-11.tar.gz"
+MAGE_FILE_MD5="43136f05674c8114e9ac3183c1b75556"
 MAGE_VER_1="1.9.3.2"
 
 # Magento 2
