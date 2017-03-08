@@ -21,6 +21,7 @@ Type=forking
 PrivateTmp=false
 ExecStartPre=/usr/sbin/varnishd -C -f $VARNISH_VCL_CONF
 ExecStart=/usr/sbin/varnishd \
+	-j unix,user=${MAGE_WEB_USER},ccgroup=${MAGE_WEB_USER},workuser=${MAGE_WEB_USER} \
 	-P /var/run/varnish.pid \
 	-f $VARNISH_VCL_CONF \
 	-a ${VARNISH_LISTEN_ADDRESS}:${VARNISH_LISTEN_PORT} \
