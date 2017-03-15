@@ -1,5 +1,12 @@
 # Change Log
 
+### RELEASE-20.4.1
+
+  * varnish jail 
+  * php-fpm hhvm config cleanup
+  * magento home permissions fix
+  * minor code cleaning
+
 ### RELEASE-20.4.0
 
   * magento 1.9.3.2
