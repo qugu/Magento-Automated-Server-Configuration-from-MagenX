@@ -1,11 +1,11 @@
 #!/bin/bash
 #====================================================================#
-#  MagenX - Automated Server Configuration for Magento 1+2           #
-#    Copyright (C) 2016 admin@magenx.com                             #
-#       All rights reserved.                                         #
+#        Automated Server Configuration for Magento 1+2              #
+#        Copyright (C) 2017 admin@magenx.com                         #
+#        All rights reserved.                                        #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="20.4.0"
+MASCM_VER="20.4.5"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -41,7 +41,7 @@ SPHINX="http://sphinxsearch.com/files/sphinx-2.2.11-1.rhel7.x86_64.rpm"
 
 # Nginx extra configuration
 NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/"
-NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf export.conf status.conf setup.conf hhvm.conf php_backend.conf maps.conf phpmyadmin.conf maintenance.conf multishop.conf spider.conf"
+NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf export.conf status.conf setup.conf php_backend.conf maps.conf phpmyadmin.conf maintenance.conf"
 
 # Debug Tools
 MYSQL_TUNER="https://raw.githubusercontent.com/major/MySQLTuner-perl/master/mysqltuner.pl"
@@ -244,6 +244,7 @@ if [ "${TOTALMEM}" -gt "3000000" ]; then
   else
   echo
   REDTXT "WARNING: YOU HAVE LESS THAN 3Gb OF RAM"
+  echo
 fi
 
 # some selinux, sir?
@@ -354,7 +355,7 @@ if [ "${new_ssh_set}" == "y" ];then
       sed -i "s/.*UseDNS.*/UseDNS no/" /etc/ssh/sshd_config
      echo
         GREENTXT "SSH PORT AND SETTINGS HAS BEEN UPDATED  -  OK"
-        /bin/systemctl restart sshd.service
+        systemctl restart sshd.service
         ss -tlp | grep sshd
      echo
 echo
@@ -371,7 +372,7 @@ if [ "${new_ssh_test}" == "y" ];then
 	echo
         mv /etc/ssh/sshd_config.BACK /etc/ssh/sshd_config
         REDTXT "RESTORING sshd_config FILE BACK TO DEFAULTS ${GREEN} [ok]"
-        /bin/systemctl restart sshd.service
+        systemctl restart sshd.service
         echo
         GREENTXT "SSH PORT HAS BEEN RESTORED  -  OK"
         ss -tlp | grep sshd
@@ -931,6 +932,7 @@ echo
         useradd -d ${MAGE_WEB_ROOT_PATH%/*} -s /sbin/nologin ${MAGE_DOMAIN%%.*}  >/dev/null 2>&1
         MAGE_WEB_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
         echo "${MAGE_DOMAIN%%.*}:${MAGE_WEB_USER_PASS}"  | chpasswd  >/dev/null 2>&1
+		chmod 711 /home/${MAGE_DOMAIN%%.*}
         chown -R ${MAGE_DOMAIN%%.*}:${MAGE_DOMAIN%%.*} ${MAGE_WEB_ROOT_PATH%/*}
         chmod 2770 ${MAGE_WEB_ROOT_PATH}
         setfacl -Rdm u:${MAGE_DOMAIN%%.*}:rwx,g:${MAGE_DOMAIN%%.*}:rwx,g::rw-,o::- ${MAGE_WEB_ROOT_PATH}
@@ -941,7 +943,6 @@ echo
 			pid="$!"
 			su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "wget -qO - ${MAGE_TMP_FILE} | tar -xzp --strip-components 1"
 			stop_progress "$pid"
-			su ${MAGE_DOMAIN%%.*} -s /bin/bash -c "wget -qO shell/fixSUPEE6788.php https://raw.githubusercontent.com/rhoerr/supee-6788-toolbox/master/fixSUPEE6788.php"
         else
 			curl -sS https://getcomposer.org/installer | php >/dev/null 2>&1
 			mv composer.phar /usr/local/bin/composer
@@ -969,7 +970,7 @@ printf "\033c"
 WHITETXT "============================================================================="
 GREENTXT "MAGENTO DATABASE AND DATABASE USER"
 echo
-/bin/systemctl start mysql.service
+systemctl start mysql.service
 MAGE_SEL_VER=$(awk '/webshop/ { print $6 }' /root/mascm/.mascm_index)
 MYSQL_ROOT_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
 MAGE_DB_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
@@ -1180,7 +1181,6 @@ echo
 echo
 GREENTXT "SERVER TIMEZONE SETTINGS"
 timedatectl set-timezone ${MAGE_TIMEZONE}
-
 echo
 GREENTXT "HHVM AND PHP-FPM SETTINGS"
 sed -i "s/\[www\]/\[${MAGE_WEB_USER}\]/" /etc/php-fpm.d/www.conf
@@ -1234,14 +1234,6 @@ done
 sed -i "s/user  nginx;/user  ${MAGE_WEB_USER};/" /etc/nginx/nginx.conf
 sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
 sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
-sed -i "s/127.0.0.1:9000/hhvm-phpfpm/" /etc/nginx/conf_m${MAGE_SEL_VER}/php_backend.conf
-cat >> /etc/nginx/conf_m${MAGE_SEL_VER}/hhvm.conf <<END
-upstream hhvm-phpfpm {
-        server 127.0.0.1:9000; # php-fpm master port
-        server 127.0.0.1:9001 down; # hhvm disabled. only for testing
-        keepalive 25;
-        }
-END
 echo
 GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
@@ -1262,6 +1254,9 @@ GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
      WHITETXT "phpMyAdmin was installed to http://www.${MAGE_DOMAIN}/mysql_${PMA_FOLDER}/"
      WHITETXT "HTTP basic auth with User: mysql"
      WHITETXT "Password: ${PMA_PASSWD}"
+cat >> /root/mascm/.mascm_index <<END
+pma   mysql_${PMA_FOLDER}   mysql   ${PMA_PASSWD}
+END
 echo
 GREENTXT "PROFTPD CONFIGURATION"
      wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
@@ -1283,18 +1278,27 @@ GREENTXT "PROFTPD CONFIGURATION"
      sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/proftpd.service
      systemctl daemon-reload
      systemctl enable proftpd.service >/dev/null 2>&1
-     /bin/systemctl restart proftpd.service
+     systemctl restart proftpd.service
      echo
      WHITETXT "PROFTPD USER: ${REDBG}${MAGE_WEB_USER}"
-     WHITETXT "PROFTPD USER PASS: ${REDBG}${MAGE_WEB_USER_PASS}"
+     WHITETXT "PROFTPD PASS: ${REDBG}${MAGE_WEB_USER_PASS}"
      WHITETXT "PROFTPD PORT: ${REDBG}${FTP_PORT}"
      WHITETXT "GEOIP LOCATION: ${REDBG}${USER_GEOIP}"
      WHITETXT "PROFTPD CONFIG: ${REDBG}/etc/proftpd.conf"
+cat >> /root/mascm/.mascm_index <<END
+proftpd   ${USER_GEOIP}   ${FTP_PORT}   ${MAGE_WEB_USER_PASS}
+END
 echo
+if [ -f /etc/systemd/system/varnish.service ]; then
+GREENTXT "VARNISH CACHE SETTINGS"
+    sed -i "s/MAGE_WEB_USER/${MAGE_WEB_USER}/g"  /etc/systemd/system/varnish.service
+	systemctl enable varnish.service >/dev/null 2>&1
+    systemctl restart varnish.service
+	YELLOWTXT "VARNISH CACHE PORT :8081"
+fi
 echo
 GREENTXT "OPCACHE GUI, n98-MAGERUN, IMAGE OPTIMIZER, MYSQLTUNER, SSL DEBUG TOOLS"
      cd ${MAGE_WEB_ROOT_PATH}
-     wget -qO opcache_$(openssl rand 2 -hex).php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
      wget -qO tlstest_$(openssl rand 2 -hex).php ${REPO_MASCM_TMP}tlstest.php
      wget -qO wesley.pl ${REPO_MASCM_TMP}wesley.pl
      wget -qO mysqltuner.pl ${MYSQL_TUNER}
@@ -1323,7 +1327,7 @@ if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
 	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
 	fi
 	echo
-	GREENTXT "GENERATE DHPARAM FILE NOW"
+	GREENTXT "GENERATE DHPARAM FOR NGINX SSL"
     openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096      
     else
     if [ "${MAGE_SEL_VER}" = "1" ]; then
@@ -1387,11 +1391,13 @@ GREENTXT "MAGENTO CRONJOBS"
 if [ "${MAGE_SEL_VER}" = "1" ]; then
         echo "MAILTO=${MAGE_ADMIN_EMAIL}" >> magecron
         echo "* * * * * ! test -e ${MAGE_WEB_ROOT_PATH}/maintenance.flag && /bin/bash ${MAGE_WEB_ROOT_PATH}/cron.sh  > /dev/null" >> magecron
-        echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
+        echo "*/5 * * * * /bin/bash ${MAGE_WEB_ROOT_PATH}/cron_check.sh" >> magecron
+		echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
 	else
-        echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
-	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
-	echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
+		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
+		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
+		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
+		echo "*/5 * * * * /bin/bash ${MAGE_WEB_ROOT_PATH}/cron_check.sh" >> magecron
         echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron     
 fi
 crontab -u ${MAGE_WEB_USER} magecron
@@ -1402,11 +1408,11 @@ if [ "${MAGE_SEL_VER}" = "1" ]; then
 sed -i '/<session_save>/d' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml
 sed -i '/<global>/ a\
  <session_save>db</session_save> \
-    <redis_session> \
-        <host>127.0.0.1</host> \
-        <port>6379</port> \
-        <password></password> \
-        <timeout>10</timeout> \
+	<redis_session> \
+	<host>127.0.0.1</host> \
+	<port>6379</port> \
+	<password></password> \
+	<timeout>10</timeout> \
 	<persistent><![CDATA[db1]]></persistent> \
 	<db>1</db> \
 	<compression_threshold>2048</compression_threshold> \
@@ -1415,7 +1421,7 @@ sed -i '/<global>/ a\
 	<max_concurrency>64</max_concurrency> \
 	<break_after_frontend>5</break_after_frontend> \
 	<break_after_adminhtml>30</break_after_adminhtml> \
-        <first_lifetime>600</first_lifetime> \
+	<first_lifetime>600</first_lifetime> \
 	<bot_first_lifetime>60</bot_first_lifetime> \
 	<bot_lifetime>7200</bot_lifetime> \
 	<disable_locking>0</disable_locking> \
@@ -1545,14 +1551,39 @@ sed -i "/.*session.*/a \\
 fi	
 
 systemctl daemon-reload
-/bin/systemctl restart nginx.service
-/bin/systemctl restart php-fpm.service
-/bin/systemctl restart redis-6379.service
-/bin/systemctl restart redis-6380.service
+systemctl restart nginx.service
+systemctl restart php-fpm.service
+systemctl restart redis-6379.service
+systemctl restart redis-6380.service
 
 cd ${MAGE_WEB_ROOT_PATH}
 chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH%/*}
-
+GREENTXT "OPCACHE INVALIDATION MONITOR"
+OPCACHE_FILE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
+if [ "${MAGE_SEL_VER}" = "1" ]; then
+wget -qO ${MAGE_WEB_ROOT_PATH}/${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
+else
+wget -qO ${MAGE_WEB_ROOT_PATH}/pub/${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
+fi
+cat > ${MAGE_WEB_ROOT_PATH}/zend_opcache.sh <<END
+#!/bin/bash
+## monitor magento folder and invalidate opcache
+/usr/bin/inotifywait -e modify,move \\
+    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
+    --excludei '/(cache|log|session|report|locks|media|skin|tmp)/|\.(xml|html?|css|js|gif|jpe?g|png|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|sh|pl)~?' \\
+    ${MAGE_WEB_ROOT_PATH}/ | while read line; do
+    echo "\$line " >> /var/log/zend_opcache_monitor.log
+    FILE=\$(echo \${line} | cut -d' ' -f1 | sed -e 's/\/\./\//g' | cut -f1-2 -d'.')
+    TARGETEXT="(php|phtml)"
+    EXTENSION="\${FILE##*.}"
+  if [[ "\$EXTENSION" =~ \$TARGETEXT ]];
+    then
+    su ${MAGE_WEB_USER} -s /bin/bash -c "curl --silent http://${MAGE_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php?page=invalidate&file=\${FILE} >/dev/null 2>&1"
+  fi
+done
+END
+echo "${MAGE_WEB_ROOT_PATH}/zend_opcache.sh &" >> /etc/rc.local
+echo
 if [ "${MAGE_SEL_VER}" = "1" ]; then
 su ${MAGE_WEB_USER} -s /bin/bash -c "mkdir -p var/log"
 curl -s -o n98-magerun.phar https://files.magerun.net/n98-magerun.phar
@@ -1563,13 +1594,13 @@ rm -rf  ${MAGE_WEB_ROOT_PATH}/var/locks/*
 su ${MAGE_WEB_USER} -s /bin/bash -c "php ${MAGE_WEB_ROOT_PATH}/shell/indexer.php --reindexall"
 echo
 	else
-GREENTXT "DISABLE MAGENTO CACHE AND GENERATE STATIC FILES"
+GREENTXT "DISABLE MAGENTO CACHE AND ENABLE DEVELOPER MODE"
 rm -rf var/*
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento deploy:mode:set developer"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:flush"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:disable"
-
-/bin/systemctl restart php-fpm.service
+sed -i "/report/report|${OPCACHE_FILE}_opcache_gui.php/" /etc/nginx/sites-available/magento2.conf
+systemctl restart php-fpm.service
 echo
 curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
 chmod u+x bin/magento
@@ -1578,11 +1609,38 @@ cp composer.json ../composer.json.saved
 cp composer.lock ../composer.lock.saved
 fi
 echo
+GREENTXT "IMAGES OPTIMIZATION SCRIPT"
+echo
+cat >> ${MAGE_WEB_ROOT_PATH}/images_optimization.sh <<END
+#!/bin/bash
+## monitor media folder and optimize new images
+/usr/bin/inotifywait -e create \\
+    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
+    --excludei '\.(xml|php|phtml|html?|css|js|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|opt|prog|crush)~?' \\
+    ${MAGE_WEB_ROOT_PATH}/pub/media | while read line; do
+    echo "\${line} " >> ${MAGE_WEB_ROOT_PATH}/var/log/images_optimization.log
+    FILE=\$(echo \${line} | cut -d' ' -f1)
+    TARGETEXT="(jpg|jpeg|png|gif)"
+    EXTENSION="\${FILE##*.}"
+  if [[ "\${EXTENSION}" =~ \${TARGETEXT} ]];
+    then
+   su ${MAGE_WEB_USER} -s /bin/bash -c "${MAGE_WEB_ROOT_PATH}/wesley.pl \${FILE} >/dev/null 2>&1"
+  fi
+done
+END
+echo "${MAGE_WEB_ROOT_PATH}/images_optimization.sh &" >> /etc/rc.local
+cat >> ${MAGE_WEB_ROOT_PATH}/cron_check.sh <<END
+#!/bin/bash
+pgrep images_optimization.sh > /dev/null || ${MAGE_WEB_ROOT_PATH}/images_optimization.sh &
+pgrep zend_opcache.sh > /dev/null || ${MAGE_WEB_ROOT_PATH}/zend_opcache.sh &
+END
+echo
 GREENTXT "FIXING PERMISSIONS"
-chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH%/*}
+chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH}
 find . -type f -exec chmod 660 {} \;
 find . -type d -exec chmod 2770 {} \;
-chmod u+x wesley.pl mysqltuner.pl
+chmod u+x wesley.pl mysqltuner.pl cron_check.sh zend_opcache.sh images_optimization.sh
+echo
 echo
 GREENTXT "NOW CHECK EVERYTHING AND LOGIN TO YOUR BACKEND"
     echo
@@ -1602,10 +1660,9 @@ WHITETXT "======================================================================
 echo
 MAGE_DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
 MAGE_ADMIN_EMAIL=$(awk '/mageadmin/ { print $4 }' /root/mascm/.mascm_index)
-
 YELLOWTXT "If you are going to use services like CloudFlare - install Fail2Ban"
 echo
-echo -n "---> Would you like to install CSF firewall? (answer n for Fail2Ban) [y/n][n]:"
+echo -n "---> Would you like to install CSF firewall(y) or Fail2Ban(n)? [y/n][n]:"
 read csf_test
 if [ "${csf_test}" == "y" ];then
            echo
