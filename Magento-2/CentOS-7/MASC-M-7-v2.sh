@@ -783,7 +783,7 @@ echo
             sed -i "/^Description=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/hhvm.service
             sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/hhvm.service
             systemctl daemon-reload
-            systemctl disable hhvm >/dev/null 2>&1
+            systemctl enable hhvm >/dev/null 2>&1
                else
               echo
             REDTXT "HHVM INSTALLATION ERROR"
@@ -1216,6 +1216,8 @@ session.save_path = "tcp://127.0.0.1:6379"
 date.timezone = ${MAGE_TIMEZONE}
 max_execution_time = 600
 END
+systemctl daemon-reload
+systemctl restart hhvm >/dev/null 2>&1
 echo
 GREENTXT "NGINX SETTINGS"
 wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}magento${MAGE_SEL_VER}/fastcgi_params
