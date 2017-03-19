@@ -5,7 +5,7 @@
 #        All rights reserved.                                        #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="20.4.1"
+MASCM_VER="20.4.2"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -1560,6 +1560,31 @@ systemctl restart redis-6380.service
 
 cd ${MAGE_WEB_ROOT_PATH}
 chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH%/*}
+GREENTXT "OPCACHE INVALIDATION MONITOR"
+OPCACHE_FILE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
+if [ "${MAGE_SEL_VER}" = "1" ]; then
+wget -qO ${MAGE_WEB_ROOT_PATH}/${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
+else
+wget -qO ${MAGE_WEB_ROOT_PATH}/pub/${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
+fi
+cat > ${MAGE_WEB_ROOT_PATH}/zend_opcache.sh <<END
+#!/bin/bash
+## monitor magento folder and invalidate opcache
+/usr/bin/inotifywait -e modify,move \\
+    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
+    --excludei '/(cache|log|session|report|locks|media|skin|tmp)/|\.(xml|html?|css|js|gif|jpe?g|png|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|sh|pl)~?' \\
+    ${MAGE_WEB_ROOT_PATH}/ | while read line; do
+    echo "\$line " >> /var/log/zend_opcache_monitor.log
+    FILE=\$(echo \${line} | cut -d' ' -f1 | sed -e 's/\/\./\//g' | cut -f1-2 -d'.')
+    TARGETEXT="(php|phtml)"
+    EXTENSION="\${FILE##*.}"
+  if [[ "\$EXTENSION" =~ \$TARGETEXT ]];
+    then
+    su ${MAGE_WEB_USER} -s /bin/bash -c "curl --silent http://${MAGE_DOMAIN}/${OPCACHE_FILE}_opcache_gui.php?page=invalidate&file=\${FILE} >/dev/null 2>&1"
+  fi
+done
+END
+echo "${MAGE_WEB_ROOT_PATH}/zend_opcache.sh &" >> /etc/rc.local
 echo
 if [ "${MAGE_SEL_VER}" = "1" ]; then
 su ${MAGE_WEB_USER} -s /bin/bash -c "mkdir -p var/log"
@@ -1586,11 +1611,37 @@ cp composer.json ../composer.json.saved
 cp composer.lock ../composer.lock.saved
 fi
 echo
+GREENTXT "IMAGES OPTIMIZATION SCRIPT"
+echo
+cat >> ${MAGE_WEB_ROOT_PATH}/images_optimization.sh <<END
+#!/bin/bash
+## monitor media folder and optimize new images
+/usr/bin/inotifywait -e create \\
+    -mrq --timefmt %a-%b-%d-%T --format '%w%f %T' \\
+    --excludei '\.(xml|php|phtml|html?|css|js|ico|te?mp|txt|csv|swp|sql|t?gz|zip|svn?g|git|log|ini|opt|prog|crush)~?' \\
+    ${MAGE_WEB_ROOT_PATH}/pub/media | while read line; do
+    echo "\${line} " >> ${MAGE_WEB_ROOT_PATH}/var/log/images_optimization.log
+    FILE=\$(echo \${line} | cut -d' ' -f1)
+    TARGETEXT="(jpg|jpeg|png|gif)"
+    EXTENSION="\${FILE##*.}"
+  if [[ "\${EXTENSION}" =~ \${TARGETEXT} ]];
+    then
+   su ${MAGE_WEB_USER} -s /bin/bash -c "${MAGE_WEB_ROOT_PATH}/wesley.pl \${FILE} >/dev/null 2>&1"
+  fi
+done
+END
+echo "${MAGE_WEB_ROOT_PATH}/images_optimization.sh &" >> /etc/rc.local
+cat >> ${MAGE_WEB_ROOT_PATH}/cron_check.sh <<END
+#!/bin/bash
+pgrep images_optimization.sh > /dev/null || ${MAGE_WEB_ROOT_PATH}/images_optimization.sh &
+pgrep zend_opcache.sh > /dev/null || ${MAGE_WEB_ROOT_PATH}/zend_opcache.sh &
+END
+echo
 GREENTXT "FIXING PERMISSIONS"
 chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH}
 find . -type f -exec chmod 660 {} \;
 find . -type d -exec chmod 2770 {} \;
-chmod u+x wesley.pl mysqltuner.pl
+chmod u+x wesley.pl mysqltuner.pl cron_check.sh zend_opcache.sh images_optimization.sh
 echo
 echo
 GREENTXT "NOW CHECK EVERYTHING AND LOGIN TO YOUR BACKEND"
