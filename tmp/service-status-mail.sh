@@ -20,8 +20,8 @@ SERVICE_STATUS=$(systemctl status ${SERVICE})
 #PUSHOVER_TOKEN=""
 #PUSHOVER_USER=""
 
-#    curl -s -F "token=${TOKEN}" \
-#    -F "user=${USER}" \
+#    curl -s -F "token=${PUSHOVER_TOKEN}" \
+#    -F "user=${PUSHOVER_USER}" \
 #    -F "title=[ALERT] on ${MAILFROM} ${SERVER_IP_ADDR}" \
 #    -F "message=${SERVICE_STATUS}" ${PUSHOVER_URL} \
 #    -F "priority=1"
