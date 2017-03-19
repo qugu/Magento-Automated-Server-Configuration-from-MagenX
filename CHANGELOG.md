@@ -1,5 +1,11 @@
 # Change Log
 
+### RELEASE-20.4.2
+
+  * realtime images optimization
+  * realtime opcache invalidation
+  * minor code cleaning
+  
 ### RELEASE-20.4.1
 
   * varnish jail 
