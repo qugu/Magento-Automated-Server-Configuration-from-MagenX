@@ -1080,7 +1080,7 @@ read -e -p "---> Enter your shop url: " -i "http://www.${MAGE_DOMAIN}/"  MAGE_SI
 echo
 WHITETXT "Language, Currency and Timezone settings"
 if [ "${MAGE_SEL_VER}" = "1" ]; then
-MAGE_ADMIN_PATH=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 6 | head -n 1)
+MAGE_ADMIN_PATH_RANDOM=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 6 | head -n 1)
 updown_menu "$(curl -s ${REPO_MASCM_TMP}magento-locale | sort )" MAGE_LOCALE
 updown_menu "$(curl -s ${REPO_MASCM_TMP}magento-currency | sort )" MAGE_CURRENCY
 updown_menu "$(timedatectl list-timezones | sort )" MAGE_TIMEZONE
@@ -1103,7 +1103,7 @@ su ${MAGE_WEB_USER} -s /bin/bash -c "php -f install.php -- \
 --secure_base_url "" \
 --skip_url_validation "yes" \
 --use_secure_admin "no" \
---admin_frontname "${MAGE_ADMIN_PATH}" \
+--admin_frontname "admin_${MAGE_ADMIN_PATH_RANDOM}" \
 --admin_firstname "${MAGE_ADMIN_FNAME}" \
 --admin_lastname "${MAGE_ADMIN_LNAME}" \
 --admin_email "${MAGE_ADMIN_EMAIL}" \
@@ -1117,7 +1117,7 @@ su ${MAGE_WEB_USER} -s /bin/bash -c "php -f install.php -- \
     WHITETXT "============================================================================="
     WHITETXT " MAGENTO ADMIN ACCOUNT"
     echo
-    echo "---> Admin path: ${MAGE_SITE_URL}${MAGE_ADMIN_PATH}"
+    echo "---> Admin path: ${MAGE_SITE_URL}admin_${MAGE_ADMIN_PATH_RANDOM}"
     echo "---> Username: ${MAGE_ADMIN_LOGIN}"
     echo "---> Password: ${MAGE_ADMIN_PASS}"
     echo
@@ -1236,6 +1236,12 @@ done
 sed -i "s/user  nginx;/user  ${MAGE_WEB_USER};/" /etc/nginx/nginx.conf
 sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
 sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
+    if [ "${MAGE_SEL_VER}" = "1" ]; then
+    	MAGE_ADMIN_PATH=$(grep -Po '(?<=<frontName><!\[CDATA\[)\w*(?=\]\]>)' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml)
+    	else
+	MAGE_ADMIN_PATH=$(bin/magento info:adminuri | cut -d'/' -f2)
+    fi
+	sed -i "s/ADMIN_PLACEHOLDER/${MAGE_ADMIN_PATH}/" /etc/nginx/conf_m${MAGE_SEL_VER}/extra_protect.conf
 echo
 GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
