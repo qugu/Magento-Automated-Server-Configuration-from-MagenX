@@ -1334,9 +1334,7 @@ if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
 	else
 	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
 	fi
-	echo
-	GREENTXT "GENERATE DHPARAM FOR NGINX SSL"
-    openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096      
+	echo  
     else
     if [ "${MAGE_SEL_VER}" = "1" ]; then
     /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
@@ -1345,8 +1343,15 @@ if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
     /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
     service nginx reload
     fi
-    echo '45 5 * * 1 root /usr/bin/certbot renew --quiet --post-hook "service nginx reload" >> /var/log/letsencrypt-renew.log' >> /etc/crontab
-fi
+ fi
+echo '45 5 * * 1 root /usr/bin/certbot renew --quiet --post-hook "service nginx reload" >> /var/log/letsencrypt-renew.log' >> /etc/crontab
+echo
+GREENTXT "GENERATE DHPARAM FOR NGINX SSL"
+openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096
+echo
+GREENTXT "GENERATE DEFAULT NGINX SSL SERVER KEY/CERT"
+openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout /etc/ssl/certs/default_server.key -out /etc/ssl/certs/default_server.crt \
+-subj "/CN=default_server" -days 3650 -subj "/C=US/ST=Oregon/L=Portland/O=default_server/OU=Org/CN=default_server"
 echo
 GREENTXT "SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
 cat > /etc/logrotate.d/magento <<END
