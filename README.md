@@ -53,3 +53,6 @@ Complete linux stack including: <br/>
 *Dedicated server / VPS*<br/>
 *CentOS 7 minimal*<br/>
 *4Gb RAM*<br/>
+
+
+How to Install Magento - Magento Server Configuration Service - HHVM Magento Server Setup - Recommended server tools for Magento
