@@ -47,9 +47,6 @@ NGINX_EXTRA_CONF="assets.conf error_page.conf extra_protect.conf export.conf sta
 MYSQL_TUNER="https://raw.githubusercontent.com/major/MySQLTuner-perl/master/mysqltuner.pl"
 MYSQL_TOP="https://launchpad.net/ubuntu/+archive/primary/+files/mytop_1.9.1.orig.tar.gz"
 
-# Malware detector
-MALDET="http://www.rfxn.com/downloads/maldetect-current.tar.gz"
-
 ### DEFINE LINKS AND PACKAGES ENDS ###
 
 # Simple colors
@@ -1376,9 +1373,8 @@ echo
 GREENTXT "REALTIME MALWARE MONITOR WITH E-MAIL ALERTING"
 YELLOWTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
 cd /usr/local/src
-wget -q ${MALDET}
-tar -zxf maldetect-current.tar.gz
-cd maldetect-*
+git clone https://github.com/rfxn/linux-malware-detect.git
+cd linux-malware-detect
 ./install.sh >/dev/null 2>&1
 
 sed -i 's/email_alert="0"/email_alert="1"/' /usr/local/maldetect/conf.maldet
@@ -1400,18 +1396,27 @@ echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
 maldet --monitor /usr/local/maldetect/monitor_paths >/dev/null 2>&1
 chmod u+x /etc/rc.local
 echo
+GREENTXT "GOACCESS REALTIME ACCESS LOG DASHBOARD"
+cd /usr/local/src
+git clone https://github.com/allinurl/goaccess.git
+cd goaccess
+autoreconf -fi
+./configure --enable-utf8 --enable-geoip=legacy --with-openssl  >/dev/null 2>&1
+make  >/dev/null 2>&1
+make install  >/dev/null 2>&1
+echo
 GREENTXT "MAGENTO CRONJOBS"
 if [ "${MAGE_SEL_VER}" = "1" ]; then
         echo "MAILTO=${MAGE_ADMIN_EMAIL}" >> magecron
         echo "* * * * * ! test -e ${MAGE_WEB_ROOT_PATH}/maintenance.flag && /bin/bash ${MAGE_WEB_ROOT_PATH}/cron.sh  > /dev/null" >> magecron
         echo "*/5 * * * * /bin/bash ${MAGE_WEB_ROOT_PATH}/cron_check.sh" >> magecron
-		echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
+	echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
 	else
 		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
 		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
 		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
 		echo "*/5 * * * * /bin/bash ${MAGE_WEB_ROOT_PATH}/cron_check.sh" >> magecron
-        echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron     
+                echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron     
 fi
 crontab -u ${MAGE_WEB_USER} magecron
 rm magecron
