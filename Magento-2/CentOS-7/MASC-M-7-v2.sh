@@ -1236,7 +1236,7 @@ sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/sites-available/mage
     if [ "${MAGE_SEL_VER}" = "1" ]; then
     	MAGE_ADMIN_PATH=$(grep -Po '(?<=<frontName><!\[CDATA\[)\w*(?=\]\]>)' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml)
     	else
-	MAGE_ADMIN_PATH=$(bin/magento info:adminuri | cut -d'/' -f2)
+	MAGE_ADMIN_PATH=$(${MAGE_WEB_ROOT_PATH}/bin/magento info:adminuri | cut -d'/' -f2)
     fi
 	sed -i "s/ADMIN_PLACEHOLDER/${MAGE_ADMIN_PATH}/" /etc/nginx/conf_m${MAGE_SEL_VER}/extra_protect.conf
 echo
