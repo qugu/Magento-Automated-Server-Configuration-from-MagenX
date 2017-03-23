@@ -21,11 +21,11 @@ Magento installation including: <br/>
 - REDIS (2 instances 6379|6380)
 - MEMCACHED
 - PROFTPD (custom port + ssl)
-- MALWARE REALTIME MONITOR (quarantine)
+- [MALWARE REALTIME MONITOR (quarantine)](https://github.com/rfxn/linux-malware-detect)
 - CLAMAV ENGINE
 - PERCONA (5.6)
 - PERCONA TOOL-KIT
-- MYSQLTUNER (+ weekly reports to admin email)
+- [MYSQLTUNER (+ weekly reports to admin email)](https://raw.githubusercontent.com/major/MySQLTuner-perl/master/mysqltuner.pl)
 - MYTOP
 - PHPMYADMIN
 - CSF FIREWALL
@@ -34,16 +34,16 @@ Magento installation including: <br/>
 
 Complete linux stack including: <br/>
 - linux and webstack settings optimization
-- letsencrypt (certbot)
-- goaccess
+- [letsencrypt (certbot)](https://certbot.eff.org/)
+- [goaccess](http://rt.goaccess.io)
 - iotop
 - sysstat
 - git/svn
 - strace
 - python-pip
 - iptraf
-- images optimization
-- opcache invalidation
+- images realtime optimization
+- opcache realtime invalidation
 - geoip
 - logs rotation
 - and many more
