@@ -1600,7 +1600,6 @@ cat > ${MAGE_WEB_ROOT_PATH}/zend_opcache.sh <<END
   fi
 done
 END
-echo "${MAGE_WEB_ROOT_PATH}/zend_opcache.sh &" >> /etc/rc.local
 echo
 if [ "${MAGE_SEL_VER}" = "1" ]; then
 su ${MAGE_WEB_USER} -s /bin/bash -c "mkdir -p var/log"
@@ -1646,7 +1645,6 @@ cat >> ${MAGE_WEB_ROOT_PATH}/images_optimization.sh <<END
   fi
 done
 END
-echo "${MAGE_WEB_ROOT_PATH}/images_optimization.sh &" >> /etc/rc.local
 cat >> ${MAGE_WEB_ROOT_PATH}/cron_check.sh <<END
 #!/bin/bash
 pgrep images_optimization.sh > /dev/null || ${MAGE_WEB_ROOT_PATH}/images_optimization.sh &
