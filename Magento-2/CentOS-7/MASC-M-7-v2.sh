@@ -1617,7 +1617,7 @@ rm -rf var/*
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento deploy:mode:set developer"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:flush"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:disable"
-sed -i "s/report/report|${OPCACHE_FILE}_opcache_gui.php/" /etc/nginx/sites-available/magento2.conf
+sed -i "s/report/report|${OPCACHE_FILE}_opcache_gui/" /etc/nginx/sites-available/magento2.conf
 systemctl restart php-fpm.service
 echo
 curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
