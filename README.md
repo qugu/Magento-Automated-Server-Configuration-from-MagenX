@@ -53,6 +53,7 @@ Complete linux stack including: <br/>
 *Dedicated server / VPS*<br/>
 *CentOS 7 minimal*<br/>
 *4Gb RAM*<br/>
+*like [DigitalOcean cloud servers](https://m.do.co/c/ccc5d115377f)
 
 
 How to Install Magento - Magento Server Configuration Service - HHVM Magento Server Setup - Recommended server tools for Magento
