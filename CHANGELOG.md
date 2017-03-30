@@ -1,5 +1,10 @@
 # Change Log
 
+### RELEASE-20.5
+
+  * wazuh(ossec) 2.0 + ELK 5.3 upgrade
+  * ELK Packetbeat monitoring
+
 ### RELEASE-20.4.2
 
   * realtime images optimization
