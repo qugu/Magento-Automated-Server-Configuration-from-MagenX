@@ -5,7 +5,7 @@
 #        All rights reserved.                                        #
 #====================================================================#
 SELF=$(basename $0)
-MASCM_VER="20.4.2"
+MASCM_VER="20.5"
 MASCM_BASE="https://masc.magenx.com"
 
 ### DEFINE LINKS AND PACKAGES STARTS ###
@@ -32,7 +32,7 @@ REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
 REPO_FAN="http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-1-13.rhel7.noarch.rpm"
 
 # WebStack Packages
-EXTRA_PACKAGES="autoconf automake dejavu-fonts-common dejavu-sans-fonts libtidy libpcap recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools smartmontools net-tools mcrypt mlocate unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle ncurses-devel GeoIP GeoIP-devel GeoIP-update openssl-devel ImageMagick libjpeg-turbo-utils pngcrush lsof net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron sysstat attr iotop expect postgresql-libs unixODBC"
+EXTRA_PACKAGES="autoconf automake dejavu-fonts-common dejavu-sans-fonts libtidy libpcap recode boost tbb lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools smartmontools net-tools mcrypt mlocate unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle ncurses-devel GeoIP GeoIP-devel GeoIP-update openssl-devel ImageMagick libjpeg-turbo-utils pngcrush lsof net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron yum-plugin-versionlock sysstat attr iotop expect postgresql-libs unixODBC"
 PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl gmp php-gettext phpseclib recode symfony-class-loader symfony-common tcpdf tcpdf-dejavu-sans-fonts tidy udan11-sql-parser snappy lz4) 
 PHP_PECL_PACKAGES=(pecl-redis pecl-lzf pecl-geoip pecl-zip pecl-memcache)
 PERCONA_PACKAGES=(client-56 server-56)
@@ -241,6 +241,7 @@ if [ "${TOTALMEM}" -gt "3000000" ]; then
   else
   echo
   REDTXT "WARNING: YOU HAVE LESS THAN 3Gb OF RAM"
+  REDTXT "TO PROPERLY RUN COMPLETE STACK YOU NEED 4Gb+"
   echo
 fi
 
@@ -1326,11 +1327,11 @@ if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
     REDTXT "DNS A record and your servers IP address do not match"
 	YELLOWTXT "Your servers ip address ${SERVER_IP_ADDR}"
 	YELLOWTXT "Domain ${MAGE_DOMAIN} resolves to ${DNS_A_RECORD}"
-	YELLOWTXT "Please change your DNS A record to this servers IP address"
+	YELLOWTXT "Please change your DNS A record to this servers IP address, and run this command later: "
 	if [ "${MAGE_SEL_VER}" = "1" ]; then
-	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
+	WHITETXT "/usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
 	else
-	YELLOWTXT "and run this command later: /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
+	WHITETXT "/usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
 	fi
 	echo  
     else
@@ -1372,7 +1373,7 @@ chmod u+x /bin/service-status-mail.sh
 systemctl daemon-reload
 echo
 GREENTXT "REALTIME MALWARE MONITOR WITH E-MAIL ALERTING"
-YELLOWTXT "WARNING: INFECTED FILES WILL BE MOVED TO QUARANTINE"
+YELLOWTXT "warning: infected files will be moved to quarantine"
 cd /usr/local/src
 git clone https://github.com/rfxn/linux-malware-detect.git
 cd linux-malware-detect
@@ -1568,7 +1569,7 @@ sed -i "/.*session.*/a \\
     ), \\
   ), \\ " ${MAGE_WEB_ROOT_PATH}/app/etc/env.php
 fi	
-
+echo
 systemctl daemon-reload
 systemctl restart nginx.service
 systemctl restart php-fpm.service
@@ -1834,19 +1835,26 @@ pause '---> Press [Enter] key to show menu'
 "ossec")
 WHITETXT "============================================================================="
 echo
-GREENTXT "Installation of OSSEC ELK stack:"
-cd /usr/local/src
-mkdir ossec_tmp && cd $_
-git clone -b stable https://github.com/wazuh/ossec-wazuh.git
+GREENTXT "INSTALLATION OF WAZUH 2.0 (OSSEC) + ELK 5.3.0 STACK:"
 echo
-cd ossec-wazuh
+GREENTXT "INSTALLATION OF WAZUH MANAGER"
+cat > /etc/yum.repos.d/wazuh.repo <<END
+[wazuh_repo]
+name=CentOS-$releasever - Wazuh
+gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH
+enabled=1
+gpgcheck=1
+baseurl=https://packages.wazuh.com/yum/el/7/x86_64
+protect=1
+END
+yum -y -q install wazuh-manager
 echo
-YELLOWTXT "Choose 'server' when being asked about the installation type and answer the rest of questions as desired."
+GREENTXT "INSTALLATION OF WAZUH API + NODEJS"
+curl --silent --location https://rpm.nodesource.com/setup_6.x | bash >/dev/null 2>&1
+yum -y -q install nodejs
+yum -y -q install wazuh-api
 echo
-./install.sh
-echo
-echo
-GREENTXT "Installation of Oracle Java 8 JDK RPM:"
+GREENTXT "INSTALLATION OF JAVA 8 JDK RPM:"
 cd /usr/local/src
 wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jdk-8u121-linux-x64.rpm"
 yum -y -q localinstall jdk-8u121-linux-x64.rpm
@@ -1854,95 +1862,90 @@ export JAVA_HOME=/usr/java/jdk1.8.0_121/jre
 echo "export JAVA_HOME=/usr/java/jdk1.8.0_121/jre" > /etc/profile
 echo
 echo
-GREENTXT "Installation of Logstash:"
-rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
-cat > /etc/yum.repos.d/logstash.repo <<END
-[logstash-2.3]
-name=Logstash repository for 2.3.x packages
-baseurl=https://packages.elastic.co/logstash/2.3/centos
-gpgcheck=1
-gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
-enabled=1
-END
-yum -y -q install logstash
-echo
-cp /usr/local/src/ossec_tmp/ossec-wazuh/extensions/logstash/01-ossec-singlehost.conf /etc/logstash/conf.d/
-cp /usr/local/src/ossec_tmp/ossec-wazuh/extensions/elasticsearch/elastic-ossec-template.json  /etc/logstash/
-curl -sO "http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz"
-gzip -d GeoLiteCity.dat.gz && mv GeoLiteCity.dat /etc/logstash/
-usermod -a -G ossec logstash
-echo
-echo
-GREENTXT "Installation of Elastcsearch:"
+GREENTXT "INSTALLATION OF ELASTCSEARCH:"
 echo
 cat > /etc/yum.repos.d/elasticsearch.repo <<END
-[elasticsearch-2.x]
-name=Elasticsearch repository for 2.x packages
-baseurl=https://packages.elastic.co/elasticsearch/2.x/centos
+[elastic-5.x]
+name=Elastic repository for 5.x packages
+baseurl=https://artifacts.elastic.co/packages/5.x/yum
 gpgcheck=1
-gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1
+autorefresh=1
+type=rpm-md
 END
 echo
-yum -y -q install elasticsearch >/dev/null 2>&1
+yum -y -q install elasticsearch-5.3.0 >/dev/null 2>&1
 echo
-systemctl daemon-reload
-systemctl enable elasticsearch.service
-echo
-sed -i "s/.*cluster.name.*/cluster.name: ossec/" /etc/elasticsearch/elasticsearch.yml
-sed -i "s/.*node.name.*/node.name: ossec_node1/" /etc/elasticsearch/elasticsearch.yml
+sed -i "s/.*cluster.name.*/cluster.name: wazuh/" /etc/elasticsearch/elasticsearch.yml
+sed -i "s/.*node.name.*/node.name: wazuh-node1/" /etc/elasticsearch/elasticsearch.yml
 sed -i "s/.*network.host.*/network.host: 127.0.0.1/" /etc/elasticsearch/elasticsearch.yml
 sed -i "s/.*http.port.*/http.port: 9200/" /etc/elasticsearch/elasticsearch.yml
+sed -i "s/-Xms2g/-Xms512m/" /etc/elasticsearch/jvm.options
+sed -i "s/-Xmx2g/-Xmx512m/" /etc/elasticsearch/jvm.options
 chown -R :elasticsearch /etc/elasticsearch/*
-service elasticsearch restart
+systemctl daemon-reload
+systemctl enable elasticsearch.service
+systemctl restart elasticsearch.service
+echo
+echo
 sleep 15
+GREENTXT "INSTALLATION OF PACKETBEAT:"
+yum -y -q install packetbeat-5.3.0
+chkconfig --add packetbeat
+/etc/init.d/packetbeat restart
+/usr/share/packetbeat/scripts/import_dashboards
 echo
-cd /usr/local/src/ossec_tmp/ossec-wazuh/extensions/elasticsearch/ && curl -XPUT "http://127.0.0.1:9200/_template/ossec/" -d "@elastic-ossec-template.json"
+echo
+GREENTXT "INSTALLATION OF LOGSTASH:"
+yum -y -q install logstash-5.3.0
+curl -so /etc/logstash/conf.d/01-wazuh.conf https://raw.githubusercontent.com/wazuh/wazuh/master/extensions/logstash/01-wazuh.conf
+curl -so /etc/logstash/wazuh-elastic5-template.json https://raw.githubusercontent.com/wazuh/wazuh/master/extensions/elasticsearch/wazuh-elastic5-template.json
+usermod -a -G ossec logstash
+sed -i "1,11d" /etc/logstash/conf.d/01-wazuh.conf
+sed -i "/elastic2/d" /etc/logstash/conf.d/01-wazuh.conf
+sed -i "s/^#//g" /etc/logstash/conf.d/01-wazuh.conf
+systemctl daemon-reload
+systemctl enable logstash.service
+systemctl start logstash.service
 echo
 echo
-GREENTXT "Lets install Kibana:"
-cd /usr/local/src/ossec_tmp/
-wget -q https://download.elastic.co/kibana/kibana/kibana-4.3.1-linux-x64.tar.gz
-tar xf kibana-*.tar.gz && sudo mkdir -p /opt/kibana && sudo cp -R kibana-4*/* /opt/kibana/
-cat > /etc/systemd/system/kibana4.service <<END
-[Service]
-ExecStart=/opt/kibana/bin/kibana
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=kibana4
-User=root
-Group=root
-Environment=NODE_ENV=production
-[Install]
-WantedBy=multi-user.target
-END
-echo
-sed -i "s/.*server.port.*/server.port: 5601/" /opt/kibana/config/kibana.yml
-sed -i 's/.*server.host.*/server.host: "127.0.0.1"/' /opt/kibana/config/kibana.yml
+GREENTXT "INSTALLATION OF KIBANA:"
+yum -y -q install kibana-5.3.0
+/usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp-2.0_5.3.0.zip
 echo
 systemctl daemon-reload
-systemctl enable kibana4.service
-systemctl restart kibana4.service
-service logstash restart
+systemctl enable kibana.service
+systemctl restart kibana.service
 echo
+echo
+yum versionlock elasticsearch logstash kibana packetbeat wazuh-manager wazuh-api
+GREETXT "OSSEC WAZUH API SETTINGS"
+sed -i 's/.*config.host.*/config.host = "127.0.0.1";/' /var/ossec/api/configuration/config.js
+echo
+MAGE_DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
 KIBANA_PORT=$(shuf -i 10322-10539 -n 1)
 USER_IP=${SSH_CLIENT%% *}
-echo "Create password for Kibana interface http authentication:"
-htpasswd -c /etc/nginx/.ossec ossec
+KIBANA_PASSWD=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
+WAZUH_API_PASSWD=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
+htpasswd -b -c /etc/nginx/.wazuh wazuh-web ${KIBANA_PASSWD}  >/dev/null 2>&1
+cd /var/ossec/api/configuration/auth
+htpasswd -b -c user wazuh-api ${WAZUH_API_PASSWD}  >/dev/null 2>&1
+systemctl restart wazuh-api
 cat > /etc/nginx/sites-available/kibana.conf <<END
 server {
   listen ${KIBANA_PORT} ssl http2;
-  server_name           ossec.${MAGE_DOMAIN};
+  server_name           ${MAGE_DOMAIN};
   access_log            /var/log/nginx/access.log;
   
   ## SSL CONFIGURATION
-	#ssl_certificate     /etc/letsencrypt/live/ossec.${MAGE_DOMAIN}/fullchain.pem; 
-	#ssl_certificate_key /etc/letsencrypt/live/ossec.${MAGE_DOMAIN}/privkey.pem;
+	#ssl_certificate     /etc/letsencrypt/live/${MAGE_DOMAIN}/fullchain.pem; 
+	#ssl_certificate_key /etc/letsencrypt/live/${MAGE_DOMAIN}/privkey.pem;
 	
     satisfy all;
     allow ${USER_IP}/32;
     deny  all;
-    auth_basic           "blackhole";
+    auth_basic  "blackhole";
     auth_basic_user_file .ossec;
        
        location / {
@@ -1953,22 +1956,12 @@ END
 echo
 cd /etc/nginx/sites-enabled/
 ln -s /etc/nginx/sites-available/kibana.conf kibana.conf
-echo "Kibana web listening port: ${KIBANA_PORT}"
+service nginx reload
 echo
-echo " to Configure an index pattern, set it up following these steps:
-
-- Check Index contains time-based events.
-- Insert Index name or pattern: ossec-* .
-- On Time-field name list select @timestamp option.
-- Click on Create button.
-- You should see the fields list with about ~72 fields.
-- Go to Discover tap on top bar buttons."
+YELLOWTXT "KIBANA WEB INTERFACE PORT: ${KIBANA_PORT}"
+YELLOWTXT "KIBANA HTTP AUTH: wazuh-web ${KIBANA_PASSWD}"
 echo
-echo "
-- Click at top bar on Settings.
-- Click on Objects.
-- Download the Dashboards JSON File: https://raw.githubusercontent.com/wazuh/ossec-wazuh/stable/extensions/kibana/kibana-ossecwazuh-dashboards.json .
-- Then click the button Import."
+YELLOWTXT "WAZUH API AUTH: wazuh-api ${WAZUH_API_PASSWD}"
 echo
 pause '---> Press [Enter] key to show menu'
 ;;
