@@ -1177,6 +1177,9 @@ BLUEBG "| POST-INSTALLATION CONFIGURATION |"
 echo "-------------------------------------------------------------------------------------"
 echo
 echo
+GREENTXT "SERVER HOSTNAME SETTINGS"
+hostnamectl set-hostname server.${MAGE_DOMAIN} --static
+echo
 GREENTXT "SERVER TIMEZONE SETTINGS"
 timedatectl set-timezone ${MAGE_TIMEZONE}
 echo
