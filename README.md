@@ -29,7 +29,8 @@ Magento installation including: <br/>
 - MYTOP
 - PHPMYADMIN
 - CSF FIREWALL
-- [OSSEC + ELK STACK 5.3 (JAVA,LOGSTASH,KIBANA,ELASTICSEARCH,PACKETBEAT)](http://www.wazuh.com/)
+- [OSSEC + ELK STACK 5.3 (JAVA,LOGSTASH,KIBANA,ELASTICSEARCH)](http://www.wazuh.com/)
+  + [Packetbeat](https://www.elastic.co/products/beats/packetbeat)
 - MAGERUN
 
 Complete linux stack including: <br/>
