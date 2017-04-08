@@ -930,7 +930,7 @@ echo
         useradd -d ${MAGE_WEB_ROOT_PATH%/*} -s /sbin/nologin ${MAGE_DOMAIN%%.*}  >/dev/null 2>&1
         MAGE_WEB_USER_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
         echo "${MAGE_DOMAIN%%.*}:${MAGE_WEB_USER_PASS}"  | chpasswd  >/dev/null 2>&1
-		chmod 711 /home/${MAGE_DOMAIN%%.*}
+        chmod 711 /home/${MAGE_DOMAIN%%.*}
         chown -R ${MAGE_DOMAIN%%.*}:${MAGE_DOMAIN%%.*} ${MAGE_WEB_ROOT_PATH%/*}
         chmod 2770 ${MAGE_WEB_ROOT_PATH}
         setfacl -Rdm u:${MAGE_DOMAIN%%.*}:rwx,g:${MAGE_DOMAIN%%.*}:rwx,g::rw-,o::- ${MAGE_WEB_ROOT_PATH}
@@ -1011,11 +1011,6 @@ CREATE DATABASE ${MAGE_DB_NAME};
 GRANT ALL PRIVILEGES ON ${MAGE_DB_NAME}.* TO '${MAGE_DB_USER_NAME}'@'${MAGE_DB_HOST}' WITH GRANT OPTION;
 exit
 EOMYSQL
-echo
-WHITETXT "MAGENTO DATABASE: ${REDBG}${MAGE_DB_NAME}"
-WHITETXT "MAGENTO DATABASE USER: ${REDBG}${MAGE_DB_USER_NAME}"
-WHITETXT "MAGENTO DATABASE PASS: ${REDBG}${MAGE_DB_PASS}"
-WHITETXT "MYSQL ROOT PASSWORD: ${REDBG}${MYSQL_ROOT_PASS}"
 echo
 cat > /root/.mytop <<END
 user=root
@@ -1152,7 +1147,7 @@ su ${MAGE_WEB_USER} -s /bin/bash -c "bin/magento setup:install --base-url=${MAGE
 fi
 
 cat >> /root/mascm/.mascm_index <<END
-mageadmin  ${MAGE_ADMIN_LOGIN}  ${MAGE_ADMIN_PASS}  ${MAGE_ADMIN_EMAIL}  ${MAGE_TIMEZONE}  ${MAGE_LOCALE}
+mageadmin  ${MAGE_ADMIN_LOGIN}  ${MAGE_ADMIN_PASS}  ${MAGE_ADMIN_EMAIL}  ${MAGE_TIMEZONE}  ${MAGE_LOCALE} ${MAGE_ADMIN_PATH_RANDOM}
 END
 
 pause '------> Press [Enter] key to show menu'
@@ -1170,8 +1165,16 @@ MAGE_WEB_USER_PASS=$(awk '/webshop/ { print $5 }' /root/mascm/.mascm_index)
 MAGE_ADMIN_EMAIL=$(awk '/mageadmin/ { print $4 }' /root/mascm/.mascm_index)
 MAGE_TIMEZONE=$(awk '/mageadmin/ { print $5 }' /root/mascm/.mascm_index)
 MAGE_LOCALE=$(awk '/mageadmin/ { print $6 }' /root/mascm/.mascm_index)
+MAGE_ADMIN_LOGIN=$(awk '/mageadmin/ { print $2 }' /root/mascm/.mascm_index)
+MAGE_ADMIN_PASS=$(awk '/mageadmin/ { print $3 }' /root/mascm/.mascm_index)
+MAGE_ADMIN_PATH_RANDOM=$(awk '/mageadmin/ { print $7 }' /root/mascm/.mascm_index)
 MAGE_SEL_VER=$(awk '/webshop/ { print $6 }' /root/mascm/.mascm_index)
 MAGE_VER=$(awk '/webshop/ { print $7 }' /root/mascm/.mascm_index)
+MAGE_DB_HOST=$(awk '/database/ { print $2 }' /root/mascm/.mascm_index)
+MAGE_DB_NAME=$(awk '/database/ { print $3 }' /root/mascm/.mascm_index)
+MAGE_DB_USER_NAME=$(awk '/database/ { print $4 }' /root/mascm/.mascm_index)
+MAGE_DB_PASS=$(awk '/database/ { print $5 }' /root/mascm/.mascm_index)
+MYSQL_ROOT_PASS=$(awk '/database/ { print $6 }' /root/mascm/.mascm_index)
 echo "-------------------------------------------------------------------------------------"
 BLUEBG "| POST-INSTALLATION CONFIGURATION |"
 echo "-------------------------------------------------------------------------------------"
@@ -1261,9 +1264,6 @@ GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
 	 	   
      htpasswd -b -c /etc/nginx/.mysql mysql ${PMA_PASSWD}  >/dev/null 2>&1
      echo
-     WHITETXT "phpMyAdmin was installed to http://www.${MAGE_DOMAIN}/mysql_${PMA_FOLDER}/"
-     WHITETXT "HTTP basic auth with User: mysql"
-     WHITETXT "Password: ${PMA_PASSWD}"
 cat >> /root/mascm/.mascm_index <<END
 pma   mysql_${PMA_FOLDER}   mysql   ${PMA_PASSWD}
 END
@@ -1290,11 +1290,6 @@ GREENTXT "PROFTPD CONFIGURATION"
      systemctl enable proftpd.service >/dev/null 2>&1
      systemctl restart proftpd.service
      echo
-     WHITETXT "PROFTPD USER: ${REDBG}${MAGE_WEB_USER}"
-     WHITETXT "PROFTPD PASS: ${REDBG}${MAGE_WEB_USER_PASS}"
-     WHITETXT "PROFTPD PORT: ${REDBG}${FTP_PORT}"
-     WHITETXT "GEOIP LOCATION: ${REDBG}${USER_GEOIP}"
-     WHITETXT "PROFTPD CONFIG: ${REDBG}/etc/proftpd.conf"
 cat >> /root/mascm/.mascm_index <<END
 proftpd   ${USER_GEOIP}   ${FTP_PORT}   ${MAGE_WEB_USER_PASS}
 END
@@ -1415,7 +1410,7 @@ if [ "${MAGE_SEL_VER}" = "1" ]; then
         echo "MAILTO=${MAGE_ADMIN_EMAIL}" >> magecron
         echo "* * * * * ! test -e ${MAGE_WEB_ROOT_PATH}/maintenance.flag && /bin/bash ${MAGE_WEB_ROOT_PATH}/cron.sh  > /dev/null" >> magecron
         echo "*/5 * * * * /bin/bash ${MAGE_WEB_ROOT_PATH}/cron_check.sh" >> magecron
-	echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
+        echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
 	else
 		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
 		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
@@ -1663,10 +1658,37 @@ find . -type d -exec chmod 2770 {} \;
 chmod u+x wesley.pl mysqltuner.pl cron_check.sh zend_opcache.sh images_optimization.sh
 echo
 echo
-GREENTXT "NOW CHECK EVERYTHING AND LOGIN TO YOUR BACKEND"
-    echo
-  echo
-  usermod -G apache ${MAGE_WEB_USER}
+echo "===========================  INSTALLATION LOG  ======================================"
+echo
+echo
+echo "shop domain: ${MAGE_DOMAIN}"
+echo "webroot path: ${MAGE_WEB_ROOT_PATH}"
+echo "admin path: ${MAGE_ADMIN_PATH}"
+echo "admin name: ${MAGE_ADMIN_LOGIN}"
+echo "admin pass: ${MAGE_ADMIN_PASS}"
+echo
+echo "phpmyadmin url: mysql_${PMA_FOLDER}"
+echo "phpmyadmin http auth name: mysql"
+echo "phpmyadmin http auth pass: ${PMA_PASSWD}"
+echo
+echo "mysql host: ${MAGE_DB_HOST}"
+echo "mysql user: ${MAGE_DB_USER_NAME}"
+echo "mysql pass: ${MAGE_DB_PASS}"
+echo "mysql database: ${MAGE_DB_HOST}"
+echo "mysql root pass: ${MYSQL_ROOT_PASS}"
+echo
+echo "ftp port: ${FTP_PORT}"
+echo "ftp user: ${MAGE_WEB_USER}"
+echo "ftp password: ${MAGE_WEB_USER_PASS}"
+echo "ftp geoip: ${USER_GEOIP}"
+echo "ftp ip login: ${USER_IP}"
+echo
+echo "opcache gui ${OPCACHE_FILE}_opcache_gui.php"
+echo
+echo
+echo "===========================  INSTALLATION LOG  ======================================"
+echo
+usermod -G apache ${MAGE_WEB_USER}
 echo "-------------------------------------------------------------------------------------"
 BLUEBG "| POST-INSTALLATION CONFIGURATION IS COMPLETED |"
 echo "-------------------------------------------------------------------------------------"
