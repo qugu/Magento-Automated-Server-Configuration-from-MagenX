@@ -1661,29 +1661,29 @@ echo
 echo "===========================  INSTALLATION LOG  ======================================"
 echo
 echo
-echo "shop domain: ${MAGE_DOMAIN}"
-echo "webroot path: ${MAGE_WEB_ROOT_PATH}"
-echo "admin path: ${MAGE_ADMIN_PATH}"
-echo "admin name: ${MAGE_ADMIN_LOGIN}"
-echo "admin pass: ${MAGE_ADMIN_PASS}"
+WHITETXT "[shop domain]: ${MAGE_DOMAIN}"
+WHITETXT "[webroot path]: ${MAGE_WEB_ROOT_PATH}"
+WHITETXT "[admin path]: ${MAGE_DOMAIN}/${MAGE_ADMIN_PATH}"
+WHITETXT "[admin name]: ${MAGE_ADMIN_LOGIN}"
+WHITETXT "[admin pass]: ${MAGE_ADMIN_PASS}"
 echo
-echo "phpmyadmin url: mysql_${PMA_FOLDER}"
-echo "phpmyadmin http auth name: mysql"
-echo "phpmyadmin http auth pass: ${PMA_PASSWD}"
+WHITETXT "[phpmyadmin url]: ${MAGE_DOMAIN}/mysql_${PMA_FOLDER}"
+WHITETXT "[phpmyadmin http auth name]: mysql"
+WHITETXT "[phpmyadmin http auth pass]: ${PMA_PASSWD}"
+WHITETXT
+WHITETXT "[mysql host]: ${MAGE_DB_HOST}"
+WHITETXT "[mysql user]: ${MAGE_DB_USER_NAME}"
+WHITETXT "[mysql pass]: ${MAGE_DB_PASS}"
+WHITETXT "[mysql database]: ${MAGE_DB_NAME}"
+WHITETXT "[mysql root pass]: ${MYSQL_ROOT_PASS}"
 echo
-echo "mysql host: ${MAGE_DB_HOST}"
-echo "mysql user: ${MAGE_DB_USER_NAME}"
-echo "mysql pass: ${MAGE_DB_PASS}"
-echo "mysql database: ${MAGE_DB_HOST}"
-echo "mysql root pass: ${MYSQL_ROOT_PASS}"
+WHITETXT "[ftp port]: ${FTP_PORT}"
+WHITETXT "[ftp user]: ${MAGE_WEB_USER}"
+WHITETXT "[ftp password]: ${MAGE_WEB_USER_PASS}"
+WHITETXT "[ftp geoip]: ${USER_GEOIP}"
+WHITETXT "[ftp ip login]: ${USER_IP}"
 echo
-echo "ftp port: ${FTP_PORT}"
-echo "ftp user: ${MAGE_WEB_USER}"
-echo "ftp password: ${MAGE_WEB_USER_PASS}"
-echo "ftp geoip: ${USER_GEOIP}"
-echo "ftp ip login: ${USER_IP}"
-echo
-echo "opcache gui ${OPCACHE_FILE}_opcache_gui.php"
+WHITETXT "[opcache gui]: ${OPCACHE_FILE}_opcache_gui.php"
 echo
 echo
 echo "===========================  INSTALLATION LOG  ======================================"
