@@ -1628,7 +1628,7 @@ fi
 echo
 GREENTXT "IMAGES OPTIMIZATION SCRIPT"
 echo
-cat >> ${MAGE_WEB_ROOT_PATH}/images_optimization.sh <<END
+cat >> ${MAGE_WEB_ROOT_PATH}/optimages.sh <<END
 #!/bin/bash
 ## monitor media folder and optimize new images
 /usr/bin/inotifywait -e create \\
@@ -1647,7 +1647,7 @@ done
 END
 cat >> ${MAGE_WEB_ROOT_PATH}/cron_check.sh <<END
 #!/bin/bash
-pgrep images_optimization.sh > /dev/null || ${MAGE_WEB_ROOT_PATH}/images_optimization.sh &
+pgrep optimages.sh > /dev/null || ${MAGE_WEB_ROOT_PATH}/optimages.sh &
 pgrep zend_opcache.sh > /dev/null || ${MAGE_WEB_ROOT_PATH}/zend_opcache.sh &
 END
 echo
@@ -1655,7 +1655,7 @@ GREENTXT "FIXING PERMISSIONS"
 chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH}
 find . -type f -exec chmod 660 {} \;
 find . -type d -exec chmod 2770 {} \;
-chmod u+x wesley.pl mysqltuner.pl cron_check.sh zend_opcache.sh images_optimization.sh
+chmod u+x wesley.pl mysqltuner.pl cron_check.sh zend_opcache.sh optimages.sh
 echo
 echo
 echo "===========================  INSTALLATION LOG  ======================================"
