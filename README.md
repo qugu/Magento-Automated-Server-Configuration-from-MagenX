@@ -28,10 +28,14 @@ Magento installation including: <br/>
 - [MYSQLTUNER (+ weekly reports to admin email)](https://raw.githubusercontent.com/major/MySQLTuner-perl/master/mysqltuner.pl)
 - MYTOP
 - PHPMYADMIN
+- MAGERUN
+
 - CSF FIREWALL
+
 - [OSSEC + ELK STACK 5.3 (JAVA,LOGSTASH,KIBANA,ELASTICSEARCH)](http://www.wazuh.com/)
   + [Packetbeat](https://www.elastic.co/products/beats/packetbeat)
-- MAGERUN
+  + [NODE.JS](https://nodejs.org/en/)
+
 
 Complete linux stack including: <br/>
 - linux and webstack settings optimization
