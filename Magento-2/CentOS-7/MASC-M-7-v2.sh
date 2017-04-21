@@ -36,7 +36,7 @@ EXTRA_PACKAGES="autoconf automake dejavu-fonts-common dejavu-sans-fonts libtidy 
 PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl gmp php-gettext phpseclib recode symfony-class-loader symfony-common tcpdf tcpdf-dejavu-sans-fonts tidy udan11-sql-parser snappy lz4) 
 PHP_PECL_PACKAGES=(pecl-redis pecl-lzf pecl-geoip pecl-zip pecl-memcache)
 PERCONA_PACKAGES=(client-56 server-56)
-PERL_MODULES=(libwww-perl Template-Toolkit Time-HiRes ExtUtils-CBuilder ExtUtils-MakeMaker TermReadKey DBI DBD-MySQL Digest-HMAC Digest-SHA1 Test-Simple Moose Net-SSLeay)
+PERL_MODULES=(libwww-perl CPAN Template-Toolkit Time-HiRes ExtUtils-CBuilder ExtUtils-Embed ExtUtils-MakeMaker TermReadKey DBI DBD-MySQL Digest-HMAC Digest-SHA1 Test-Simple Moose Net-SSLeay devel)
 SPHINX="http://sphinxsearch.com/files/sphinx-2.2.11-1.rhel7.x86_64.rpm"
 
 # Nginx extra configuration
@@ -577,7 +577,7 @@ END
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install nginx nginx-module-geoip >/dev/null 2>&1
+            yum -y -q install nginx nginx-module-geoip nginx-module-perl >/dev/null 2>&1
             stop_progress "$pid"
             rpm  --quiet -q nginx
       if [ "$?" = 0 ]
