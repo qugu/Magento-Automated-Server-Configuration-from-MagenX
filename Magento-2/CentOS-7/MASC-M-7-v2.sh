@@ -1671,7 +1671,7 @@ echo
 WHITETXT "[phpmyadmin url]: ${MAGE_DOMAIN}/mysql_${PMA_FOLDER}"
 WHITETXT "[phpmyadmin http auth name]: mysql"
 WHITETXT "[phpmyadmin http auth pass]: ${PMA_PASSWD}"
-WHITETXT
+echo
 WHITETXT "[mysql host]: ${MAGE_DB_HOST}"
 WHITETXT "[mysql user]: ${MAGE_DB_USER_NAME}"
 WHITETXT "[mysql pass]: ${MAGE_DB_PASS}"
