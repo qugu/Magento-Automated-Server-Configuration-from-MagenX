@@ -27,17 +27,15 @@ WEBMIN_NGINX="https://github.com/magenx/webmin-nginx/archive/nginx-0.08.wbm__0.t
 WEBMIN_FAIL2BAN="http://download.webmin.com/download/modules/fail2ban.wbm.gz"
 
 # Repositories
-REPO_PERCONA="https://www.percona.com/redir/downloads/percona-release/redhat/percona-release-0.1-4.noarch.rpm"
-REPO_REMI="http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
-REPO_FAN="http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-1-13.rhel7.noarch.rpm"
+REPO_PERCONA="https://www.percona.com/redir/downloads/percona-release/ubuntu/latest/percona-release_0.1-4.xenial_all.deb"
 
 # WebStack Packages
-EXTRA_PACKAGES="autoconf automake dejavu-fonts-common dejavu-sans-fonts libtidy libpcap gettext-devel cppunit recode boost tbb ed lz4 libyaml libdwarf bind-utils e2fsprogs svn gcc iptraf inotify-tools smartmontools net-tools mcrypt mlocate unzip vim wget curl sudo bc mailx clamav-filesystem clamav-server clamav-update clamav-milter-systemd clamav-data clamav-server-systemd clamav-scanner-systemd clamav clamav-milter clamav-lib clamav-scanner proftpd logrotate git patch ipset strace rsyslog gifsicle ncurses-devel GeoIP GeoIP-devel GeoIP-update openssl-devel ImageMagick libjpeg-turbo-utils pngcrush lsof net-snmp net-snmp-utils xinetd python-pip ncftp postfix certbot yum-cron yum-plugin-versionlock sysstat attr iotop expect postgresql-libs unixODBC"
-PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysqlnd pdo xml xmlrpc intl gmp php-gettext phpseclib recode symfony-class-loader symfony-common tcpdf tcpdf-dejavu-sans-fonts tidy udan11-sql-parser snappy lz4) 
-PHP_PECL_PACKAGES=(pecl-redis pecl-lzf pecl-geoip pecl-zip pecl-memcache)
-PERCONA_PACKAGES=(client-56 server-56)
-PERL_MODULES=(libwww-perl CPAN Template-Toolkit Time-HiRes ExtUtils-CBuilder ExtUtils-Embed ExtUtils-MakeMaker TermReadKey DBI DBD-MySQL Digest-HMAC Digest-SHA1 Test-Simple Moose Net-SSLeay devel)
-SPHINX="http://sphinxsearch.com/files/sphinx-2.2.11-1.rhel7.x86_64.rpm"
+EXTRA_PACKAGES="build-essential make autoconf autopoint fonts-dejavu libtidy-0.99-0 libncap44 libgettextpo-dev libcppunit* recode libboost-all-dev libtbb* ed liblz4* libyaml-cpp-dev libdwarf-dev dnsutils e2fsprogs subversion gcc iptraf inotify-tools smartmontools net-tools mcrypt mlocate unzip vim wget curl sudo bc mailutils clamav clamav-base clamav-daemon proftpd-basic proftpd-mod-vroot proftpd-mod-geoip logrotate git patch ipset strace rsyslog gifsicle ncurses-dev libncursesw5-dev geoip-bin geoip-database libgeoip-dev openssl libssl-dev imagemagick libjpeg-turbo* pngcrush lsof snmp xinetd python-pip ncftp sysstat attr iotop expect certbot postgresql unixodbc"
+PHP_PACKAGES=(cli common fpm opcache gd curl mbstring bcmath soap mcrypt mysql common xml xmlrpc intl gmp recode tidy zip ) # udan11-sql-parser, snappy
+PHP_PECL_PACKAGES=(php-redis php-lzf php-geoip php-zip php-pclzip php-memcache php-gettext php-tcpdf php-phpseclib horde-lz4 symfony-class-loader symfony-common)
+PERCONA_PACKAGES=(client-5.6 server-5.6)
+PERL_MODULES=(libwww-perl libcpan-meta-perl libtemplate-plugin* libmoosex-role-timer-perl libextutils* libterm-readkey-perl libdbi-perl libdbd-mysql-perl libdigest* libtest-simple-perl libmoose-perl libnet-ssleay-perl libdevel*)
+SPHINX="http://sphinxsearch.com/files/sphinxsearch_2.2.11-release-1~xenial_amd64.deb"
 
 # Nginx extra configuration
 NGINX_BASE="https://raw.githubusercontent.com/magenx/Magento-nginx-config/master/"
@@ -135,7 +133,7 @@ echo -e "\n---> Use up/down arrow keys then press Enter to select $2"
 while [ 0 ]; do
   if [ "$i" -eq 0 ]; then i=1; fi
   if [ ! "${item[$i]}" ]; then let i=i-1; fi
-  echo -en "\r                                 " 
+  echo -en "\r                                 "
   echo -en "\r${item[$i]}"
   read -sn 1 selector
   case "${selector}" in
@@ -184,40 +182,15 @@ if [[ ${RESULT} == up ]]; then
   echo
   exit 1
 fi
-        MD5_NEW=$(curl -sL ${MASCM_BASE} > MASCM_NEW && md5sum MASCM_NEW | awk '{print $1}')
-        MD5_OLD=$(md5sum ${SELF} | awk '{print $1}')
-            if [[ "${MD5_NEW}" == "${MD5_OLD}" ]]; then
-            GREENTXT "PASS: INTEGRITY CHECK FOR '${SELF}' OK"
-            rm MASCM_NEW
-            elif [[ "${MD5_NEW}" != "${MD5_OLD}" ]]; then
-            echo
-            YELLOWTXT "INTEGRITY CHECK FOR '${SELF}'"
-            YELLOWTXT "DETECTED DIFFERENT MD5 CHECKSUM"
-            YELLOWTXT "REMOTE REPOSITORY FILE HAS SOME CHANGES"
-            REDTXT "IF YOU HAVE LOCAL CHANGES - SKIP UPDATES"
-            echo
-                echo -n "---> Would you like to update the file now?  [y/n][y]:"
-		read update_agree
-		if [ "${update_agree}" == "y" ];then
-		mv MASCM_NEW ${SELF}
-		echo
-                GREENTXT "THE FILE HAS BEEN UPGRADED, PLEASE RUN IT AGAIN"
-		echo
-                exit 1
-            else
-        echo
-        YELLOWTXT "NEW FILE SAVED TO MASCM_NEW"
-        echo
-  fi
-fi
 
-# do we have CentOS 7?
-if grep "CentOS.* 7\." /etc/centos-release  > /dev/null 2>&1; then
-  GREENTXT "PASS: CENTOS RELEASE 7"
+# do we have Ubuntu 16.04?
+if grep "16.04" /etc/os-release  > /dev/null 2>&1; then
+  GREENTXT "PASS: UBUNTU 16.04"
   else
   echo
   REDTXT "ERROR: UNABLE TO DETERMINE DISTRIBUTION TYPE."
-  YELLOWTXT "------> THIS CONFIGURATION FOR CENTOS 7"
+  YELLOWTXT "------> THIS CONFIGURATION FOR UBUNTU 16.04"
+  YELLOWTXT "------> DONT RUN ON NEWER OR OLDER VERSIONS, PACKAGES MAY BE DIFFERENT"
   echo
   exit 1
 fi
@@ -266,9 +239,9 @@ echo "--------------------------------------------------------------------------
 BLUEBG "| QUICK SYSTEM TEST |"
 echo "-------------------------------------------------------------------------------------"
 echo
-    yum -y install epel-release > /dev/null 2>&1
-    yum -y install time bzip2 tar > /dev/null 2>&1
-    
+#    yum -y install epel-release > /dev/null 2>&1
+#    yum -y install time bzip2 tar > /dev/null 2>&1
+
     test_file=vpsbench__$$
     tar_file=tarfile
     now=$(date +"%m/%d/%Y")
@@ -277,9 +250,9 @@ echo
     cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F: ' /cpu MHz/ {freq=$2} END {print freq}' /proc/cpuinfo )
     tram=$( free -m | awk 'NR==2 {print $2}' )
-    
+
     echo
-    
+
     echo -n "     PROCESSING I/O PERFORMANCE "
     start_progress &
     pid="$!"
@@ -449,11 +422,13 @@ echo
 else
 ## install all extra packages
 GREENTXT "SYSTEM PACKAGES INSTALLATION. PLEASE WAIT"
-yum -q -y upgrade >/dev/null 2>&1
-yum -q -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/yum-plugin-replace-0.2.7-1.ius.centos7.noarch.rpm >/dev/null 2>&1
-yum -q -y install ${REPO_FAN} >/dev/null 2>&1
-sed -i '0,/gpgkey/s//includepkgs=curl libmetalink libpsl libcurl libssh2\n&/' /etc/yum.repos.d/city-fan.org.repo
-yum -q -y install ${EXTRA_PACKAGES} ${PERL_MODULES[@]/#/perl-} >/dev/null 2>&1
+add-apt-repository -y ppa:certbot/certbot >/dev/null 2>&1
+apt-get -q -y update >/dev/null 2>&1
+apt-get -q -y upgrade >/dev/null 2>&1
+echo proftpd-basic shared/proftpd/inetd_or_standalone select standalone | debconf-set-selections
+echo postfix postfix/main_mailer_type select No configuration |  debconf-set-selections
+apt-get -q -y install ${EXTRA_PACKAGES} >/dev/null 2>&1
+apt-get -q -y install ${PERL_MODULES}  >/dev/null 2>&1
 echo
 echo "yes" > /root/mascm/.sysupdate
 echo
@@ -475,9 +450,10 @@ if [ "${repo_percona_install}" == "y" ];then
             echo -n "     PROCESSING  "
             quick_progress &
             pid="$!"
-            rpm --quiet -U ${REPO_PERCONA} >/dev/null 2>&1
+            wget -qO /tmp/percona_repo.deb ${REPO_PERCONA}
+            dpkg --install /tmp/percona_repo.deb >/dev/null 2>&1
             stop_progress "$pid"
-            rpm  --quiet -q percona-release
+            dpkg-query -l percona-release >/dev/null 2>&1
       if [ "$?" = 0 ] # if repository installed then install package
         then
           echo
@@ -489,34 +465,29 @@ if [ "${repo_percona_install}" == "y" ];then
               echo -n "     PROCESSING  "
               long_progress &
               pid="$!"
-              yum -y -q install ${PERCONA_PACKAGES[@]/#/Percona-Server-}  >/dev/null 2>&1
+              apt-get update -y >/dev/null 2>&1
+              export MYSQL_ROOT_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
+              echo ${MYSQL_ROOT_PASS} > /root/mascm/.mysql_pass
+              echo percona-server-server-5.6 percona-server-server/root_password password ${MYSQL_ROOT_PASS} | debconf-set-selections
+              echo percona-server-server-5.6 percona-server-server/root_password_again password ${MYSQL_ROOT_PASS} | debconf-set-selections
+              apt-get install -q -y ${PERCONA_PACKAGES[@]/#/percona-server-}  >/dev/null 2>&1
               stop_progress "$pid"
-              rpm  --quiet -q ${PERCONA_PACKAGES[@]/#/Percona-Server-}
+              dpkg-query -l ${PERCONA_PACKAGES[@]/#/percona-server-} >/dev/null 2>&1
         if [ "$?" = 0 ] # if package installed then configure
           then
             echo
               GREENTXT "DATABASE HAS BEEN INSTALLED  -  OK"
               echo
-              ## plug in service status alert
-              cp /usr/lib/systemd/system/mysqld.service /etc/systemd/system/mysqld.service
-              sed -i "s/^Restart=always/Restart=on-failure/" /etc/systemd/system/mysqld.service
-              sed -i "s/^Restart=always/Restart=on-failure/" /etc/systemd/system/mysql.service
-              sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/mysqld.service
-              sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/mysql.service
-              sed -i "/Restart=on-failure/a RestartSec=10" /etc/systemd/system/mysqld.service
-              sed -i "/Restart=on-failure/a RestartSec=10" /etc/systemd/system/mysql.service
-              systemctl daemon-reload
-              systemctl enable mysql >/dev/null 2>&1
               echo
               WHITETXT "Downloading my.cnf file from MagenX Github repository"
-              wget -qO /etc/my.cnf https://raw.githubusercontent.com/magenx/magento-mysql/master/my.cnf/my.cnf
+              wget -qO /etc/mysql/my.cnf https://raw.githubusercontent.com/magenx/magento-mysql/master/my.cnf/my.cnf
               echo
                 echo
                  WHITETXT "We need to correct your innodb_buffer_pool_size"
-                 rpm -qa | grep -qw bc || yum -q -y install bc >/dev/null 2>&1
+                 apt install -y bc >/dev/null 2>&1
                  IBPS=$(echo "0.5*$(awk '/MemTotal/ { print $2 / (1024*1024)}' /proc/meminfo | cut -d'.' -f1)" | bc | xargs printf "%1.0f")
-                 sed -i "s/innodb_buffer_pool_size = 4G/innodb_buffer_pool_size = ${IBPS}G/" /etc/my.cnf
-                 sed -i "s/innodb_buffer_pool_instances = 4/innodb_buffer_pool_instances = ${IBPS}/" /etc/my.cnf
+                 sed -i "s/innodb_buffer_pool_size = 4G/innodb_buffer_pool_size = ${IBPS}G/" /etc/mysql/my.cnf
+                 sed -i "s/innodb_buffer_pool_instances = 4/innodb_buffer_pool_instances = ${IBPS}/" /etc/mysql/my.cnf
                  echo
                  YELLOWTXT "innodb_buffer_pool_size = ${IBPS}G"
                  YELLOWTXT "innodb_buffer_pool_instances = ${IBPS}"
@@ -524,9 +495,11 @@ if [ "${repo_percona_install}" == "y" ];then
               echo
               ## get mysql tools
               cd /usr/local/src
-              wget -qO - ${MYSQL_TOP} | tar -xzp && cd mytop*
-              perl Makefile.PL && make && make install  >/dev/null 2>&1
-              yum -y -q install percona-toolkit >/dev/null 2>&1
+              wget -qO - ${MYSQL_TOP} | tar -xzp && cd mytop*  >/dev/null 2>&1
+              perl Makefile.PL >/dev/null 2>&1
+              make >/dev/null 2>&1
+              make install >/dev/null 2>&1
+              apt install -y percona-toolkit >/dev/null 2>&1
               echo
               WHITETXT "Please use these tools to check and finetune your database:"
               echo
@@ -558,17 +531,15 @@ if [ "${repo_nginx_install}" == "y" ];then
             GREENTXT "Installation of Nginx (mainline) repository:"
             echo
             WHITETXT "Downloading Nginx GPG key"
-            wget -qO /etc/pki/rpm-gpg/nginx_signing.key  http://nginx.org/packages/keys/nginx_signing.key
+            wget -qO /tmp/nginx_signing.key https://nginx.ru/keys/nginx_signing.key  >/dev/null 2>&1
             echo
+            WHITETXT "Adding Nginx GPG key"
+            apt-key add /tmp/nginx_signing.key
             WHITETXT "Nginx (mainline) repository file"
             echo
-cat >> /etc/yum.repos.d/nginx.repo <<END
-[nginx]
-name=nginx repo
-baseurl=http://nginx.org/packages/mainline/centos/7/x86_64/
-enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/nginx_signing.key
-gpgcheck=1
+cat >> /etc/apt/sources.list <<END
+deb http://nginx.org/packages/mainline/ubuntu/ xenial nginx
+deb-src http://nginx.org/packages/mainline/ubuntu/ xenial nginx
 END
             echo
             GREENTXT "REPOSITORY HAS BEEN INSTALLED  -  OK"
@@ -578,23 +549,16 @@ END
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install nginx nginx-module-geoip nginx-module-perl >/dev/null 2>&1
+            apt update -y >/dev/null 2>&1
+            apt install -y nginx nginx-module-geoip nginx-module-perl >/dev/null 2>&1
             stop_progress "$pid"
-            rpm  --quiet -q nginx
+            dpkg-query -l nginx >/dev/null 2>&1
       if [ "$?" = 0 ]
         then
           echo
             GREENTXT "NGINX HAS BEEN INSTALLED  -  OK"
             echo
-            ## plug in service status alert
-            cp /usr/lib/systemd/system/nginx.service /etc/systemd/system/nginx.service
-            sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/nginx.service
-            sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/nginx.service
-            sed -i "s,PIDFile=/run/nginx.pid,PIDFile=/var/run/nginx.pid," /etc/systemd/system/nginx.service
-            sed -i "s/PrivateTmp=true/PrivateTmp=false/" /etc/systemd/system/nginx.service
-            systemctl daemon-reload
-            systemctl enable nginx >/dev/null 2>&1
-              else
+            else
              echo
             REDTXT "NGINX INSTALLATION ERROR"
         exit
@@ -606,115 +570,110 @@ fi
 echo
 WHITETXT "============================================================================="
 echo
-echo -n "---> Start the Remi repository and PHP 7.0 installation? [y/n][n]:"
+echo -n "---> Start the PHP 7.0 installation? [y/n][n]:"
 read repo_remi_install
-if [ "${repo_remi_install}" == "y" ];then
-          echo
-            GREENTXT "Installation of Remi repository:"
-            echo
-            echo -n "     PROCESSING  "
-            quick_progress &
-            pid="$!"
-            rpm --quiet -U ${REPO_REMI} >/dev/null 2>&1
-            stop_progress "$pid"
-            rpm  --quiet -q remi-release
-      if [ "$?" = 0 ]
-        then
-          echo
-            GREENTXT "REPOSITORY HAS BEEN INSTALLED  -  OK"
-            echo
-            GREENTXT "Installation of PHP 7.0:"
+if [ "${repo_remi_install}" == "y" ]; then
+        GREENTXT "Installation of PHP 7.0:"
             echo
             echo -n "     PROCESSING  "
             long_progress &
             pid="$!"
-            yum --enablerepo=remi,remi-php70 -y -q install php ${PHP_PACKAGES[@]/#/php-} ${PHP_PECL_PACKAGES[@]/#/php-} >/dev/null 2>&1
+            add-apt-repository -y ppa:ondrej/php >/dev/null 2>&1
+            apt-get update -y  >/dev/null 2>&1
+            apt-get install -y php7.0 ${PHP_PACKAGES[@]/#/php7.0-} ${PHP_PECL_PACKAGES} >/dev/null 2>&1
             stop_progress "$pid"
-            rpm  --quiet -q php
+            dpkg-query -l php7.0 >/dev/null 2>&1
        if [ "$?" = 0 ]
          then
            echo
              GREENTXT "PHP HAS BEEN INSTALLED  -  OK"
-             ## plug in service status alert
-             cp /usr/lib/systemd/system/php-fpm.service /etc/systemd/system/php-fpm.service
-             sed -i "s/PrivateTmp=true/PrivateTmp=false/" /etc/systemd/system/php-fpm.service
-             sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/php-fpm.service
-             sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/php-fpm.service
-             systemctl daemon-reload
-             systemctl enable php-fpm >/dev/null 2>&1
-             systemctl disable httpd >/dev/null 2>&1
-             yum list installed | awk '/php.*x86_64/ {print "      ",$1}'
+              sed -i "s/PrivateTmp=true/PrivateTmp=false/" /lib/systemd/system/php7.0-fpm.service
+              sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /lib/systemd/system/php7.0-fpm.service
+              sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /lib/systemd/system/php7.0-fpm.service
+              systemctl daemon-reload
+              systemctl enable php7.0-fpm >/dev/null 2>&1
+              dpkg-query -l php7.0* | awk '/php7.0.*/ {print "      ",$2}'
                 else
                echo
              REDTXT "PHP INSTALLATION ERROR"
          exit
        fi
-         echo
+     else
+       echo
+         YELLOWTXT "The PHP installation was skipped by the user. Next step"
+       fi
+
+     WHITETXT "============================================================================="
+      echo
+      echo -n "---> Start the Redis and Memcached installation? [y/n][n]:"
+      read repo_redis_install
+      if [ "${repo_redis_install}" == "y" ]; then
            echo
             GREENTXT "Installation of Redis, Memcached and Sphinx packages:"
             echo
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum --enablerepo=remi -y -q install redis memcached ${SPHINX} >/dev/null 2>&1
+            apt install -y redis-server memcached >/dev/null 2>&1
+            wget -qO sphinx-latest.deb ${SPHINX}  >/dev/null 2>&1
+            dpkg --install sphinx-latest.deb >/dev/null 2>&1
+            apt-get install -f -y  >/dev/null 2>&1
             stop_progress "$pid"
-            rpm  --quiet -q redis
+            dpkg-query -l redis-server >/dev/null 2>&1
        if [ "$?" = 0 ]
          then
            echo
              GREENTXT "REDIS HAS BEEN INSTALLED"
-             systemctl disable redis >/dev/null 2>&1
+             systemctl stop redis-server.service >/dev/null 2>&1
+             systemctl disable redis-server.service >/dev/null 2>&1
              echo
+
 for REDISPORT in 6379 6380
-do
-mkdir -p /var/lib/redis-${REDISPORT}
-chmod 755 /var/lib/redis-${REDISPORT}
-chown redis /var/lib/redis-${REDISPORT}
-cp -rf /etc/redis.conf /etc/redis-${REDISPORT}.conf
-chmod 644 /etc/redis-${REDISPORT}.conf
-cp -rf /usr/lib/systemd/system/redis.service /etc/systemd/system/redis-${REDISPORT}.service
-sed -i "s/daemonize no/daemonize yes/"  /etc/redis-${REDISPORT}.conf
-sed -i "s/^bind 127.0.0.1.*/bind 127.0.0.1/"  /etc/redis-${REDISPORT}.conf
-sed -i "s/^dir.*/dir \/var\/lib\/redis-${REDISPORT}\//"  /etc/redis-${REDISPORT}.conf
-sed -i "s/^logfile.*/logfile \/var\/log\/redis\/redis-${REDISPORT}.log/"  /etc/redis-${REDISPORT}.conf
-sed -i "s/^pidfile.*/pidfile \/var\/run\/redis\/redis-${REDISPORT}.pid/"  /etc/redis-${REDISPORT}.conf
-sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis-${REDISPORT}.conf
-sed -i "s/redis.conf/redis-${REDISPORT}.conf/" /etc/systemd/system/redis-${REDISPORT}.service
-sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/redis-${REDISPORT}.service
-sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/redis-${REDISPORT}.service
-done
+    do
+        mkdir -p /var/lib/redis-${REDISPORT}
+        chmod 755 /var/lib/redis-${REDISPORT}
+        chown redis:redis /var/lib/redis-${REDISPORT}
+        cp -rf /etc/redis/redis.conf /etc/redis/redis-${REDISPORT}.conf
+        chmod 644 /etc/redis/redis-${REDISPORT}.conf
+        cp -rf /lib/systemd/system/redis-server.service /lib/systemd/system/redis-${REDISPORT}.service
+        sed -i "s/daemonize no/daemonize yes/"  /etc/redis/redis-${REDISPORT}.conf
+        sed -i "s/pidfile \/var\/run\/redis\/redis-server.pid/pidfile \/var\/run\/redis\/redis-${REDISPORT}.pid/" /etc/redis/redis-${REDISPORT}.conf
+        sed -i "s/^bind 127.0.0.1.*/bind 127.0.0.1/"  /etc/redis/redis-${REDISPORT}.conf
+        sed -i "s/^dir.*/dir \/var\/lib\/redis-${REDISPORT}\//"  /etc/redis/redis-${REDISPORT}.conf
+        sed -i "s/^logfile.*/logfile \/var\/log\/redis\/redis-${REDISPORT}.log/"  /etc/redis/redis-${REDISPORT}.conf
+        sed -i "s/^port.*/port ${REDISPORT}/" /etc/redis/redis-${REDISPORT}.conf
+        sed -i "s/redis.conf/redis-${REDISPORT}.conf/" /lib/systemd/system/redis-${REDISPORT}.service
+        sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /lib/systemd/system/redis-${REDISPORT}.service
+        # Hack of the original file coming from GIT.
+        sed -i "/ExecStartPre/d" /lib/systemd/system/redis-${REDISPORT}.service
+        sed -i "/ExecStartPost/d" /lib/systemd/system/redis-${REDISPORT}.service
+        sed -i "/ExecStopPost/d" /lib/systemd/system/redis-${REDISPORT}.service
+        sed -i "/PIDFile/d" /lib/systemd/system/redis-${REDISPORT}.service
+        # --- End of Hack ---
+        sed -i "s/^Alias=.*/Alias=redis-${REDISPORT}.service/" /lib/systemd/system/redis-${REDISPORT}.service
+        sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /lib/systemd/system/redis-${REDISPORT}.service
+        sed -i "s/ReadWriteDirectories=-\/var\/lib\/redis/ReadWriteDirectories=-\/var\/lib\/redis-${REDISPORT}/" /lib/systemd/system/redis-${REDISPORT}.service
+    done
 echo
-cat > /etc/sysconfig/memcached <<END
-PORT="11211"
-USER="memcached"
-MAXCONN="5024"
-CACHESIZE="128"
-OPTIONS="-l 127.0.0.1"
+        cat > /etc/memcached.conf <<END
+-p 11211
+-u memcache
+-c 5024
+-m 128
+-l 127.0.0.1
 END
-## plug in service status alert
-cp /usr/lib/systemd/system/memcached.service /etc/systemd/system/memcached.service
-cp /usr/lib/systemd/system/searchd.service /etc/systemd/system/searchd.service
-sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/memcached.service
-sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/memcached.service
-sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/searchd.service
-sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/searchd.service
-systemctl daemon-reload
-systemctl enable redis-6379 >/dev/null 2>&1
-systemctl enable redis-6380 >/dev/null 2>&1
-systemctl enable memcached  >/dev/null 2>&1
+        systemctl daemon-reload
+        systemctl enable redis-6379 >/dev/null 2>&1
+        systemctl enable redis-6380 >/dev/null 2>&1
+
                 else
                echo
-             REDTXT "PACKAGES INSTALLATION ERROR"
+             REDTXT "REDIS PACKAGE INSTALLATION ERROR"
          exit
        fi
-         else
-           echo
-             REDTXT "REPOSITORY INSTALLATION ERROR"
-        exit
-      fi
         else
           echo
-            YELLOWTXT "The Remi repository installation was skipped by the user. Next step"
+            YELLOWTXT "The Redis installation was skipped by the user. Next step"
 fi
 echo
 WHITETXT "============================================================================="
@@ -725,18 +684,18 @@ if [ "${varnish_install}" == "y" ];then
           echo
             GREENTXT "Installation of Varnish package:"
             echo
-            rpm --quiet --nosignature -i https://repo.varnish-cache.org/redhat/varnish-4.1.el7.rpm >/dev/null 2>&1
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install varnish >/dev/null 2>&1
+            apt-get install -f -y  >/dev/null 2>&1
+            apt-get install -y varnish >/dev/null 2>&1
             stop_progress "$pid"
-            rpm  --quiet -q varnish
+            dpkg-query -l varnish >/dev/null 2>&1
       if [ "$?" = 0 ]
         then
           echo
-	    wget -qO /etc/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service
-            wget -qO /etc/varnish/varnish.params ${REPO_MASCM_TMP}varnish.params
+	    wget -qO /lib/systemd/system/varnish.service ${REPO_MASCM_TMP}varnish.service  >/dev/null 2>&1
+            wget -qO /etc/varnish/varnish.params ${REPO_MASCM_TMP}varnish.params  >/dev/null 2>&1
             systemctl daemon-reload >/dev/null 2>&1
             GREENTXT "VARNISH HAS BEEN INSTALLED  -  OK"
                else
@@ -755,32 +714,22 @@ echo -n "---> Start HHVM installation? [y/n][n]:"
 read hhvm_install
 if [ "${hhvm_install}" == "y" ];then
 echo
-cat > /etc/yum.repos.d/gleez.repo <<END
-[gleez]
-name=Gleez repo
-baseurl=https://yum.gleez.com/7/x86_64/
-gpgcheck=0
-enabled=1
-includepkgs=hhvm
-END
 echo
             GREENTXT "Installation of HHVM package:"
             echo
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install hhvm >/dev/null 2>&1
+            apt install -y hhvm >/dev/null 2>&1
             stop_progress "$pid"
-            rpm  --quiet -q hhvm
+            dpkg-query -l hhvm >/dev/null 2>&1
       if [ "$?" = 0 ]
         then
           echo
             GREENTXT "HHVM HAS BEEN INSTALLED  -  OK"
             echo
-            ## plug in service status alert
-            cp /usr/lib/systemd/system/hhvm.service /etc/systemd/system/hhvm.service
-            sed -i "/^Description=.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/hhvm.service
-            sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/hhvm.service
+            sed -i "/^Description=.*/a OnFailure=service-status-mail@%n.service" /lib/systemd/system/hhvm.service
+            sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /lib/systemd/system/hhvm.service
             systemctl daemon-reload
             systemctl enable hhvm >/dev/null 2>&1
                else
@@ -844,7 +793,7 @@ END
 sysctl -q -p
 echo
 WHITETXT "sysctl.conf loaded ${GREEN} [ok]"
-cat > /etc/php.d/10-opcache.ini <<END
+cat > /etc/php/7.0/fpm/conf.d/10-opcache.ini <<END
 zend_extension=opcache.so
 opcache.enable = 1
 opcache.enable_cli = 1
@@ -863,7 +812,7 @@ opcache.fast_shutdown = 0
 opcache.enable_file_override = 0
 opcache.optimization_level = 0xffffffff
 opcache.inherited_hack = 1
-opcache.blacklist_filename=/etc/php.d/opcache-default.blacklist
+opcache.blacklist_filename=/etc/php/7.0/fpm/opcache-default.blacklist
 opcache.max_file_size = 0
 opcache.consistency_checks = 0
 opcache.force_restart_timeout = 60
@@ -876,23 +825,23 @@ END
 
 WHITETXT "opcache.ini loaded ${GREEN} [ok]"
 #Tweak php.ini.
-cp /etc/php.ini /etc/php.ini.BACK
-sed -i 's/^\(max_execution_time = \)[0-9]*/\17200/' /etc/php.ini
-sed -i 's/^\(max_input_time = \)[0-9]*/\17200/' /etc/php.ini
-sed -i 's/^\(memory_limit = \)[0-9]*M/\11024M/' /etc/php.ini
-sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' /etc/php.ini
-sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\164M/' /etc/php.ini
-sed -i 's/expose_php = On/expose_php = Off/' /etc/php.ini
-sed -i 's/;realpath_cache_size = 16k/realpath_cache_size = 512k/' /etc/php.ini
-sed -i 's/;realpath_cache_ttl = 120/realpath_cache_ttl = 86400/' /etc/php.ini
-sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php.ini
-sed -i 's/; max_input_vars = 1000/max_input_vars = 50000/' /etc/php.ini
-sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' /etc/php.ini
-sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' /etc/php.ini
-sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' /etc/php.ini
-sed -i 's/pm = dynamic/pm = ondemand/' /etc/php-fpm.d/www.conf
-sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' /etc/php-fpm.d/www.conf
-sed -i 's/pm.max_children = 50/pm.max_children = 1000/' /etc/php-fpm.d/www.conf
+cp /etc/php/7.0/fpm/php.ini /etc/php/7.0/fpm/php.ini.BACK
+sed -i 's/^\(max_execution_time = \)[0-9]*/\17200/' /etc/php/7.0/fpm/php.ini
+sed -i 's/^\(max_input_time = \)[0-9]*/\17200/' /etc/php/7.0/fpm/php.ini
+sed -i 's/^\(memory_limit = \)[0-9]*M/\11024M/' /etc/php/7.0/fpm/php.ini
+sed -i 's/^\(post_max_size = \)[0-9]*M/\164M/' /etc/php/7.0/fpm/php.ini
+sed -i 's/^\(upload_max_filesize = \)[0-9]*M/\164M/' /etc/php/7.0/fpm/php.ini
+sed -i 's/expose_php = On/expose_php = Off/' /etc/php/7.0/fpm/php.ini
+sed -i 's/;realpath_cache_size = 16k/realpath_cache_size = 512k/' /etc/php/7.0/fpm/php.ini
+sed -i 's/;realpath_cache_ttl = 120/realpath_cache_ttl = 86400/' /etc/php/7.0/fpm/php.ini
+sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.0/fpm/php.ini
+sed -i 's/; max_input_vars = 1000/max_input_vars = 50000/' /etc/php/7.0/fpm/php.ini
+sed -i 's/session.gc_maxlifetime = 1440/session.gc_maxlifetime = 28800/' /etc/php/7.0/fpm/php.ini
+sed -i 's/mysql.allow_persistent = On/mysql.allow_persistent = Off/' /etc/php/7.0/fpm/php.ini
+sed -i 's/mysqli.allow_persistent = On/mysqli.allow_persistent = Off/' /etc/php/7.0/fpm/php.ini
+sed -i 's/pm = dynamic/pm = ondemand/' /etc/php/7.0/fpm/pool.d/www.conf
+sed -i 's/;pm.max_requests = 500/pm.max_requests = 10000/' /etc/php/7.0/fpm/pool.d/www.conf
+sed -i 's/pm.max_children = 50/pm.max_children = 1000/' /etc/php/7.0/fpm/pool.d/www.conf
 
 WHITETXT "php.ini loaded ${GREEN} [ok]"
 echo
@@ -921,7 +870,7 @@ echo
      read -e -p "---> SELECT MAGENTO TO DOWNLOAD 1 OR 2: " -i "2"  MAGE_SEL_VER
 	 MAGE_VER=MAGE_VER_${MAGE_SEL_VER}
 	 echo
-     read -e -p "---> ENTER YOUR DOMAIN NAME (without www.): " -i "myshop.com" MAGE_DOMAIN
+     read -e -p "---> ENTER YOUR DOMAIN NAME: " -i "myshop.com" MAGE_DOMAIN
      MAGE_WEB_ROOT_PATH="/home/${MAGE_DOMAIN%%.*}/public_html"
      echo
 	 echo "---> MAGENTO ${MAGE_SEL_VER} (${!MAGE_VER})"
@@ -971,7 +920,11 @@ GREENTXT "MAGENTO DATABASE AND DATABASE USER"
 echo
 systemctl start mysql.service
 MAGE_SEL_VER=$(awk '/webshop/ { print $6 }' /root/mascm/.mascm_index)
-MYSQL_ROOT_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
+if [ -f "/root/mascm/.mysql_pass" ]; then
+   MYSQL_ROOT_PASS=$(cat /root/mascm/.mysql_pass)
+  else
+  MYSQL_ROOT_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
+  fi
 MAGE_DB_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
 
 MYSQL_SECURE_INSTALLATION=$(expect -c "
@@ -979,23 +932,20 @@ set timeout 5
 log_user 0
 spawn mysql_secure_installation
 expect \"Enter current password for root (enter for none):\"
-send \"\r\"
-expect \"Set root password?\"
-send \"y\r\"
-expect \"New password:\"
 send \"${MYSQL_ROOT_PASS}\r\"
-expect \"Re-enter new password:\"
-send \"${MYSQL_ROOT_PASS}\r\"
+expect \"Change the root password?\"
+send \"n\r\"
 expect \"Remove anonymous users?\"
 send \"y\r\"
 expect \"Disallow root login remotely?\"
-send \"y\r\"
+send \"n\r\"
 expect \"Remove test database and access to it?\"
 send \"y\r\"
 expect \"Reload privilege tables now?\"
 send \"y\r\"
 expect eof
 ")
+
 
 echo "${MYSQL_SECURE_INSTALLATION}"
 echo
@@ -1006,12 +956,9 @@ read -e -p "---> Enter Magento database user : " -i "m${MAGE_SEL_VER}u_$(openssl
 echo
 echo
 pause '------> Press [Enter] key to create MySQL database and user'
-mysql -u root -p${MYSQL_ROOT_PASS} <<EOMYSQL
+mysql -u root -p${MYSQL_ROOT_PASS} -Bse "CREATE DATABASE \`${MAGE_DB_NAME}\`;
 CREATE USER '${MAGE_DB_USER_NAME}'@'${MAGE_DB_HOST}' IDENTIFIED BY '${MAGE_DB_PASS}';
-CREATE DATABASE ${MAGE_DB_NAME};
-GRANT ALL PRIVILEGES ON ${MAGE_DB_NAME}.* TO '${MAGE_DB_USER_NAME}'@'${MAGE_DB_HOST}' WITH GRANT OPTION;
-exit
-EOMYSQL
+GRANT ALL PRIVILEGES ON ${MAGE_DB_NAME}.* TO '${MAGE_DB_USER_NAME}'@'${MAGE_DB_HOST}' WITH GRANT OPTION"
 echo
 cat > /root/.mytop <<END
 user=root
@@ -1070,7 +1017,7 @@ read -e -p "---> Enter your email: " -i "admin@${MAGE_DOMAIN}"  MAGE_ADMIN_EMAIL
 read -e -p "---> Enter your admins login name: " -i "admin"  MAGE_ADMIN_LOGIN
 MAGE_ADMIN_PASSGEN=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
 read -e -p "---> Use generated admin password: " -i "${MAGE_ADMIN_PASSGEN}${RANDOM}"  MAGE_ADMIN_PASS
-read -e -p "---> Enter your shop url: " -i "http://www.${MAGE_DOMAIN}/"  MAGE_SITE_URL
+read -e -p "---> Enter your shop url: " -i "http://${MAGE_DOMAIN}/"  MAGE_SITE_URL
 echo
 WHITETXT "Language, Currency and Timezone settings"
 if [ "${MAGE_SEL_VER}" = "1" ]; then
@@ -1188,19 +1135,19 @@ GREENTXT "SERVER TIMEZONE SETTINGS"
 timedatectl set-timezone ${MAGE_TIMEZONE}
 echo
 GREENTXT "HHVM AND PHP-FPM SETTINGS"
-sed -i "s/\[www\]/\[${MAGE_WEB_USER}\]/" /etc/php-fpm.d/www.conf
-sed -i "s/user = apache/user = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
-sed -i "s/group = apache/group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
-sed -i "s/;listen.owner = nobody/listen.group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
-sed -i "s/;listen.group = nobody/listen.group = ${MAGE_WEB_USER}/" /etc/php-fpm.d/www.conf
-sed -i "s/;listen.mode = 0660/listen.mode = 0660/" /etc/php-fpm.d/www.conf
-sed -i "s,session.save_handler = files,session.save_handler = redis," /etc/php.ini
-sed -i 's,;session.save_path = "/tmp",session.save_path = "tcp://127.0.0.1:6379",' /etc/php.ini
-sed -i '/PHPSESSID/d' /etc/php.ini
-sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php.ini
-sed -i '/sendmail_path/,$d' /etc/php-fpm.d/www.conf
+sed -i "s/\[www\]/\[${MAGE_WEB_USER}\]/" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s/user = www-data/user = ${MAGE_WEB_USER}/" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s/group = www-data/group = ${MAGE_WEB_USER}/" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s/listen.owner = www-data/listen.group = ${MAGE_WEB_USER}/" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s/listen.group = www-data/listen.group = ${MAGE_WEB_USER}/" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s/;listen.mode = 0660/listen.mode = 0660/" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s,session.save_handler = files,session.save_handler = redis," /etc/php/7.0/fpm/php.ini
+sed -i 's,;session.save_path = "/var/lib/php/sessions",session.save_path = "tcp://127.0.0.1:6379",' /etc/php/7.0/fpm/php.ini
+sed -i '/PHPSESSID/d' /etc/php/7.0/fpm/php.ini
+sed -i "s,.*date.timezone.*,date.timezone = ${MAGE_TIMEZONE}," /etc/php/7.0/fpm/php.ini
+sed -i '/sendmail_path/,$d' /etc/php/7.0/fpm/pool.d/www.conf
 
-cat >> /etc/php-fpm.d/www.conf <<END
+cat >> /etc/php/7.0/fpm/pool.d/www.conf <<END
 ;;
 ;; Custom pool settings
 php_flag[display_errors] = off
@@ -1210,13 +1157,12 @@ php_admin_value[memory_limit] = 1024M
 php_admin_value[date.timezone] = ${MAGE_TIMEZONE}
 END
 
-sed -i "s/nginx/${MAGE_WEB_USER}/" /etc/systemd/system/hhvm.service
-sed -i "s/daemon/server/" /etc/systemd/system/hhvm.service
+sed -i "s/www-data/${MAGE_WEB_USER}/" /lib/systemd/system/hhvm.service
+sed -i "s/daemon/server/" /lib/systemd/system/hhvm.service
 sed -i "/.*hhvm.server.port.*/a hhvm.server.ip = 127.0.0.1" /etc/hhvm/server.ini
 sed -i '/.*hhvm.jit_a_size.*/,$d' /etc/hhvm/server.ini
 cat >> /etc/hhvm/server.ini <<END
-## Extra settings
-session.save_handler =  redis
+session.save_handler = redis
 session.save_path = "tcp://127.0.0.1:6379"
 date.timezone = ${MAGE_TIMEZONE}
 max_execution_time = 600
@@ -1225,23 +1171,29 @@ systemctl daemon-reload
 systemctl restart hhvm >/dev/null 2>&1
 echo
 GREENTXT "NGINX SETTINGS"
-wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}magento${MAGE_SEL_VER}/fastcgi_params
-wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}magento${MAGE_SEL_VER}/nginx.conf
+wget -qO /etc/nginx/fastcgi_params  ${NGINX_BASE}magento${MAGE_SEL_VER}/fastcgi_params  >/dev/null 2>&1
+wget -qO /etc/nginx/nginx.conf  ${NGINX_BASE}magento${MAGE_SEL_VER}/nginx.conf  >/dev/null 2>&1
 mkdir -p /etc/nginx/sites-enabled
 mkdir -p /etc/nginx/sites-available && cd $_
-wget -q ${NGINX_BASE}magento${MAGE_SEL_VER}/sites-available/default.conf
-wget -q ${NGINX_BASE}magento${MAGE_SEL_VER}/sites-available/magento${MAGE_SEL_VER}.conf
+wget -q ${NGINX_BASE}magento${MAGE_SEL_VER}/sites-available/default.conf  >/dev/null 2>&1
+wget -q ${NGINX_BASE}magento${MAGE_SEL_VER}/sites-available/magento${MAGE_SEL_VER}.conf  >/dev/null 2>&1
 ln -s /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf /etc/nginx/sites-enabled/magento${MAGE_SEL_VER}.conf
 ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
 mkdir -p /etc/nginx/conf_m${MAGE_SEL_VER} && cd /etc/nginx/conf_m${MAGE_SEL_VER}/
 for CONFIG in ${NGINX_EXTRA_CONF}
 do
-wget -q ${NGINX_BASE}magento${MAGE_SEL_VER}/conf_m${MAGE_SEL_VER}/${CONFIG}
+wget -q ${NGINX_BASE}magento${MAGE_SEL_VER}/conf_m${MAGE_SEL_VER}/${CONFIG}  >/dev/null 2>&1
 done
 sed -i "s/user  nginx;/user  ${MAGE_WEB_USER};/" /etc/nginx/nginx.conf
 sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
+# Hack remove the www-redirect block:
+sed -i -e '/\#\#.*www\sredirect.*/,+5d' /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
+# Hack. Remove the www-redirect coming from the orginal GIT
+# sed -i '/return\s301.*/d' /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
 sed -i "s/example.com/${MAGE_DOMAIN}/g" /etc/nginx/nginx.conf
 sed -i "s,/var/www/html,${MAGE_WEB_ROOT_PATH},g" /etc/nginx/sites-available/magento${MAGE_SEL_VER}.conf
+# Hack: Deploy path fix in nginx's conf_m2/php_backend.conf:
+sed -i "s/^fastcgi_pass.*$/fastcgi_pass   unix:\/run\/php\/php7.0-fpm.sock;/" /etc/nginx/conf_m${MAGE_SEL_VER}/php_backend.conf
     if [ "${MAGE_SEL_VER}" = "1" ]; then
     	MAGE_ADMIN_PATH=$(grep -Po '(?<=<frontName><!\[CDATA\[)\w*(?=\]\]>)' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml)
     	else
@@ -1253,16 +1205,30 @@ GREENTXT "PHPMYADMIN INSTALLATION AND CONFIGURATION"
      PMA_FOLDER=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
      PMA_PASSWD=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)
      BLOWFISHCODE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1)
-     yum -y -q --enablerepo=remi,remi-test,remi-php70 install phpMyAdmin
-     USER_IP=${SSH_CLIENT%% *} 
-     sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpMyAdmin/config.inc.php
+     debconf-set-selections <<< "mysql-server mysql-server/root_password password $(cat /root/mascm/.mysql_pass)"
+     debconf-set-selections <<< "mysql-server mysql-server/root_password_again password $(cat /root/mascm/.mysql_pass)"
+     debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-install boolean true"
+     debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-reinstall boolean true"
+     debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-upgrade boolean true"
+     debconf-set-selections <<< "phpmyadmin phpmyadmin/dbconfig-remove boolean true"
+     debconf-set-selections <<< "phpmyadmin phpmyadmin/app-password-confirm password ${PMA_PASSWD}"
+     debconf-set-selections <<< "phpmyadmin phpmyadmin/mysql/admin-pass password ${PMA_PASSWD}"
+     debconf-set-selections <<< "phpmyadmin phpmyadmin/mysql/app-pass password ${PMA_PASSWD}"
+     debconf-set-selections <<< "phpmyadmin phpmyadmin/reconfigure-webserver multiselect none"
+     apt-get install -y phpmyadmin  >/dev/null 2>&1
+     USER_IP=$(echo $SSH_CLIENT | awk '{ print $1}')
+     # USER_IP=$(ss -ant | grep -Po "(\d|\.)+:22\s+\K[^:]+")
+     sed -i "s/.*blowfish_secret.*/\$cfg['blowfish_secret'] = '${BLOWFISHCODE}';/" /etc/phpmyadmin/config.inc.php
      sed -i "s/PHPMYADMIN_PLACEHOLDER/mysql_${PMA_FOLDER}/g" /etc/nginx/conf_m${MAGE_SEL_VER}/phpmyadmin.conf
      sed -i "5i satisfy any; \\
            allow ${USER_IP}/32; \\
            deny  all; \\
            auth_basic  \"please login\"; \\
            auth_basic_user_file .mysql;"  /etc/nginx/conf_m${MAGE_SEL_VER}/phpmyadmin.conf
-	 	   
+# Hack. The config coming from authors GIT...
+sed -i 's/phpMyAdmin/phpmyadmin/' /etc/nginx/conf_m2/phpmyadmin.conf
+chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} /usr/share/phpmyadmin
+# ---- End of hack -------
      htpasswd -b -c /etc/nginx/.mysql mysql ${PMA_PASSWD}  >/dev/null 2>&1
      echo
 cat >> /root/mascm/.mascm_index <<END
@@ -1270,34 +1236,34 @@ pma   mysql_${PMA_FOLDER}   mysql   ${PMA_PASSWD}
 END
 echo
 GREENTXT "PROFTPD CONFIGURATION"
-     wget -qO /etc/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf
+     wget -qO /etc/proftpd/proftpd.conf ${REPO_MASCM_TMP}proftpd.conf  >/dev/null 2>&1
      ## change proftpd config
      SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
-     USER_IP=${SSH_CLIENT%% *}
+     USER_IP=$(echo $SSH_CLIENT | awk '{ print $1}')
+     #USER_IP=${SSH_CLIENT%% *}
      USER_GEOIP=$(geoiplookup ${USER_IP} | awk 'NR==1{print substr($4,1,2)}')
      FTP_PORT=$(shuf -i 5121-5132 -n 1)
-     sed -i "s/server_sftp_port/${FTP_PORT}/" /etc/proftpd.conf
-     sed -i "s/server_ip_address/${SERVER_IP_ADDR}/" /etc/proftpd.conf
-     sed -i "s/client_ip_address/${USER_IP}/" /etc/proftpd.conf
-     sed -i "s/geoip_country_code/${USER_GEOIP}/" /etc/proftpd.conf
-     sed -i "s/sftp_domain/${MAGE_DOMAIN}/" /etc/proftpd.conf
-     sed -i "s/FTP_USER/${MAGE_WEB_USER}/" /etc/proftpd.conf
+     sed -i "s/server_sftp_port/${FTP_PORT}/" /etc/proftpd/proftpd.conf
+     sed -i "s/server_ip_address/${SERVER_IP_ADDR}/" /etc/proftpd/proftpd.conf
+     sed -i "s/client_ip_address/${USER_IP}/" /etc/proftpd/proftpd.conf
+     sed -i "s/geoip_country_code/${USER_GEOIP}/" /etc/proftpd/proftpd.conf
+     sed -i "s/sftp_domain/${MAGE_DOMAIN}/" /etc/proftpd/proftpd.conf
+     sed -i "s/FTP_USER/${MAGE_WEB_USER}/" /etc/proftpd/proftpd.conf
+     # A hack to fix the file coming from original GIT.
+     sed -i '/^Group.*nobody.*/d' /etc/proftpd/proftpd.conf
+     echo "127.0.0.1    $(hostname)" >> /etc/hosts
      echo
-     ## plug in service status alert
-     cp /usr/lib/systemd/system/proftpd.service /etc/systemd/system/proftpd.service
-     sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/proftpd.service
-     sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/proftpd.service
      systemctl daemon-reload
-     systemctl enable proftpd.service >/dev/null 2>&1
-     systemctl restart proftpd.service
+     /lib/systemd/systemd-sysv-install enable proftpd >/dev/null 2>&1
+     /etc/init.d/proftpd restart
      echo
 cat >> /root/mascm/.mascm_index <<END
 proftpd   ${USER_GEOIP}   ${FTP_PORT}   ${MAGE_WEB_USER_PASS}
 END
 echo
-if [ -f /etc/systemd/system/varnish.service ]; then
+if [ -f /lib/systemd/system/varnish.service ]; then
 GREENTXT "VARNISH CACHE SETTINGS"
-    sed -i "s/MAGE_WEB_USER/${MAGE_WEB_USER}/g"  /etc/systemd/system/varnish.service
+    sed -i "s/MAGE_WEB_USER/${MAGE_WEB_USER}/g"  /lib/systemd/system/varnish.service
 	systemctl enable varnish.service >/dev/null 2>&1
     systemctl restart varnish.service
 	YELLOWTXT "VARNISH CACHE PORT :8081"
@@ -1305,22 +1271,14 @@ fi
 echo
 GREENTXT "OPCACHE GUI, n98-MAGERUN, IMAGE OPTIMIZER, MYSQLTUNER, SSL DEBUG TOOLS"
      cd ${MAGE_WEB_ROOT_PATH}
-     wget -qO tlstest_$(openssl rand 2 -hex).php ${REPO_MASCM_TMP}tlstest.php
-     wget -qO wesley.pl ${REPO_MASCM_TMP}wesley.pl
-     wget -qO mysqltuner.pl ${MYSQL_TUNER}
+     wget -qO tlstest_$(openssl rand 2 -hex).php ${REPO_MASCM_TMP}tlstest.php  >/dev/null 2>&1
+     wget -qO wesley.pl ${REPO_MASCM_TMP}wesley.pl  >/dev/null 2>&1
+     wget -qO mysqltuner.pl ${MYSQL_TUNER}  >/dev/null 2>&1
 echo
-GREENTXT "SYSTEM AUTO UPDATE WITH YUM-CRON"
-sed -i '8s/.*/enabled=1/' /etc/yum.repos.d/remi-php70.repo
-sed -i '9s/.*/enabled=1/' /etc/yum.repos.d/remi.repo
-sed -i 's/apply_updates = no/apply_updates = yes/' /etc/yum/yum-cron.conf
-sed -i "s/email_from = root@localhost/email_from = yum-cron@${MAGE_DOMAIN}/" /etc/yum/yum-cron.conf
-sed -i "s/email_to = root/email_to = ${MAGE_ADMIN_EMAIL}/" /etc/yum/yum-cron.conf
-systemctl enable yum-cron
-systemctl restart yum-cron
 echo
 GREENTXT "LETSENCRYPT SSL CERTIFICATE REQUEST"
-DNS_A_RECORD=$(getent hosts ${MAGE_DOMAIN} | awk '{ print $1 }')
-SERVER_IP_ADDR=$(ip route get 1 | awk '{print $NF;exit}')
+DNS_A_RECORD=$(getent hosts magento.cozy-apparel.online | awk '{ print $1 }')
+SERVER_IP_ADDR=$(dig +short myip.opendns.com @resolver1.opendns.com)
 if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
     echo
     REDTXT "DNS A record and your servers IP address do not match"
@@ -1328,28 +1286,28 @@ if [ "${DNS_A_RECORD}" != "${SERVER_IP_ADDR}" ] ; then
 	YELLOWTXT "Domain ${MAGE_DOMAIN} resolves to ${DNS_A_RECORD}"
 	YELLOWTXT "Please change your DNS A record to this servers IP address, and run this command later: "
 	if [ "${MAGE_SEL_VER}" = "1" ]; then
-	WHITETXT "/usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
+	WHITETXT "/usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN}"
 	else
-	WHITETXT "/usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}"
+	WHITETXT "/usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN}"
 	fi
-	echo  
+	echo
     else
     if [ "${MAGE_SEL_VER}" = "1" ]; then
-    /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
+    /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH} -d ${MAGE_DOMAIN}
     service nginx reload
     else
-    /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN} -d www.${MAGE_DOMAIN}
+    /usr/bin/certbot certonly --agree-tos --email ${MAGE_ADMIN_EMAIL} --webroot -w ${MAGE_WEB_ROOT_PATH}/pub -d ${MAGE_DOMAIN}
     service nginx reload
     fi
  fi
 echo '45 5 * * 1 root /usr/bin/certbot renew --quiet --post-hook "service nginx reload" >> /var/log/letsencrypt-renew.log' >> /etc/crontab
 echo
 GREENTXT "GENERATE DHPARAM FOR NGINX SSL"
-openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096
+openssl dhparam -dsaparam -out /etc/ssl/certs/dhparams.pem 4096 >/dev/null 2>&1
 echo
 GREENTXT "GENERATE DEFAULT NGINX SSL SERVER KEY/CERT"
 openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout /etc/ssl/certs/default_server.key -out /etc/ssl/certs/default_server.crt \
--subj "/CN=default_server" -days 3650 -subj "/C=US/ST=Oregon/L=Portland/O=default_server/OU=Org/CN=default_server"
+-subj "/CN=default_server" -days 3650 -subj "/C=US/ST=Oregon/L=Portland/O=default_server/OU=Org/CN=default_server" >/dev/null 2>&1
 echo
 GREENTXT "SIMPLE LOGROTATE SCRIPT FOR MAGENTO LOGS"
 cat > /etc/logrotate.d/magento <<END
@@ -1364,8 +1322,8 @@ compress
 END
 echo
 GREENTXT "SERVICE STATUS WITH E-MAIL ALERTING"
-wget -qO /etc/systemd/system/service-status-mail@.service ${REPO_MASCM_TMP}service-status-mail@.service
-wget -qO /bin/service-status-mail.sh ${REPO_MASCM_TMP}service-status-mail.sh
+wget -qO /lib/systemd/system/service-status-mail@.service ${REPO_MASCM_TMP}service-status-mail@.service  >/dev/null 2>&1
+wget -qO /bin/service-status-mail.sh ${REPO_MASCM_TMP}service-status-mail.sh  >/dev/null 2>&1
 sed -i "s/MAGEADMINEMAIL/${MAGE_ADMIN_EMAIL}/" /bin/service-status-mail.sh
 sed -i "s/DOMAINNAME/${MAGE_DOMAIN}/" /bin/service-status-mail.sh
 chmod u+x /bin/service-status-mail.sh
@@ -1374,7 +1332,7 @@ echo
 GREENTXT "REALTIME MALWARE MONITOR WITH E-MAIL ALERTING"
 YELLOWTXT "warning: infected files will be moved to quarantine"
 cd /usr/local/src
-git clone https://github.com/rfxn/linux-malware-detect.git
+git clone https://github.com/rfxn/linux-malware-detect.git >/dev/null 2>&1
 cd linux-malware-detect
 ./install.sh >/dev/null 2>&1
 
@@ -1385,23 +1343,20 @@ sed -i 's,# default_monitor_mode="/usr/local/maldetect/monitor_paths",default_mo
 sed -i 's/inotify_base_watches="16384"/inotify_base_watches="85384"/' /usr/local/maldetect/conf.maldet
 echo -e "${MAGE_WEB_ROOT_PATH%/*}\n\n/var/tmp/\n\n/tmp/" > /usr/local/maldetect/monitor_paths
 
-cp /usr/lib/systemd/system/maldet.service /etc/systemd/system/maldet.service
-sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /etc/systemd/system/maldet.service
-sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /etc/systemd/system/maldet.service
+cp /usr/lib/systemd/system/maldet.service /lib/systemd/system/maldet.service
+sed -i "/^After.*/a OnFailure=service-status-mail@%n.service" /lib/systemd/system/maldet.service
+sed -i "/\[Install\]/i Restart=on-failure\nRestartSec=10\n" /lib/systemd/system/maldet.service
 systemctl daemon-reload
 
-sed -i "/^Example/d" /etc/clamd.d/scan.conf
-sed -i "/^Example/d" /etc/freshclam.conf
-sed -i "/^FRESHCLAM_DELAY/d" /etc/sysconfig/freshclam
 echo "maldet --monitor /usr/local/maldetect/monitor_paths" >> /etc/rc.local
 maldet --monitor /usr/local/maldetect/monitor_paths >/dev/null 2>&1
 chmod u+x /etc/rc.local
 echo
 GREENTXT "GOACCESS REALTIME ACCESS LOG DASHBOARD"
 cd /usr/local/src
-git clone https://github.com/allinurl/goaccess.git
+git clone https://github.com/allinurl/goaccess.git >/dev/null 2>&1
 cd goaccess
-autoreconf -fi
+autoreconf -fi >/dev/null 2>&1
 ./configure --enable-utf8 --enable-geoip=legacy --with-openssl  >/dev/null 2>&1
 make  >/dev/null 2>&1
 make install  >/dev/null 2>&1
@@ -1413,11 +1368,11 @@ if [ "${MAGE_SEL_VER}" = "1" ]; then
         echo "*/5 * * * * /bin/bash ${MAGE_WEB_ROOT_PATH}/cron_check.sh" >> magecron
         echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
 	else
-		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
-		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
-		echo "* * * * * php -c /etc/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
+		echo "* * * * * php -c /etc/php/7.0/fpm/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento cron:run" >> magecron
+		echo "* * * * * php -c /etc/php/7.0/fpm/php.ini ${MAGE_WEB_ROOT_PATH}/update/cron.php" >> magecron
+		echo "* * * * * php -c /etc/php/7.0/fpm/php.ini ${MAGE_WEB_ROOT_PATH}/bin/magento setup:cron:run" >> magecron
 		echo "*/5 * * * * /bin/bash ${MAGE_WEB_ROOT_PATH}/cron_check.sh" >> magecron
-                echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron     
+                echo "5 8 * * 7 perl ${MAGE_WEB_ROOT_PATH}/mysqltuner.pl --nocolor 2>&1 | mailx -E -s \"MYSQLTUNER WEEKLY REPORT at ${HOSTNAME}\" ${MAGE_ADMIN_EMAIL}" >> magecron
 fi
 crontab -u ${MAGE_WEB_USER} magecron
 rm magecron
@@ -1467,7 +1422,7 @@ sed -i '/<global>/ a\
             <compression_lib>lzf</compression_lib> \
         </backend_options> \
     </cache>' ${MAGE_WEB_ROOT_PATH}/app/etc/local.xml
-  
+
     sed -i "s/false/true/" ${MAGE_WEB_ROOT_PATH}/app/etc/modules/Cm_RedisSession.xml
 echo
 GREENTXT "DISABLE MAGENTO DATABASE LOGGING"
@@ -1567,11 +1522,11 @@ sed -i "/.*session.*/a \\
       ), \\
     ), \\
   ), \\ " ${MAGE_WEB_ROOT_PATH}/app/etc/env.php
-fi	
+fi
 echo
 systemctl daemon-reload
 systemctl restart nginx.service
-systemctl restart php-fpm.service
+systemctl restart php7.0-fpm.service
 systemctl restart redis-6379.service
 systemctl restart redis-6380.service
 
@@ -1580,9 +1535,9 @@ chown -R ${MAGE_WEB_USER}:${MAGE_WEB_USER} ${MAGE_WEB_ROOT_PATH%/*}
 GREENTXT "OPCACHE INVALIDATION MONITOR"
 OPCACHE_FILE=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z' | fold -w 12 | head -n 1)
 if [ "${MAGE_SEL_VER}" = "1" ]; then
-wget -qO ${MAGE_WEB_ROOT_PATH}/${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
+wget -qO ${MAGE_WEB_ROOT_PATH}/${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php  >/dev/null 2>&1
 else
-wget -qO ${MAGE_WEB_ROOT_PATH}/pub/${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php
+wget -qO ${MAGE_WEB_ROOT_PATH}/pub/${OPCACHE_FILE}_opcache_gui.php https://raw.githubusercontent.com/magenx/opcache-gui/master/index.php  >/dev/null 2>&1
 fi
 cat > ${MAGE_WEB_ROOT_PATH}/zend_opcache.sh <<END
 #!/bin/bash
@@ -1618,7 +1573,7 @@ su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento deploy:mode:set developer"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:flush"
 su ${MAGE_WEB_USER} -s /bin/bash -c "php bin/magento cache:disable"
 sed -i "s/report/report|${OPCACHE_FILE}_opcache_gui/" /etc/nginx/sites-available/magento2.conf
-systemctl restart php-fpm.service
+systemctl restart php7.0-fpm.service
 echo
 curl -s -o n98-magerun2.phar https://files.magerun.net/n98-magerun2.phar
 chmod u+x bin/magento
@@ -1689,7 +1644,7 @@ echo
 echo
 echo "===========================  INSTALLATION LOG  ======================================"
 echo
-usermod -G apache ${MAGE_WEB_USER}
+# usermod -G apache ${MAGE_WEB_USER}
 echo "-------------------------------------------------------------------------------------"
 BLUEBG "| POST-INSTALLATION CONFIGURATION IS COMPLETED |"
 echo "-------------------------------------------------------------------------------------"
@@ -1716,7 +1671,7 @@ if [ "${csf_test}" == "y" ];then
                echo -n "     PROCESSING  "
                quick_progress &
                pid="$!"
-               wget -qO - https://download.configserver.com/csf.tgz | tar -xz
+               wget -qO - https://download.configserver.com/csf.tgz | tar -xz  >/dev/null 2>&1
                stop_progress "$pid"
                echo
                cd csf
@@ -1729,7 +1684,7 @@ if [ "${csf_test}" == "y" ];then
                echo -n "     PROCESSING  "
                quick_progress &
                pid="$!"
-               yum -q -y install fail2ban >/dev/null 2>&1
+               apt install -y fail2ban >/dev/null 2>&1
                stop_progress "$pid"
                echo
                GREENTXT "FAIL2BAN HAS BEEN INSTALLED OK"
@@ -1775,7 +1730,7 @@ if [ "${csf_test}" == "y" ];then
     echo -n "     PROCESSING  "
     quick_progress &
     pid="$!"
-    yum -q -y install fail2ban >/dev/null 2>&1
+    apt-get install -y fail2ban >/dev/null 2>&1
     stop_progress "$pid"
     echo
     GREENTXT "FAIL2BAN HAS BEEN INSTALLED OK"
@@ -1795,21 +1750,16 @@ read webmin_install
 if [ "${webmin_install}" == "y" ];then
           echo
             GREENTXT "Installation of Webmin package:"
-cat > /etc/yum.repos.d/webmin.repo <<END
-[Webmin]
-name=Webmin Distribution
-#baseurl=http://download.webmin.com/download/yum
-mirrorlist=http://download.webmin.com/download/yum/mirrorlist
-enabled=1
-END
-rpm --import http://www.webmin.com/jcameron-key.asc
+wget http://www.webmin.com/download/deb/webmin-current.deb  >/dev/null 2>&1
             echo
             echo -n "     PROCESSING  "
             start_progress &
             pid="$!"
-            yum -y -q install webmin >/dev/null 2>&1
+            dpkg --install webmin-current.deb >/dev/null 2>&1
+            # Add missing dependencies for webmin
+            apt-get -f install -y  >/dev/null 2>&1
             stop_progress "$pid"
-            rpm  --quiet -q webmin
+            dpkg-query -l webmin
       if [ "$?" = 0 ]
         then
           echo
@@ -1822,7 +1772,7 @@ rpm --import http://www.webmin.com/jcameron-key.asc
             sed -i "s/listen=10000/listen=${WEBMIN_PORT}/" /etc/webmin/miniserv.conf
             ## nginx module
             cd /usr/local/src/
-            wget -q ${WEBMIN_NGINX} -O webmin_nginx
+            wget -q ${WEBMIN_NGINX} -O webmin_nginx  >/dev/null 2>&1
             perl /usr/libexec/webmin/install-module.pl $_ >/dev/null 2>&1
             if [ -f "/usr/local/csf/csfwebmin.tgz" ]
 				then
@@ -1838,7 +1788,7 @@ rpm --import http://www.webmin.com/jcameron-key.asc
             sed -i 's/root:/webadmin:/' /etc/webmin/webmin.acl
             WEBADMIN_PASS=$(head -c 500 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1)
             /usr/libexec/webmin/changepass.pl /etc/webmin/ webadmin ${WEBADMIN_PASS} >/dev/null 2>&1
-            chkconfig webmin on >/dev/null 2>&1
+          #  chkconfig webmin on >/dev/null 2>&1
             service webmin restart  >/dev/null 2>&1
             YELLOWTXT "Access Webmin on port: ${WEBMIN_PORT}"
             YELLOWTXT "User: webadmin , Password: ${WEBADMIN_PASS}"
@@ -1864,44 +1814,34 @@ echo
 GREENTXT "INSTALLATION OF WAZUH 2.0 (OSSEC) + ELK 5.3.0 STACK:"
 echo
 GREENTXT "INSTALLATION OF WAZUH MANAGER"
-cat > /etc/yum.repos.d/wazuh.repo <<END
-[wazuh_repo]
-name=CentOS-$releasever - Wazuh
-gpgkey=https://packages.wazuh.com/key/GPG-KEY-WAZUH
-enabled=1
-gpgcheck=1
-baseurl=https://packages.wazuh.com/yum/el/7/x86_64
-protect=1
-END
-yum -y -q install wazuh-manager
+apt-get install -y curl apt-transport-https lsb-release  >/dev/null 2>&1
+curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add -
+CODENAME=$(lsb_release -cs)
+echo "deb https://packages.wazuh.com/apt ${CODENAME} main" | tee /etc/apt/sources.list.d/wazuh.list
+apt-get update -y  >/dev/null 2>&1
+apt-get install -y wazuh-manager  >/dev/null 2>&1
 echo
 GREENTXT "INSTALLATION OF WAZUH API + NODEJS"
-curl --silent --location https://rpm.nodesource.com/setup_6.x | bash >/dev/null 2>&1
-yum -y -q install nodejs
-yum -y -q install wazuh-api
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - >/dev/null 2>&1
+apt-get install -y nodejs  >/dev/null 2>&1
+apt-get install -y wazuh-api  >/dev/null 2>&1
 echo
-GREENTXT "INSTALLATION OF JAVA 8 JDK RPM:"
-cd /usr/local/src
-wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jdk-8u121-linux-x64.rpm"
-yum -y -q localinstall jdk-8u121-linux-x64.rpm
-export JAVA_HOME=/usr/java/jdk1.8.0_121/jre
-echo "export JAVA_HOME=/usr/java/jdk1.8.0_121/jre" > /etc/profile
+GREENTXT "INSTALLATION OF JAVA 8 JDK:"
+apt-get install -y python-software-properties  >/dev/null 2>&1
+add-apt-repository -y ppa:webupd8team/java  >/dev/null 2>&1
+apt-get update -y  >/dev/null 2>&1
+apt-get install -y oracle-java8-installer
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre
+echo "export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre" > /etc/profile
 echo
 echo
 GREENTXT "INSTALLATION OF ELASTCSEARCH:"
 echo
-cat > /etc/yum.repos.d/elasticsearch.repo <<END
-[elastic-5.x]
-name=Elastic repository for 5.x packages
-baseurl=https://artifacts.elastic.co/packages/5.x/yum
-gpgcheck=1
-gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
-enabled=1
-autorefresh=1
-type=rpm-md
-END
-echo
-yum -y -q install elasticsearch-5.3.0 >/dev/null 2>&1
+curl -s https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
+apt-get install apt-transport-https  >/dev/null 2>&1
+echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | tee /etc/apt/sources.list.d/elastic-5.x.list
+apt-get update -y  >/dev/null 2>&1
+apt-get install -y elasticsearch >/dev/null 2>&1
 echo
 sed -i "s/.*cluster.name.*/cluster.name: wazuh/" /etc/elasticsearch/elasticsearch.yml
 sed -i "s/.*node.name.*/node.name: wazuh-node1/" /etc/elasticsearch/elasticsearch.yml
@@ -1912,19 +1852,17 @@ sed -i "s/-Xmx2g/-Xmx512m/" /etc/elasticsearch/jvm.options
 chown -R :elasticsearch /etc/elasticsearch/*
 systemctl daemon-reload
 systemctl enable elasticsearch.service
-systemctl restart elasticsearch.service
+systemctl start elasticsearch.service
 echo
 echo
 sleep 15
 GREENTXT "INSTALLATION OF PACKETBEAT:"
-yum -y -q install packetbeat-5.3.0
-chkconfig --add packetbeat
-/etc/init.d/packetbeat restart
+apt-get install -y packetbeat-5.3.0  >/dev/null 2>&1
 /usr/share/packetbeat/scripts/import_dashboards
 echo
 echo
 GREENTXT "INSTALLATION OF LOGSTASH:"
-yum -y -q install logstash-5.3.0
+apt-get install -y logstash  >/dev/null 2>&1
 curl -so /etc/logstash/conf.d/01-wazuh.conf https://raw.githubusercontent.com/wazuh/wazuh/master/extensions/logstash/01-wazuh.conf
 curl -so /etc/logstash/wazuh-elastic5-template.json https://raw.githubusercontent.com/wazuh/wazuh/master/extensions/elasticsearch/wazuh-elastic5-template.json
 usermod -a -G ossec logstash
@@ -1937,16 +1875,16 @@ systemctl start logstash.service
 echo
 echo
 GREENTXT "INSTALLATION OF KIBANA:"
-yum -y -q install kibana-5.3.0
-/usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp-2.0_5.3.0.zip
+apt-get install -y kibana  >/dev/null 2>&1
+/usr/share/kibana/bin/kibana-plugin install https://packages.wazuh.com/wazuhapp/wazuhapp.zip
 echo
 systemctl daemon-reload
 systemctl enable kibana.service
 systemctl restart kibana.service
 echo
 echo
-yum versionlock elasticsearch logstash kibana packetbeat wazuh-manager wazuh-api
-GREETXT "OSSEC WAZUH API SETTINGS"
+apt-mark hold elasticsearch logstash kibana packetbeat wazuh-manager wazuh-api
+GREENTXT "OSSEC WAZUH API SETTINGS"
 sed -i 's/.*config.host.*/config.host = "127.0.0.1";/' /var/ossec/api/configuration/config.js
 echo
 MAGE_DOMAIN=$(awk '/webshop/ { print $2 }' /root/mascm/.mascm_index)
@@ -1958,22 +1896,23 @@ htpasswd -b -c /etc/nginx/.wazuh wazuh-web ${KIBANA_PASSWD}  >/dev/null 2>&1
 cd /var/ossec/api/configuration/auth
 htpasswd -b -c user wazuh-api ${WAZUH_API_PASSWD}  >/dev/null 2>&1
 systemctl restart wazuh-api
+touch /etc/nginx/sites-available/kibana.conf
 cat > /etc/nginx/sites-available/kibana.conf <<END
 server {
   listen ${KIBANA_PORT} ssl http2;
   server_name           ${MAGE_DOMAIN};
   access_log            /var/log/nginx/access.log;
-  
+
   ## SSL CONFIGURATION
-	#ssl_certificate     /etc/letsencrypt/live/${MAGE_DOMAIN}/fullchain.pem; 
+	#ssl_certificate     /etc/letsencrypt/live/${MAGE_DOMAIN}/fullchain.pem;
 	#ssl_certificate_key /etc/letsencrypt/live/${MAGE_DOMAIN}/privkey.pem;
-	
+
     satisfy all;
-    allow ${USER_IP}/32;
+    allow "${USER_IP}""/32;
     deny  all;
     auth_basic  "blackhole";
     auth_basic_user_file .ossec;
-       
+
        location / {
                proxy_pass http://127.0.0.1:5601;
        }
